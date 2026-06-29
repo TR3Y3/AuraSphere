@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: aurasphere-backend
+    runtime: python
+    runtimeVersion: 3.11
+    buildCommand: pip install -r backend/requirements.txt && cd backend && alembic upgrade head
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        scope: run
+      - key: SESSION_SECRET
+        scope: run
+      - key: FRONTEND_ORIGIN
+        scope: run
+    disk:
+      - name: data
+        mountPath: /data
+
+  - type: static
+    name: aurasphere-frontend
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        scope: build
+
+  - type: pserv
+    name: aurasphere-postgres
+    ipAllowList: []
+    plan: free
+    postgresVersion: 15

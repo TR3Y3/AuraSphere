@@ -1,0 +1,99 @@
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import type { Company } from '../../lib/api'
+import { useUsers } from '../users/api'
+import { useCreateCompany, useUpdateCompany } from './api'
+
+// Mirror the backend; the backend stays the source of truth for validation.
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  domain: z.string().optional(),
+  industry: z.string().optional(),
+  phone: z.string().optional(),
+  website: z.string().optional(),
+  owner_id: z.coerce.number().optional(),
+})
+type FormValues = z.infer<typeof schema>
+
+export function CompanyForm({
+  existing,
+  onDone,
+}: {
+  existing?: Company
+  onDone: () => void
+}) {
+  const { data: users } = useUsers()
+  const create = useCreateCompany()
+  const update = useUpdateCompany(existing?.id ?? 0)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: existing?.name ?? '',
+      domain: existing?.domain ?? '',
+      industry: existing?.industry ?? '',
+      phone: existing?.phone ?? '',
+      website: existing?.website ?? '',
+      owner_id: existing?.owner_id ?? undefined,
+    },
+  })
+
+  const onSubmit = async (values: FormValues) => {
+    const body = {
+      name: values.name,
+      domain: values.domain || null,
+      industry: values.industry || null,
+      phone: values.phone || null,
+      website: values.website || null,
+      owner_id: values.owner_id,
+    }
+    if (existing) await update.mutateAsync(body)
+    else await create.mutateAsync(body)
+    onDone()
+  }
+
+  return (
+    <form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
+      <div className="field">
+        <label className="cl">Name</label>
+        <input className="ti" placeholder="Acme Corp" {...register('name')} />
+        {errors.name && <span className="err-text">{errors.name.message}</span>}
+      </div>
+      <div className="field">
+        <label className="cl">Domain</label>
+        <input className="ti" placeholder="acme.com" {...register('domain')} />
+      </div>
+      <div className="field">
+        <label className="cl">Industry</label>
+        <input className="ti" {...register('industry')} />
+      </div>
+      <div className="field">
+        <label className="cl">Phone</label>
+        <input className="ti" {...register('phone')} />
+      </div>
+      <div className="field">
+        <label className="cl">Website</label>
+        <input className="ti" {...register('website')} />
+      </div>
+      <div className="field">
+        <label className="cl">Owner</label>
+        <select className="ti" {...register('owner_id')}>
+          <option value="">(me)</option>
+          {users?.map((u) => (
+            <option key={u.id} value={u.id}>{u.full_name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="form-actions">
+        <button className="btn" type="submit" disabled={isSubmitting}>
+          {existing ? 'Save' : 'Create'}
+        </button>
+        <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>
+      </div>
+    </form>
+  )
+}

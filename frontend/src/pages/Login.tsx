@@ -1,0 +1,68 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
+import { ApiError } from '../lib/api'
+
+// Mirror the backend's validation; the backend remains the source of truth.
+const schema = z.object({
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+})
+type FormValues = z.infer<typeof schema>
+
+export function Login() {
+  const { me, login } = useAuth()
+  const navigate = useNavigate()
+  const [formError, setFormError] = useState<string | null>(null)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
+
+  if (me) return <Navigate to="/" replace />
+
+  const onSubmit = async (values: FormValues) => {
+    setFormError(null)
+    try {
+      await login(values.email, values.password)
+      navigate('/', { replace: true })
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : 'Login failed')
+    }
+  }
+
+  return (
+    <div className="login-wrap">
+      <form className="login" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="brand" style={{ border: 0, padding: '0 0 16px' }}>
+          <span className="logo-mark">A</span>
+          <div>
+            <b>AuraSphere</b>
+            <small>CRM</small>
+          </div>
+        </div>
+
+        {formError && <div className="notice err">{formError}</div>}
+
+        <div className="field">
+          <label className="cl">Email</label>
+          <input className="ti" type="email" autoComplete="username" {...register('email')} />
+          {errors.email && <span className="err-text">{errors.email.message}</span>}
+        </div>
+        <div className="field">
+          <label className="cl">Password</label>
+          <input className="ti" type="password" autoComplete="current-password" {...register('password')} />
+          {errors.password && <span className="err-text">{errors.password.message}</span>}
+        </div>
+
+        <button className="btn" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+    </div>
+  )
+}
