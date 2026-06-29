@@ -57,29 +57,42 @@ export function CompanyForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: 10 }}>
-      <div>
-        <input placeholder="Name" {...register('name')} style={{ padding: 8, width: '100%' }} />
-        {errors.name && <small style={{ color: 'red' }}>{errors.name.message}</small>}
+    <form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
+      <div className="field">
+        <label className="cl">Name</label>
+        <input className="ti" placeholder="Acme Corp" {...register('name')} />
+        {errors.name && <span className="err-text">{errors.name.message}</span>}
       </div>
-      <input placeholder="Domain" {...register('domain')} style={{ padding: 8 }} />
-      <input placeholder="Industry" {...register('industry')} style={{ padding: 8 }} />
-      <input placeholder="Phone" {...register('phone')} style={{ padding: 8 }} />
-      <input placeholder="Website" {...register('website')} style={{ padding: 8 }} />
-      <label>
-        Owner
-        <select {...register('owner_id')} style={{ padding: 8, width: '100%' }}>
+      <div className="field">
+        <label className="cl">Domain</label>
+        <input className="ti" placeholder="acme.com" {...register('domain')} />
+      </div>
+      <div className="field">
+        <label className="cl">Industry</label>
+        <input className="ti" {...register('industry')} />
+      </div>
+      <div className="field">
+        <label className="cl">Phone</label>
+        <input className="ti" {...register('phone')} />
+      </div>
+      <div className="field">
+        <label className="cl">Website</label>
+        <input className="ti" {...register('website')} />
+      </div>
+      <div className="field">
+        <label className="cl">Owner</label>
+        <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => (
             <option key={u.id} value={u.id}>{u.full_name}</option>
           ))}
         </select>
-      </label>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="submit" disabled={isSubmitting}>
+      </div>
+      <div className="form-actions">
+        <button className="btn" type="submit" disabled={isSubmitting}>
           {existing ? 'Save' : 'Create'}
         </button>
-        <button type="button" onClick={onDone}>Cancel</button>
+        <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>
       </div>
     </form>
   )

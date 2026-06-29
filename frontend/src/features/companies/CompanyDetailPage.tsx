@@ -1,56 +1,81 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useContacts } from '../contacts/api'
 import { useCompany } from './api'
 import { CompanyForm } from './CompanyForm'
 
 export function CompanyDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const companyId = id ? Number(id) : undefined
   const [editing, setEditing] = useState(false)
   const { data: company, isLoading, error } = useCompany(companyId)
   const { data: contacts } = useContacts({ company_id: companyId, page_size: 100 })
 
-  if (isLoading) return <p>Loading…</p>
-  if (error || !company) return <p style={{ color: 'red' }}>Company not found.</p>
+  if (isLoading) return <p className="muted">Loading…</p>
+  if (error || !company) return <div className="notice err">Company not found.</div>
 
   return (
     <section>
-      <Link to="/companies">← Companies</Link>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
-        <h2 style={{ margin: 0 }}>{company.name}</h2>
-        <button style={{ marginLeft: 'auto' }} onClick={() => setEditing((v) => !v)}>
-          {editing ? 'Cancel' : 'Edit'}
-        </button>
-      </div>
+      <p style={{ marginBottom: 14 }}>
+        <Link to="/companies" className="muted">← Companies</Link>
+      </p>
 
-      {editing ? (
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 12 }}>
-          <CompanyForm existing={company} onDone={() => setEditing(false)} />
+      <div className="profile">
+        <div className="panel panel-pad">
+          <div className="head">
+            <div className="avatar">{company.name.slice(0, 2).toUpperCase()}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{company.name}</div>
+              <div className="muted">{company.industry || 'Industry n/a'}</div>
+            </div>
+            <button className="btn ghost" onClick={() => setEditing((v) => !v)}>
+              {editing ? '✕ Cancel' : '✎ Edit'}
+            </button>
+          </div>
         </div>
-      ) : (
-        <dl style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 6, marginTop: 12 }}>
-          <dt style={{ color: '#666' }}>Domain</dt><dd>{company.domain || '—'}</dd>
-          <dt style={{ color: '#666' }}>Industry</dt><dd>{company.industry || '—'}</dd>
-          <dt style={{ color: '#666' }}>Phone</dt><dd>{company.phone || '—'}</dd>
-          <dt style={{ color: '#666' }}>Website</dt><dd>{company.website || '—'}</dd>
-        </dl>
-      )}
 
-      <h3 style={{ marginTop: 24 }}>Contacts</h3>
-      <ul>
-        {contacts?.items.map((c) => (
-          <li key={c.id}>
-            <Link to={`/contacts/${c.id}`}>
-              {c.first_name} {c.last_name ?? ''}
-            </Link>
-            {c.title ? ` — ${c.title}` : ''}
-          </li>
-        ))}
-        {contacts && contacts.items.length === 0 && (
-          <li style={{ color: '#666' }}>No contacts linked to this company.</li>
+        {editing ? (
+          <div className="panel panel-pad">
+            <CompanyForm existing={company} onDone={() => setEditing(false)} />
+          </div>
+        ) : (
+          <div className="panel panel-pad">
+            <h2 style={{ border: 0, padding: 0, marginBottom: 12 }}>Details</h2>
+            <div className="kv">
+              <div className="k">Domain</div><div>{company.domain || '—'}</div>
+              <div className="k">Industry</div><div>{company.industry || '—'}</div>
+              <div className="k">Phone</div><div>{company.phone || '—'}</div>
+              <div className="k">Website</div>
+              <div>
+                {company.website ? (
+                  <a href={company.website} target="_blank" rel="noopener noreferrer">{company.website}</a>
+                ) : '—'}
+              </div>
+            </div>
+          </div>
         )}
-      </ul>
+
+        <div className="panel">
+          <h2>Contacts</h2>
+          <table>
+            <tbody>
+              {contacts?.items.map((c) => (
+                <tr key={c.id} className="row-link" onClick={() => navigate(`/contacts/${c.id}`)}>
+                  <td>
+                    <strong>{c.first_name} {c.last_name ?? ''}</strong>
+                    {c.title && <div className="sub">{c.title}</div>}
+                  </td>
+                  <td>{c.email || '—'}</td>
+                </tr>
+              ))}
+              {contacts && contacts.items.length === 0 && (
+                <tr><td className="muted" style={{ padding: 18 }}>No contacts linked to this company.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   )
 }

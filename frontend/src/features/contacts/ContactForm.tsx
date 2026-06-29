@@ -61,39 +61,50 @@ export function ContactForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: 10 }}>
-      <div>
-        <input placeholder="First name" {...register('first_name')} style={{ padding: 8, width: '100%' }} />
-        {errors.first_name && <small style={{ color: 'red' }}>{errors.first_name.message}</small>}
+    <form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
+      <div className="field">
+        <label className="cl">First name</label>
+        <input className="ti" {...register('first_name')} />
+        {errors.first_name && <span className="err-text">{errors.first_name.message}</span>}
       </div>
-      <input placeholder="Last name" {...register('last_name')} style={{ padding: 8 }} />
-      <div>
-        <input placeholder="Email" {...register('email')} style={{ padding: 8, width: '100%' }} />
-        {errors.email && <small style={{ color: 'red' }}>{errors.email.message}</small>}
+      <div className="field">
+        <label className="cl">Last name</label>
+        <input className="ti" {...register('last_name')} />
       </div>
-      <input placeholder="Phone" {...register('phone')} style={{ padding: 8 }} />
-      <input placeholder="Title" {...register('title')} style={{ padding: 8 }} />
-      <label>
-        Company
-        <select {...register('company_id')} style={{ padding: 8, width: '100%' }}>
+      <div className="field">
+        <label className="cl">Email</label>
+        <input className="ti" {...register('email')} />
+        {errors.email && <span className="err-text">{errors.email.message}</span>}
+      </div>
+      <div className="field">
+        <label className="cl">Phone</label>
+        <input className="ti" {...register('phone')} />
+      </div>
+      <div className="field">
+        <label className="cl">Title</label>
+        <input className="ti" {...register('title')} />
+      </div>
+      <div className="field">
+        <label className="cl">Company</label>
+        <select className="ti" {...register('company_id')}>
           <option value="">(none)</option>
           {companies?.items.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-      </label>
-      <label>
-        Owner
-        <select {...register('owner_id')} style={{ padding: 8, width: '100%' }}>
+      </div>
+      <div className="field">
+        <label className="cl">Owner</label>
+        <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => (
             <option key={u.id} value={u.id}>{u.full_name}</option>
           ))}
         </select>
-      </label>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="submit" disabled={isSubmitting}>{existing ? 'Save' : 'Create'}</button>
-        <button type="button" onClick={onDone}>Cancel</button>
+      </div>
+      <div className="form-actions">
+        <button className="btn" type="submit" disabled={isSubmitting}>{existing ? 'Save' : 'Create'}</button>
+        <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>
       </div>
     </form>
   )

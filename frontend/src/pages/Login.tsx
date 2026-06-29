@@ -36,25 +36,30 @@ export function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: '64px auto', fontFamily: 'system-ui' }}>
-      <h1>Sign in to AuraSphere</h1>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div style={{ marginBottom: 12 }}>
-          <label>Email</label>
-          <input type="email" autoComplete="username" {...register('email')}
-            style={{ width: '100%', padding: 8 }} />
-          {errors.email && <small style={{ color: 'red' }}>{errors.email.message}</small>}
+    <div className="login-wrap">
+      <form className="login" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="brand" style={{ border: 0, padding: '0 0 16px' }}>
+          <span className="logo-mark">A</span>
+          <div>
+            <b>AuraSphere</b>
+            <small>CRM</small>
+          </div>
         </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>Password</label>
-          <input type="password" autoComplete="current-password" {...register('password')}
-            style={{ width: '100%', padding: 8 }} />
-          {errors.password && (
-            <small style={{ color: 'red' }}>{errors.password.message}</small>
-          )}
+
+        {formError && <div className="notice err">{formError}</div>}
+
+        <div className="field">
+          <label className="cl">Email</label>
+          <input className="ti" type="email" autoComplete="username" {...register('email')} />
+          {errors.email && <span className="err-text">{errors.email.message}</span>}
         </div>
-        {formError && <p style={{ color: 'red' }}>{formError}</p>}
-        <button type="submit" disabled={isSubmitting} style={{ width: '100%', padding: 10 }}>
+        <div className="field">
+          <label className="cl">Password</label>
+          <input className="ti" type="password" autoComplete="current-password" {...register('password')} />
+          {errors.password && <span className="err-text">{errors.password.message}</span>}
+        </div>
+
+        <button className="btn" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
