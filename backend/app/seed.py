@@ -12,6 +12,7 @@ import sys
 
 from app import config
 from app.database import SessionLocal
+from app.defaults import ensure_default_pipeline
 from app.models import Organization, User
 from app.security import hash_password
 
@@ -31,7 +32,8 @@ def seed_org() -> Organization:
         db.add(org)
         db.commit()
         db.refresh(org)
-        print(f"Created org '{org.slug}' (id={org.id}).")
+        ensure_default_pipeline(db, org.id)
+        print(f"Created org '{org.slug}' (id={org.id}) with default pipeline.")
         return org
     finally:
         db.close()

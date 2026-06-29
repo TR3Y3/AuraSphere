@@ -192,6 +192,12 @@ class Deal(Base):
         nullable=False,
     )
 
+    stage: Mapped["Stage"] = relationship(foreign_keys=[stage_id])
+    company: Mapped["Company | None"] = relationship(foreign_keys=[company_id])
+    primary_contact: Mapped["Contact | None"] = relationship(
+        foreign_keys=[primary_contact_id]
+    )
+
 
 class Activity(Base):
     __tablename__ = "activities"

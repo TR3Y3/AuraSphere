@@ -128,8 +128,13 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **Phase 2 (complete)**
-- Last completed: Contacts + Companies — the reference vertical slice, both layers.
+- Current phase: **Phase 3 (complete)**
+- Last completed: Deals + pipeline + kanban.
+  - Backend: pipelines/stages with one default pipeline seeded per org (`app/defaults.py` `ensure_default_pipeline`, idempotent; called by `seed-org` and lazily by `GET /api/pipelines`). Default stages: New, Qualified, Proposal, Negotiation, Closed Won (`is_won`), Closed Lost (`is_lost`). Deal CRUD (`app/routers/deals.py`) with list (search/filter by pipeline/stage/owner, pagination), org scoping, and link validation (company/contact must be in-org → 422). Dedicated kanban endpoint `PATCH /api/deals/{id}/stage` validates the target stage is in the deal's pipeline (422 otherwise) and stamps/clears `closed_at` on won/lost. DealOut embeds company + primary-contact summaries. No new migration (pipeline/stage/deal tables existed from Phase 1; added only ORM relationships).
+  - Frontend: dnd-kit kanban board (`src/features/deals/`) — columns are stages, cards are deals; dragging a card calls the stage endpoint via an **optimistic** TanStack Query mutation (`useChangeStage`, rolls back on error). Board/List view toggle, "My deals" filter, create/edit form, deal detail page, per-column value totals. Nav + dashboard cards updated. `npm run build` passes.
+  - Tests (`backend/tests/`): 21 passing — adds pipeline seeding, deal create defaults to first stage, stage-change persists + sets `closed_at`, foreign-stage rejected (422), and full deal tenant isolation (404 cross-org).
+  - Verified live: drag-drop survives a page reload (Playwright drag → reload → card stays in new column).
+- Earlier (Phase 2): Contacts + Companies — the reference vertical slice, both layers.
   - Backend: full CRUD for `companies` and `contacts` (`app/routers/{companies,contacts}.py`) with list endpoints supporting search, `owner_id` filter (drives "My records"), sort whitelist, and pagination (returns `Page[...]` from `app/schemas/common.py`). Ownership enforced via `OrgScope.can_edit` (admins/owners edit any org record; members edit only their own); cross-org access returns 404. Contact→company linking validates the company is in the caller's org (422 otherwise) and embeds a `{id,name}` company summary on `ContactOut`. Added org-scoped `GET /api/users` for owner/reassign dropdowns. All scoped through `OrgScope`.
   - Frontend: regenerated typed client; model types are derived from the generated OpenAPI schemas in `src/lib/api.ts` (no hand-written API types). TanStack Query hooks per feature (`src/features/{companies,contacts,users}/api.ts`), list views with search + "My records" toggle + pagination, detail pages, create/edit forms (react-hook-form + zod), delete, and contact→company linking via a company select. Shared `Layout` with nav + logout. `npm run build` passes.
   - Tests (`backend/tests/`): 16 passing — adds companies CRUD cycle, list search/pagination, member-cannot-edit-others, cross-org 404, and contacts CRUD + company-link validation + cross-org link rejection + contact isolation.
@@ -141,7 +146,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: Phase 3 — Deals + pipeline (seed one default pipeline/stages per org, deal CRUD, dnd-kit kanban with optimistic stage-change persistence, deals list).
+- Next concrete step: Phase 4 — Activities + timeline (log call/email/note/task/meeting, task due dates + completion, chronological timeline on contact/company/deal detail pages, a "My open tasks" view).
 - Open decisions / blockers: _none_
 
 ---

@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { useCompanies } from '../features/companies/api'
 import { useContacts } from '../features/contacts/api'
+import { useDeals } from '../features/deals/api'
 
 export function Dashboard() {
   const { me } = useAuth()
   const companies = useCompanies({ page_size: 1 })
   const contacts = useContacts({ page_size: 1 })
-  const myCompanies = useCompanies({ page_size: 1, owner_id: me?.user.id })
-  const myContacts = useContacts({ page_size: 1, owner_id: me?.user.id })
+  const deals = useDeals({ page_size: 1 })
+  const myDeals = useDeals({ page_size: 1, owner_id: me?.user.id })
   if (!me) return null
 
   const stat = (q: { data?: { total: number } }) => (q.data ? q.data.total : '—')
@@ -25,12 +26,12 @@ export function Dashboard() {
           <div className="v">{stat(contacts)}</div>
         </div>
         <div className="card">
-          <div className="k">My companies</div>
-          <div className="v">{stat(myCompanies)}</div>
+          <div className="k">Deals</div>
+          <div className="v">{stat(deals)}</div>
         </div>
         <div className="card">
-          <div className="k">My contacts</div>
-          <div className="v">{stat(myContacts)}</div>
+          <div className="k">My deals</div>
+          <div className="v">{stat(myDeals)}</div>
         </div>
       </div>
 
@@ -42,8 +43,9 @@ export function Dashboard() {
           {me.organization.name} · <span className="badge b-brand">{me.user.role}</span>
         </p>
         <p style={{ marginTop: 12 }}>
-          Jump into <Link to="/companies">Companies</Link> or{' '}
-          <Link to="/contacts">Contacts</Link>.
+          Jump into <Link to="/companies">Companies</Link>,{' '}
+          <Link to="/contacts">Contacts</Link>, or the{' '}
+          <Link to="/deals">Deals</Link> board.
         </p>
       </div>
     </section>

@@ -150,6 +150,38 @@ select.ti { appearance: auto; }
 /* ── Pagination ─────────────────────────────────────────────────── */
 .pager { display: flex; gap: 12px; align-items: center; margin-top: 14px; color: var(--muted); font-size: 13px; }
 
+/* ── Kanban board ───────────────────────────────────────────────── */
+.board { display: flex; gap: 12px; align-items: flex-start; overflow-x: auto; padding-bottom: 8px; }
+.col {
+  flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); display: flex; flex-direction: column; max-height: calc(100vh - 180px);
+}
+.col-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+.col-head .name { font-weight: 600; font-size: 13px; }
+.col-head .count { color: var(--muted); font-size: 12px; }
+.col-body { padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 60px; }
+.col.drop-over { border-color: var(--brand); }
+.col.drop-over .col-body { background: rgba(139, 92, 246, 0.06); }
+.col-sum { padding: 8px 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+
+.deal-card {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; cursor: grab; touch-action: none;
+}
+.deal-card:hover { border-color: var(--brand); }
+.deal-card.dragging { opacity: 0.4; }
+.deal-card .dc-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.deal-card .dc-amt { color: var(--good); font-weight: 700; font-size: 13px; }
+.deal-card .dc-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+/* ── View toggle ────────────────────────────────────────────────── */
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--surface); color: var(--muted); border: 0; padding: 8px 14px; cursor: pointer; font-size: 13px; }
+.seg button.on { background: var(--surface-2); color: var(--text); }
+
 /* ── Logo mark ──────────────────────────────────────────────────── */
 .logo-mark {
   width: 30px; height: 30px; border-radius: 7px;

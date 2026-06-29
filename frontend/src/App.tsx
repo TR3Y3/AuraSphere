@@ -8,6 +8,8 @@ import { CompaniesPage } from './features/companies/CompaniesPage'
 import { CompanyDetailPage } from './features/companies/CompanyDetailPage'
 import { ContactsPage } from './features/contacts/ContactsPage'
 import { ContactDetailPage } from './features/contacts/ContactDetailPage'
+import { DealsPage } from './features/deals/DealsPage'
+import { DealDetailPage } from './features/deals/DealDetailPage'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
               <Route path="/companies/:id" element={<CompanyDetailPage />} />
               <Route path="/contacts" element={<ContactsPage />} />
               <Route path="/contacts/:id" element={<ContactDetailPage />} />
+              <Route path="/deals" element={<DealsPage />} />
+              <Route path="/deals/:id" element={<DealDetailPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
