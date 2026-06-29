@@ -44,6 +44,27 @@ npm run dev
 
 Frontend runs on `http://localhost:5173`.
 
+## Developer tooling (Claude Code)
+
+- **Skills** live in `.claude/skills/`. CRM workflow skills (adapted from
+  CALCOR for AuraSphere's data model): `add-prospects`, `review-records`,
+  `personalize-outreach`, `weekly-sales-report`. Generic orchestration/util
+  skills: `efficient-fable`, `efficient-frontier`, `stay-within-limits`,
+  `quick-recap`, `visual-plan`, `visual-recap`.
+- **Cross-session memory** is the `claude-mem` git submodule
+  (`github.com/thedotmack/claude-mem`). Initialize it where GitHub is
+  reachable:
+
+  ```bash
+  git submodule update --init --recursive
+  ```
+
+  > Note: it could not be fetched in the locked-down build environment
+  > (outbound git is restricted to this repo), so it must be initialized in a
+  > network-permitted environment. It is third-party code that installs
+  > session hooks — review before enabling.
+
 ## Phases
 
-See `CLAUDE.md` for the detailed phase-by-phase build plan. Currently: **Phase 0** (monorepo scaffold).
+See `CLAUDE.md` for the detailed phase-by-phase build plan. Currently:
+**Phase 2 complete** (contacts + companies); next is Phase 3 (deals + pipeline).
