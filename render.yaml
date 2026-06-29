@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pkd-backend
+    name: aurasphere-backend
     runtime: python
     runtimeVersion: 3.11
     buildCommand: pip install -r backend/requirements.txt && cd backend && alembic upgrade head
@@ -17,7 +17,7 @@ services:
         mountPath: /data
 
   - type: static
-    name: pkd-frontend
+    name: aurasphere-frontend
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
     envVars:
@@ -25,7 +25,7 @@ services:
         scope: build
 
   - type: pserv
-    name: pkd-postgres
+    name: aurasphere-postgres
     ipAllowList: []
     plan: free
     postgresVersion: 15

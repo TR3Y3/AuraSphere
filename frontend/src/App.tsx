@@ -33,7 +33,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>PKD CRM</h1>
+      <h1>AuraSphere</h1>
       {loading && <p>Checking backend health...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
       {health && (

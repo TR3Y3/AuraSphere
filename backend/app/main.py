@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 
-app = FastAPI(title="PKD CRM", version="0.1.0")
+app = FastAPI(title="AuraSphere CRM", version="0.1.0")
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -23,4 +23,4 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "app": "pkd-crm"}
+    return {"status": "ok", "app": "aurasphere"}

@@ -1,4 +1,4 @@
-# PKD — Multi-tenant CRM
+# AuraSphere — Multi-tenant CRM
 
 A SaaS CRM built on React + FastAPI with PostgreSQL, designed for multi-tenant isolation.
 
