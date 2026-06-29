@@ -1,48 +1,22 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-
-interface HealthResponse {
-  status: string
-  app: string
-}
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './auth/AuthContext'
+import { ProtectedRoute } from './auth/ProtectedRoute'
+import { Login } from './pages/Login'
+import { Dashboard } from './pages/Dashboard'
 
 function App() {
-  const [health, setHealth] = useState<HealthResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchHealth = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-        const response = await fetch(`${apiUrl}/health`)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const data = await response.json()
-        setHealth(data)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        setHealth(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchHealth()
-  }, [])
-
   return (
-    <div className="App">
-      <h1>AuraSphere</h1>
-      {loading && <p>Checking backend health...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-      {health && (
-        <div>
-          <p>✓ Backend is running</p>
-          <pre>{JSON.stringify(health, null, 2)}</pre>
-        </div>
-      )}
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Dashboard />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

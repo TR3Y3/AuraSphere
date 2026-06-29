@@ -128,9 +128,16 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **Phase 0 (complete)**
-- Last completed: Monorepo scaffold landed. Backend FastAPI JSON API boots with `/health`, CORS for the frontend origin (credentials enabled), and OpenAPI exposed; SQLAlchemy + Alembic initialized and `alembic upgrade head` runs clean. Frontend Vite + React + TS app builds and fetches/renders `/health`. Typed-client generation wired (`npm run gen:api` → `src/types/api.ts`) and verified against the live backend. `render.yaml` (backend web service + frontend static site + Postgres) and `.env.example` for each app present. Fixed a scaffold dependency conflict: pinned `typescript` to `~5.9.3` so `openapi-typescript@7` (the locked typed-client generator) resolves.
-- Next concrete step: Phase 1 — tenancy + users + cookie-session auth + org-scoping dependency, with tenant-isolation tests.
+- Current phase: **Phase 1 (complete)**
+- Last completed: Tenancy + users + cookie-session auth.
+  - Models for all core tables (`organizations`, `users`, `sessions`, `companies`, `contacts`, `pipelines`, `stages`, `deals`, `activities`), each business table carrying `organization_id` (`app/models.py`). One Alembic migration creates the whole schema; `alembic upgrade head` runs clean.
+  - Auth: argon2 password hashing (`app/security.py`); server-side sessions in the `sessions` table delivered via an httpOnly, SameSite=Lax cookie (Secure toggled by `COOKIE_SECURE`); only the SHA-256 token hash is stored. Endpoints: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`.
+  - Tenant isolation: `OrgScope` dependency (`app/deps.py`) whose `.query(Model)` is pre-filtered to the caller's `organization_id`; org id is never accepted from the client. `require_role(...)` enforces owner/admin/member. A scoped `GET /api/companies` read endpoint exists as the isolation proof slice (full Contacts/Companies CRUD is Phase 2).
+  - Seed: `python -m app.seed [seed-org|seed-admin|all]`, idempotent, driven by `SEED_*` env vars; admin is created as `owner`.
+  - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
+  - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
+  - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
+- Next concrete step: Phase 2 — Contacts + Companies full CRUD across both layers (list with search/sort/pagination/filter, detail, create/edit forms, "My records" toggle, contact→company linking), copying this as the reference pattern.
 - Open decisions / blockers: _none_
 
 ---

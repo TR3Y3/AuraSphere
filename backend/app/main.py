@@ -1,24 +1,22 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app import config
+from app.routers import auth, companies
 
 app = FastAPI(title="AuraSphere CRM", version="0.1.0")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# CORS configuration
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
-
+# CORS: exact SPA origin with credentials so the session cookie is sent.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=[config.FRONTEND_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
+app.include_router(companies.router)
 
 
 @app.get("/health")

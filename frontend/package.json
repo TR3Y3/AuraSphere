@@ -11,9 +11,14 @@
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/types/api.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@tanstack/react-query": "^5.101.2",
     "axios": "^1.18.1",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-hook-form": "^7.80.0",
+    "react-router-dom": "^6.30.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

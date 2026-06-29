@@ -15,6 +15,7 @@ if config.config_file_name is not None:
 
 # Add your model's MetaData for autogenerate support
 from app.database import Base
+import app.models  # noqa: F401  (registers tables on Base.metadata)
 target_metadata = Base.metadata
 
 # Get DATABASE_URL from environment
