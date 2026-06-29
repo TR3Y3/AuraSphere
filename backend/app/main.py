@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import config
-from app.routers import auth, companies
+from app.routers import auth, companies, contacts, users
 
 app = FastAPI(title="AuraSphere CRM", version="0.1.0")
 
@@ -17,6 +17,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(companies.router)
+app.include_router(contacts.router)
+app.include_router(users.router)
 
 
 @app.get("/health")

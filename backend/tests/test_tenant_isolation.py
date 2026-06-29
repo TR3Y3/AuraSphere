@@ -8,7 +8,7 @@ def _login(client, email, password):
 
 def test_user_only_sees_own_org_companies(client, seeded):
     _login(client, "a@example.com", "password-a")
-    rows = client.get("/api/companies").json()
+    rows = client.get("/api/companies").json()["items"]
     names = {c["name"] for c in rows}
     org_ids = {c["organization_id"] for c in rows}
     assert names == {"Acme A"}
@@ -18,7 +18,7 @@ def test_user_only_sees_own_org_companies(client, seeded):
 def test_other_org_data_is_invisible(client, seeded):
     # User B sees only Globex B, never Acme A.
     _login(client, "b@example.com", "password-b")
-    rows = client.get("/api/companies").json()
+    rows = client.get("/api/companies").json()["items"]
     names = {c["name"] for c in rows}
     assert names == {"Globex B"}
     assert "Acme A" not in names

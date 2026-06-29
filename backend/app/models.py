@@ -125,6 +125,8 @@ class Contact(Base):
         nullable=False,
     )
 
+    company: Mapped["Company | None"] = relationship(foreign_keys=[company_id])
+
 
 class Pipeline(Base):
     __tablename__ = "pipelines"

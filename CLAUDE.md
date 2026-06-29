@@ -128,8 +128,12 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **Phase 1 (complete)**
-- Last completed: Tenancy + users + cookie-session auth.
+- Current phase: **Phase 2 (complete)**
+- Last completed: Contacts + Companies — the reference vertical slice, both layers.
+  - Backend: full CRUD for `companies` and `contacts` (`app/routers/{companies,contacts}.py`) with list endpoints supporting search, `owner_id` filter (drives "My records"), sort whitelist, and pagination (returns `Page[...]` from `app/schemas/common.py`). Ownership enforced via `OrgScope.can_edit` (admins/owners edit any org record; members edit only their own); cross-org access returns 404. Contact→company linking validates the company is in the caller's org (422 otherwise) and embeds a `{id,name}` company summary on `ContactOut`. Added org-scoped `GET /api/users` for owner/reassign dropdowns. All scoped through `OrgScope`.
+  - Frontend: regenerated typed client; model types are derived from the generated OpenAPI schemas in `src/lib/api.ts` (no hand-written API types). TanStack Query hooks per feature (`src/features/{companies,contacts,users}/api.ts`), list views with search + "My records" toggle + pagination, detail pages, create/edit forms (react-hook-form + zod), delete, and contact→company linking via a company select. Shared `Layout` with nav + logout. `npm run build` passes.
+  - Tests (`backend/tests/`): 16 passing — adds companies CRUD cycle, list search/pagination, member-cannot-edit-others, cross-org 404, and contacts CRUD + company-link validation + cross-org link rejection + contact isolation.
+- Earlier (Phase 1): Tenancy + users + cookie-session auth.
   - Models for all core tables (`organizations`, `users`, `sessions`, `companies`, `contacts`, `pipelines`, `stages`, `deals`, `activities`), each business table carrying `organization_id` (`app/models.py`). One Alembic migration creates the whole schema; `alembic upgrade head` runs clean.
   - Auth: argon2 password hashing (`app/security.py`); server-side sessions in the `sessions` table delivered via an httpOnly, SameSite=Lax cookie (Secure toggled by `COOKIE_SECURE`); only the SHA-256 token hash is stored. Endpoints: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`.
   - Tenant isolation: `OrgScope` dependency (`app/deps.py`) whose `.query(Model)` is pre-filtered to the caller's `organization_id`; org id is never accepted from the client. `require_role(...)` enforces owner/admin/member. A scoped `GET /api/companies` read endpoint exists as the isolation proof slice (full Contacts/Companies CRUD is Phase 2).
@@ -137,7 +141,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: Phase 2 — Contacts + Companies full CRUD across both layers (list with search/sort/pagination/filter, detail, create/edit forms, "My records" toggle, contact→company linking), copying this as the reference pattern.
+- Next concrete step: Phase 3 — Deals + pipeline (seed one default pipeline/stages per org, deal CRUD, dnd-kit kanban with optimistic stage-change persistence, deals list).
 - Open decisions / blockers: _none_
 
 ---

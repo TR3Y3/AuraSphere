@@ -69,6 +69,10 @@ class OrgScope:
     def is_admin(self) -> bool:
         return self.user.role in ("owner", "admin")
 
+    def can_edit(self, record) -> bool:
+        """Admins/owners edit any record in the org; members edit their own."""
+        return self.is_admin or record.owner_id == self.user.id
+
 
 def get_scope(
     db: DbSession = Depends(get_db), user: User = Depends(get_current_user)
