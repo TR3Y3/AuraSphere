@@ -27,6 +27,7 @@ export function CompaniesPage() {
 
   return (
     <section>
+      <h1 className="page-h">Shippers</h1>
       <div className="toolbar">
         <input
           type="search"

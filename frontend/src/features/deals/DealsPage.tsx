@@ -33,6 +33,7 @@ export function DealsPage() {
 
   return (
     <section>
+      <h1 className="page-h">Loads</h1>
       <div className="toolbar">
         <div className="seg">
           <button className={view === 'board' ? 'on' : ''} onClick={() => setView('board')}>Board</button>

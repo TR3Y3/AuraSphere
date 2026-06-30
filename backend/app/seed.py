@@ -28,7 +28,11 @@ def seed_org() -> Organization:
         if org:
             print(f"Org '{org.slug}' already exists (id={org.id}).")
             return org
-        org = Organization(name=config.SEED_ORG_NAME, slug=config.SEED_ORG_SLUG)
+        org = Organization(
+            name=config.SEED_ORG_NAME,
+            slug=config.SEED_ORG_SLUG,
+            accent_color=config.SEED_ORG_ACCENT,
+        )
         db.add(org)
         db.commit()
         db.refresh(org)

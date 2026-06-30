@@ -129,13 +129,21 @@ Do not start a phase until the previous one runs and its checks pass.
 - **Phase 3 — Pipeline kanban (dnd-kit).** Stage board with optimistic, persisted drag. ✅ *(becomes the Load board in F2.)*
 
 ### Freight pivot (F-phases — current track)
-- **F1 — Accounts split + app shell.** Add **Carriers** (MC/DOT, rating, on-time/tracking/bounce, insurance auto-liability + cargo, equipment) with CRUD + isolation tests; let **Contacts** link a shipper *or* carrier. Relabel Companies → **Shippers** (UI). Build the reusable shell — **status-hero record header, contextual action row, KPI stat row, panel + in-panel tabs** — and apply it to Shipper + Carrier detail. Nav: Dashboard · Shippers · Carriers · Contacts · (Deals interim).
-- **F2 — Loads + load board (THE centerpiece).** Rename `companies→shippers`, `deals→loads`; add stops (pickup/delivery), commodity/weight/equipment/miles, **customer rate − carrier rate = margin**, carrier assignment, and the freight **status workflow**. The kanban becomes the **Load status board**. Load detail = the hero page (header status, action row, rates/margin panel, route & stops, carrier panel). Tests: status transitions, margin math, isolation.
-- **F3 — Carrier ops.** Compliance/insurance gating, ratings, equipment, **lanes & lane-rate history**, capacity. Carrier profile filled out.
-- **F4 — Activities + timeline.** Log calls/emails/notes/tasks against loads/carriers/shippers; chronological timeline on detail pages; "My open tasks." Verify association + isolation.
-- **F5 — Pricing + dashboard.** Lane rate history, margin/KPIs (loaded $, avg margin, on-time), pipeline value by status, market-insight panels, recent activity. Simple charts.
+- **F1 — Accounts split + app shell.** ✅ Carriers (MC/DOT, rating, on-time/tracking/bounce, insurance, equipment) + reusable record shell (status-hero header, action row, KPI strip, panel/tabs, alert badge, rating). Contacts link a shipper *or* carrier. Companies relabeled → Shippers (UI).
+- **F1.5 — Layout & identity (current).** Move from the left sidebar to a **top app bar** (org brand · primary nav · More menu · global search · "+ New" quick actions · notifications · avatar) — matches the reference TMS and opens full width for dense views. **Per-tenant branding:** the platform is AuraSphere, but each org shows its own display name + accent color (`organizations.accent_color`); logged in as CorTrans → CorTrans branding. Login page keeps the platform brand.
+- **F2 — Loads + load board (THE centerpiece).** Rename `companies→shippers`, `deals→loads`; add stops (pickup/delivery), commodity/weight/equipment/miles, **customer rate − carrier rate = margin**, carrier assignment, and the freight **status workflow** (Quote is the first status). The kanban becomes the **Load status board**. Load detail = the hero page (header status, action row, rates/margin panel, route & stops, carrier panel). Tests: status transitions, margin math, isolation.
+- **F3 — Carrier ops.** Compliance/insurance gating, ratings, equipment, **lanes & lane-rate history**, capacity. Loud compliance flags.
+- **F4 — Activities + timeline.** Log calls/emails/notes/tasks against loads/carriers/shippers; chronological timeline; "My open tasks."
+- **F5 — Pricing + dashboard.** Lane rate history, margin/KPIs (loaded $, avg margin, on-time), value by status, market-insight panels.
 - **F6 — Tracking.** Stops + check-calls/pings + a map; ETA; status auto-advance hooks.
-- **Product track (gated — do NOT build until told).** Deploy (Postgres + cross-site cookie fix), self-serve brokerage signup + email verification, Stripe plan-gating, integrations (Gmail/Apollo copied + adapted from CALCOR).
+
+### Signature features (our original twist — make it better than the gold standard)
+- **S1 — Live Quote Desk.** A collaborative quote workspace where **customer-facing and carrier-facing reps interact on the same quote/load in real time** (shared options list, target vs offered rate, margin live, status hand-off). Builds on F2 loads (Quote status) + F5 pricing.
+- **S2 — Shipper Lead-Gen.** A **customer-facing prospecting tool** that finds companies that ship + their logistics decision-maker contacts, dedupes against the CRM, and creates Shipper + Contact records (builds on the `add-prospects` skill; web research first, paid enrichment only when needed). Surfaces freight-fit signals.
+- *(Carrier-quality/compliance + margin/pricing emphasis run THROUGH F2/F3/F5 rather than as a separate phase: loud flags, margin everywhere, pricing targets in the load view.)*
+
+### Product track (gated — do NOT build until told)
+- Deploy (Postgres + cross-site cookie fix), self-serve brokerage signup + email verification, Stripe plan-gating, integrations (Gmail/Apollo copied + adapted from CALCOR).
 
 ## Guardrails (read this every session — these prevent the loops and the leaks)
 

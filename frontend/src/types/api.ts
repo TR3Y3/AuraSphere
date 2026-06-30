@@ -664,6 +664,10 @@ export interface components {
             slug: string;
             /** Plan */
             plan: string;
+            /** Accent Color */
+            accent_color?: string | null;
+            /** Logo Url */
+            logo_url?: string | null;
         };
         /** Page[CarrierOut] */
         Page_CarrierOut_: {

@@ -22,6 +22,7 @@ export function CarriersPage() {
 
   return (
     <section>
+      <h1 className="page-h">Carriers</h1>
       <div className="toolbar">
         <input type="search" placeholder="Search name, MC#, DOT#…" value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }} />

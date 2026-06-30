@@ -27,6 +27,7 @@ export function ContactsPage() {
 
   return (
     <section>
+      <h1 className="page-h">Contacts</h1>
       <div className="toolbar">
         <input
           type="search"

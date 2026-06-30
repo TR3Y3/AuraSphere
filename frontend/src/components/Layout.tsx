@@ -1,64 +1,128 @@
-import { useState, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { SearchPalette } from './SearchPalette'
 
 const NAV = [
-  { to: '/', label: 'Dashboard', ico: '▦', end: true },
-  { to: '/companies', label: 'Shippers', ico: '▣' },
-  { to: '/carriers', label: 'Carriers', ico: '⛟' },
-  { to: '/contacts', label: 'Contacts', ico: '☰' },
-  { to: '/deals', label: 'Deals', ico: '◧' },
+  { to: '/', label: 'Dashboard', end: true },
+  { to: '/deals', label: 'Loads' },
+  { to: '/carriers', label: 'Carriers' },
+  { to: '/companies', label: 'Shippers' },
+  { to: '/contacts', label: 'Contacts' },
 ]
 
-// Page heading is derived from the route so the topbar stays in sync.
-function headingFor(path: string): ReactNode {
-  if (path.startsWith('/companies')) return 'Shippers'
-  if (path.startsWith('/carriers')) return 'Carriers'
-  if (path.startsWith('/contacts')) return 'Contacts'
-  if (path.startsWith('/deals')) return 'Deals'
-  return 'Dashboard'
+// Close a popover when clicking outside it.
+function useClickOutside(onOut: () => void) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onOut()
+    }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [onOut])
+  return ref
 }
 
 export function Layout() {
   const { me, logout } = useAuth()
-  const location = useLocation()
-  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const [search, setSearch] = useState(false)
+  const [newOpen, setNewOpen] = useState(false)
+  const [meOpen, setMeOpen] = useState(false)
+  const newRef = useClickOutside(() => setNewOpen(false))
+  const meRef = useClickOutside(() => setMeOpen(false))
+
+  // Per-tenant accent: paint the org's brand color into the theme.
+  useEffect(() => {
+    const accent = me?.organization.accent_color
+    const root = document.documentElement
+    if (accent) {
+      root.style.setProperty('--brand', accent)
+      root.style.setProperty('--brand-2', accent)
+    } else {
+      root.style.removeProperty('--brand')
+      root.style.removeProperty('--brand-2')
+    }
+  }, [me?.organization.accent_color])
+
+  // ⌘K / Ctrl-K opens the search palette.
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearch(true)
+      }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [])
+
+  const orgName = me?.organization.name ?? 'AuraSphere'
+  const initials = orgName.slice(0, 2).toUpperCase()
+
+  const newItem = (label: string, to: string) => (
+    <button onClick={() => { setNewOpen(false); navigate(to) }}>{label}</button>
+  )
 
   return (
-    <div className="layout">
-      <aside className={`sidebar${open ? ' open' : ''}`}>
-        <div className="brand">
-          <img className="logo" src="/logo.svg" alt="AuraSphere" width={30} height={30} />
+    <div>
+      <header className="appbar">
+        <div className="brand2">
+          <span className="logo-mark">{initials}</span>
           <div>
-            <b>AuraSphere</b>
-            <small>CRM</small>
+            <b>{orgName}</b>
+            <small>Freight TMS</small>
           </div>
         </div>
-        <nav className="nav" onClick={() => setOpen(false)}>
+
+        <nav className="topnav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}
               className={({ isActive }) => (isActive ? 'active' : '')}>
-              <span className="ico">{n.ico}</span> {n.label}
+              {n.label}
             </NavLink>
           ))}
         </nav>
-        <div className="side-foot">
-          <div className="who">{me?.user.full_name}</div>
-          <div style={{ marginBottom: 8 }}>{me?.organization.name}</div>
-          <button onClick={() => logout()}>Sign out</button>
-        </div>
-      </aside>
 
-      <div className="main">
-        <div className="topbar">
-          <button className="hamburger" onClick={() => setOpen((v) => !v)}>☰</button>
-          <h1>{headingFor(location.pathname)}</h1>
-          <span />
+        <div className="appbar-spacer" />
+
+        <button className="searchbtn" onClick={() => setSearch(true)}>
+          🔍 Search <kbd>⌘K</kbd>
+        </button>
+
+        <div className="menu" ref={newRef}>
+          <button className="btn sm" onClick={() => setNewOpen((v) => !v)}>+ New ▾</button>
+          {newOpen && (
+            <div className="menu-pop">
+              {newItem('New load', '/deals')}
+              {newItem('New shipper', '/companies')}
+              {newItem('New carrier', '/carriers')}
+              {newItem('New contact', '/contacts')}
+            </div>
+          )}
         </div>
-        <div className="content">
-          <Outlet />
+
+        <button className="iconbtn" title="Notifications">🔔</button>
+
+        <div className="menu" ref={meRef}>
+          <button className="avatar-btn" onClick={() => setMeOpen((v) => !v)}>
+            {(me?.user.full_name ?? '?').slice(0, 1).toUpperCase()}
+          </button>
+          {meOpen && (
+            <div className="menu-pop">
+              <div className="who">{me?.user.full_name}<br />{me?.user.email}</div>
+              <button onClick={() => logout()}>Sign out</button>
+            </div>
+          )}
         </div>
+      </header>
+
+      <div className="app-content">
+        <Outlet />
       </div>
+
+      {search && <SearchPalette onClose={() => setSearch(false)} />}
     </div>
   )
 }
