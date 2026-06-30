@@ -24,6 +24,7 @@
 
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; padding: 0; min-height: 100vh; }
+html, body { overflow-x: hidden; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -214,7 +215,10 @@ select.ti { appearance: auto; }
 .appbar .brand2 { display: flex; align-items: center; gap: 10px; }
 .appbar .brand2 b { font-size: 15px; }
 .appbar .brand2 small { display: block; color: var(--muted); font-size: 11px; }
-.topnav { display: flex; gap: 2px; overflow-x: auto; }
+/* min-width:0 lets the nav shrink inside the flex bar and scroll internally
+   instead of widening the page (which produced a stray bottom scrollbar). */
+.topnav { display: flex; gap: 2px; overflow-x: auto; min-width: 0; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
 .topnav a {
   padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 500;
   font-size: 14px; white-space: nowrap;
