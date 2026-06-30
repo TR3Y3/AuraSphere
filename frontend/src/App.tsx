@@ -10,6 +10,8 @@ import { ContactsPage } from './features/contacts/ContactsPage'
 import { ContactDetailPage } from './features/contacts/ContactDetailPage'
 import { DealsPage } from './features/deals/DealsPage'
 import { DealDetailPage } from './features/deals/DealDetailPage'
+import { CarriersPage } from './features/carriers/CarriersPage'
+import { CarrierDetailPage } from './features/carriers/CarrierDetailPage'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/companies" element={<CompaniesPage />} />
               <Route path="/companies/:id" element={<CompanyDetailPage />} />
+              <Route path="/carriers" element={<CarriersPage />} />
+              <Route path="/carriers/:id" element={<CarrierDetailPage />} />
               <Route path="/contacts" element={<ContactsPage />} />
               <Route path="/contacts/:id" element={<ContactDetailPage />} />
               <Route path="/deals" element={<DealsPage />} />

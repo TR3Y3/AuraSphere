@@ -11,6 +11,7 @@ export interface ContactListParams {
   search?: string
   owner_id?: number
   company_id?: number
+  carrier_id?: number
   sort?: string
   order?: 'asc' | 'desc'
   page?: number

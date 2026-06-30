@@ -4,14 +4,16 @@ import { useAuth } from '../auth/AuthContext'
 
 const NAV = [
   { to: '/', label: 'Dashboard', ico: '▦', end: true },
-  { to: '/companies', label: 'Companies', ico: '▣' },
+  { to: '/companies', label: 'Shippers', ico: '▣' },
+  { to: '/carriers', label: 'Carriers', ico: '⛟' },
   { to: '/contacts', label: 'Contacts', ico: '☰' },
   { to: '/deals', label: 'Deals', ico: '◧' },
 ]
 
 // Page heading is derived from the route so the topbar stays in sync.
 function headingFor(path: string): ReactNode {
-  if (path.startsWith('/companies')) return 'Companies'
+  if (path.startsWith('/companies')) return 'Shippers'
+  if (path.startsWith('/carriers')) return 'Carriers'
   if (path.startsWith('/contacts')) return 'Contacts'
   if (path.startsWith('/deals')) return 'Deals'
   return 'Dashboard'

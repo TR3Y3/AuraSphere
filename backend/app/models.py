@@ -113,6 +113,9 @@ class Contact(Base):
     company_id: Mapped[int | None] = mapped_column(
         ForeignKey("companies.id"), nullable=True
     )
+    carrier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carriers.id"), nullable=True
+    )
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -125,7 +128,46 @@ class Contact(Base):
         nullable=False,
     )
 
+    # `company` backs the shipper link until the F2 companies->shippers rename.
     company: Mapped["Company | None"] = relationship(foreign_keys=[company_id])
+    carrier: Mapped["Carrier | None"] = relationship(foreign_keys=[carrier_id])
+
+
+class Carrier(Base):
+    """A trucking company that hauls loads (freight pivot, F1)."""
+
+    __tablename__ = "carriers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    mc_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    dot_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    hq_city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    hq_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    rating: Mapped[float | None] = mapped_column(Numeric(2, 1), nullable=True)
+    on_time_pct: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tracking_pct: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    bounce_pct: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    auto_liability: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    cargo_coverage: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    equipment_types: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 class Pipeline(Base):

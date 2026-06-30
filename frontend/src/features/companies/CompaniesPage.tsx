@@ -39,7 +39,7 @@ export function CompaniesPage() {
           My records
         </label>
         <button className="btn" onClick={() => setCreating((v) => !v)}>
-          {creating ? '✕ Cancel' : '+ New company'}
+          {creating ? '✕ Cancel' : '+ New shipper'}
         </button>
       </div>
 
@@ -81,7 +81,7 @@ export function CompaniesPage() {
               </tr>
             ))}
             {data && data.items.length === 0 && (
-              <tr><td colSpan={4} className="muted" style={{ padding: 22 }}>No companies yet.</td></tr>
+              <tr><td colSpan={4} className="muted" style={{ padding: 22 }}>No shippers yet.</td></tr>
             )}
           </tbody>
         </table>

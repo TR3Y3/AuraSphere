@@ -46,10 +46,16 @@ export function ContactDetailPage() {
               <div>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : '—'}</div>
               <div className="k">Phone</div><div>{contact.phone || '—'}</div>
               <div className="k">Title</div><div>{contact.title || '—'}</div>
-              <div className="k">Company</div>
+              <div className="k">Shipper</div>
               <div>
                 {contact.company ? (
                   <Link to={`/companies/${contact.company.id}`}>{contact.company.name}</Link>
+                ) : '—'}
+              </div>
+              <div className="k">Carrier</div>
+              <div>
+                {contact.carrier ? (
+                  <Link to={`/carriers/${contact.carrier.id}`}>{contact.carrier.name}</Link>
                 ) : '—'}
               </div>
             </div>

@@ -18,7 +18,7 @@ export function CompanyDetailPage() {
   return (
     <section>
       <p style={{ marginBottom: 14 }}>
-        <Link to="/companies" className="muted">← Companies</Link>
+        <Link to="/companies" className="muted">← Shippers</Link>
       </p>
 
       <div className="profile">

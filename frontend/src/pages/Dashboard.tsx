@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { useCompanies } from '../features/companies/api'
+import { useCarriers } from '../features/carriers/api'
 import { useContacts } from '../features/contacts/api'
 import { useDeals } from '../features/deals/api'
 
 export function Dashboard() {
   const { me } = useAuth()
-  const companies = useCompanies({ page_size: 1 })
+  const shippers = useCompanies({ page_size: 1 })
+  const carriers = useCarriers({ page_size: 1 })
   const contacts = useContacts({ page_size: 1 })
   const deals = useDeals({ page_size: 1 })
-  const myDeals = useDeals({ page_size: 1, owner_id: me?.user.id })
   if (!me) return null
 
   const stat = (q: { data?: { total: number } }) => (q.data ? q.data.total : '—')
@@ -18,8 +19,12 @@ export function Dashboard() {
     <section>
       <div className="cards">
         <div className="card">
-          <div className="k">Companies</div>
-          <div className="v">{stat(companies)}</div>
+          <div className="k">Shippers</div>
+          <div className="v">{stat(shippers)}</div>
+        </div>
+        <div className="card">
+          <div className="k">Carriers</div>
+          <div className="v">{stat(carriers)}</div>
         </div>
         <div className="card">
           <div className="k">Contacts</div>
@@ -28,10 +33,6 @@ export function Dashboard() {
         <div className="card">
           <div className="k">Deals</div>
           <div className="v">{stat(deals)}</div>
-        </div>
-        <div className="card">
-          <div className="k">My deals</div>
-          <div className="v">{stat(myDeals)}</div>
         </div>
       </div>
 
@@ -43,7 +44,8 @@ export function Dashboard() {
           {me.organization.name} · <span className="badge b-brand">{me.user.role}</span>
         </p>
         <p style={{ marginTop: 12 }}>
-          Jump into <Link to="/companies">Companies</Link>,{' '}
+          Jump into <Link to="/companies">Shippers</Link>,{' '}
+          <Link to="/carriers">Carriers</Link>,{' '}
           <Link to="/contacts">Contacts</Link>, or the{' '}
           <Link to="/deals">Deals</Link> board.
         </p>

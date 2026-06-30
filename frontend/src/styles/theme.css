@@ -182,6 +182,42 @@ select.ti { appearance: auto; }
 .seg button { background: var(--surface); color: var(--muted); border: 0; padding: 8px 14px; cursor: pointer; font-size: 13px; }
 .seg button.on { background: var(--surface-2); color: var(--text); }
 
+/* ── Record shell (status header / action row / KPIs / tabs) ─────── */
+.rec-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.rec-status {
+  font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 4px 0; margin-bottom: 2px;
+}
+.st-active, .st-covered, .st-delivered, .st-invoiced { color: var(--good); }
+.st-quote, .st-tendered, .st-offered { color: var(--warn); }
+.st-in_transit, .st-dispatched { color: var(--brand); }
+.st-lost, .st-tonu, .st-deactivated { color: var(--danger); }
+.rec-title { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.rec-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.rec-spacer { flex: 1; }
+
+.action-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.action-row .btn { white-space: nowrap; }
+
+.kpis { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; margin-bottom: 16px; flex-wrap: wrap; }
+.kpi { flex: 1; min-width: 120px; padding: 14px 18px; border-right: 1px solid var(--border); }
+.kpi:last-child { border-right: 0; }
+.kpi .kpi-v { font-size: 22px; font-weight: 700; }
+.kpi .kpi-k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 10px 14px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.tabs button.on { color: var(--text); border-bottom-color: var(--brand); }
+
+.alert-badge {
+  display: inline-flex; align-items: center; gap: 5px; background: rgba(248, 81, 73, 0.16);
+  color: var(--danger); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px;
+}
+.rating-stars { color: var(--warn); letter-spacing: 1px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
+
 /* ── Logo mark ──────────────────────────────────────────────────── */
 .logo-mark {
   width: 30px; height: 30px; border-radius: 7px;

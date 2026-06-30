@@ -129,6 +129,43 @@ export interface paths {
         patch: operations["update_contact_api_contacts__contact_id__patch"];
         trace?: never;
     };
+    "/api/carriers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Carriers */
+        get: operations["list_carriers_api_carriers_get"];
+        put?: never;
+        /** Create Carrier */
+        post: operations["create_carrier_api_carriers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carriers/{carrier_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Carrier */
+        get: operations["get_carrier_api_carriers__carrier_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Carrier */
+        delete: operations["delete_carrier_api_carriers__carrier_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Carrier */
+        patch: operations["update_carrier_api_carriers__carrier_id__patch"];
+        trace?: never;
+    };
     "/api/pipelines": {
         parameters: {
             query?: never;
@@ -241,6 +278,133 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CarrierCreate */
+        CarrierCreate: {
+            /** Name */
+            name: string;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
+            /** Hq City */
+            hq_city?: string | null;
+            /** Hq State */
+            hq_state?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Status
+             * @default active
+             */
+            status: string;
+            /** Rating */
+            rating?: number | string | null;
+            /** On Time Pct */
+            on_time_pct?: number | null;
+            /** Tracking Pct */
+            tracking_pct?: number | null;
+            /** Bounce Pct */
+            bounce_pct?: number | null;
+            /** Auto Liability */
+            auto_liability?: number | string | null;
+            /** Cargo Coverage */
+            cargo_coverage?: number | string | null;
+            /** Equipment Types */
+            equipment_types?: string | null;
+            /** Owner Id */
+            owner_id?: number | null;
+        };
+        /** CarrierOut */
+        CarrierOut: {
+            /** Name */
+            name: string;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
+            /** Hq City */
+            hq_city?: string | null;
+            /** Hq State */
+            hq_state?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Status
+             * @default active
+             */
+            status: string;
+            /** Rating */
+            rating?: string | null;
+            /** On Time Pct */
+            on_time_pct?: number | null;
+            /** Tracking Pct */
+            tracking_pct?: number | null;
+            /** Bounce Pct */
+            bounce_pct?: number | null;
+            /** Auto Liability */
+            auto_liability?: string | null;
+            /** Cargo Coverage */
+            cargo_coverage?: string | null;
+            /** Equipment Types */
+            equipment_types?: string | null;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Owner Id */
+            owner_id: number | null;
+            /** Created By */
+            created_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CarrierUpdate */
+        CarrierUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
+            /** Hq City */
+            hq_city?: string | null;
+            /** Hq State */
+            hq_state?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Rating */
+            rating?: number | string | null;
+            /** On Time Pct */
+            on_time_pct?: number | null;
+            /** Tracking Pct */
+            tracking_pct?: number | null;
+            /** Bounce Pct */
+            bounce_pct?: number | null;
+            /** Auto Liability */
+            auto_liability?: number | string | null;
+            /** Cargo Coverage */
+            cargo_coverage?: number | string | null;
+            /** Equipment Types */
+            equipment_types?: string | null;
+            /** Owner Id */
+            owner_id?: number | null;
+        };
         /** CompanyCreate */
         CompanyCreate: {
             /** Name */
@@ -302,16 +466,6 @@ export interface components {
             /** Owner Id */
             owner_id?: number | null;
         };
-        /**
-         * ContactCompany
-         * @description Lightweight linked-company summary embedded in a contact.
-         */
-        ContactCompany: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-        };
         /** ContactCreate */
         ContactCreate: {
             /** First Name */
@@ -326,6 +480,8 @@ export interface components {
             title?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
             /** Owner Id */
             owner_id?: number | null;
         };
@@ -343,6 +499,8 @@ export interface components {
             title?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
             /** Id */
             id: number;
             /** Organization Id */
@@ -361,16 +519,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
-            company?: components["schemas"]["ContactCompany"] | null;
-        };
-        /** ContactRef */
-        ContactRef: {
-            /** Id */
-            id: number;
-            /** First Name */
-            first_name: string;
-            /** Last Name */
-            last_name?: string | null;
+            company?: components["schemas"]["app__schemas__contact__ContactRef"] | null;
+            carrier?: components["schemas"]["app__schemas__contact__ContactRef"] | null;
         };
         /** ContactUpdate */
         ContactUpdate: {
@@ -386,6 +536,8 @@ export interface components {
             title?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
             /** Owner Id */
             owner_id?: number | null;
         };
@@ -445,7 +597,7 @@ export interface components {
              */
             updated_at: string;
             company?: components["schemas"]["DealRef"] | null;
-            primary_contact?: components["schemas"]["ContactRef"] | null;
+            primary_contact?: components["schemas"]["app__schemas__deal__ContactRef"] | null;
         };
         /**
          * DealRef
@@ -512,6 +664,17 @@ export interface components {
             slug: string;
             /** Plan */
             plan: string;
+        };
+        /** Page[CarrierOut] */
+        Page_CarrierOut_: {
+            /** Items */
+            items: components["schemas"]["CarrierOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
         };
         /** Page[CompanyOut] */
         Page_CompanyOut_: {
@@ -603,6 +766,25 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /**
+         * ContactRef
+         * @description Lightweight linked-account summary embedded in a contact.
+         */
+        app__schemas__contact__ContactRef: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /** ContactRef */
+        app__schemas__deal__ContactRef: {
+            /** Id */
+            id: number;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name?: string | null;
         };
     };
     responses: never;
@@ -855,6 +1037,7 @@ export interface operations {
                 search?: string | null;
                 owner_id?: number | null;
                 company_id?: number | null;
+                carrier_id?: number | null;
                 sort?: string;
                 order?: string;
                 page?: number;
@@ -1001,6 +1184,171 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_carriers_api_carriers_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                owner_id?: number | null;
+                status?: string | null;
+                sort?: string;
+                order?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_CarrierOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_carrier_api_carriers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CarrierCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_carrier_api_carriers__carrier_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_carrier_api_carriers__carrier_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_carrier_api_carriers__carrier_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CarrierUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierOut"];
                 };
             };
             /** @description Validation Error */
