@@ -9,13 +9,25 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status as http
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
+from app import plans
 from app.deps import OrgScope, get_scope
-from app.models import Carrier, Company, Contact, Load
+from app.models import Carrier, Company, Contact, Load, Organization
 from app.schemas.common import Page
 from app.schemas.load import LoadCreate, LoadOut, LoadStatusUpdate, LoadUpdate
 from app.workflow import LOAD_PIPELINE, LOAD_STATUSES, is_valid_status
 
 router = APIRouter(prefix="/api/loads", tags=["loads"])
+
+
+def _enforce_load_limit(scope: OrgScope) -> None:
+    """Free-plan load ceiling (402 when exceeded → prompt to upgrade)."""
+    org = scope.db.query(Organization).filter(Organization.id == scope.org_id).first()
+    limit = plans.max_loads(org.plan if org else "free")
+    if limit is not None and scope.query(Load).count() >= limit:
+        raise HTTPException(
+            status_code=http.HTTP_402_PAYMENT_REQUIRED,
+            detail=f"Free plan is limited to {limit} loads. Upgrade to Pro for unlimited loads.",
+        )
 
 SORT_FIELDS = {
     "reference": Load.reference,
@@ -111,6 +123,7 @@ def list_loads(
 
 @router.post("", response_model=LoadOut, status_code=http.HTTP_201_CREATED)
 def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
+    _enforce_load_limit(scope)
     _validate_links(scope, payload.shipper_id, payload.carrier_id, payload.primary_contact_id)
     status_value = payload.status or "quote"
     if not is_valid_status(status_value):
@@ -135,6 +148,7 @@ def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
 def duplicate_load(load_id: int, scope: OrgScope = Depends(get_scope)):
     """Re-book: clone the load's lane/shipper/freight into a fresh quote
     (carrier + carrier rate dropped, status reset to quote)."""
+    _enforce_load_limit(scope)
     src = _load(scope, load_id)
     clone = Load(
         organization_id=scope.org_id,

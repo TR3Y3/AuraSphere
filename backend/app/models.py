@@ -30,6 +30,9 @@ class Organization(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     plan: Mapped[str] = mapped_column(String(20), nullable=False, default="free")
+    # Stripe linkage (null until the org starts a real checkout).
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Per-tenant branding: each org renders its own accent (hex) + logo.
     accent_color: Mapped[str | None] = mapped_column(String(9), nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)

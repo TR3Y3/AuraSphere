@@ -110,6 +110,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Billing */
+        get: operations["get_billing_api_billing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Checkout */
+        post: operations["checkout_api_billing_checkout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Portal */
+        post: operations["portal_api_billing_portal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/downgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Downgrade
+         * @description Cancel Pro. In stub mode this is immediate; with real Stripe, cancellation
+         *     flows through the billing portal, so direct downgrade is rejected.
+         */
+        post: operations["downgrade_api_billing_downgrade_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Webhook */
+        post: operations["webhook_api_billing_webhook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/companies": {
         parameters: {
             query?: never;
@@ -876,6 +965,23 @@ export interface components {
             /** Related Carrier Id */
             related_carrier_id?: number | null;
         };
+        /** BillingStatus */
+        BillingStatus: {
+            /** Plan */
+            plan: string;
+            /** Label */
+            label: string;
+            /** Is Pro */
+            is_pro: boolean;
+            /** Configured */
+            configured: boolean;
+            /** Loads Used */
+            loads_used: number;
+            /** Max Loads */
+            max_loads: number | null;
+            /** Plans */
+            plans: components["schemas"]["PlanInfo"][];
+        };
         /** Body_upload_document_api_loads__load_id__documents_post */
         Body_upload_document_api_loads__load_id__documents_post: {
             /**
@@ -1115,6 +1221,11 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** CheckoutOut */
+        CheckoutOut: {
+            /** Url */
+            url: string;
         };
         /** CompanyCreate */
         CompanyCreate: {
@@ -1806,6 +1917,24 @@ export interface components {
             /** Stages */
             stages: components["schemas"]["StageOut"][];
         };
+        /** PlanInfo */
+        PlanInfo: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Price */
+            price: string;
+            /** Blurb */
+            blurb: string;
+            /** Features */
+            features: string[];
+        };
+        /** PortalOut */
+        PortalOut: {
+            /** Url */
+            url: string | null;
+        };
         /** ProspectCreate */
         ProspectCreate: {
             /** Company Name */
@@ -2201,6 +2330,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+        };
+    };
+    get_billing_api_billing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingStatus"];
+                };
+            };
+        };
+    };
+    checkout_api_billing_checkout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutOut"];
+                };
+            };
+        };
+    };
+    portal_api_billing_portal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalOut"];
+                };
+            };
+        };
+    };
+    downgrade_api_billing_downgrade_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingStatus"];
+                };
+            };
+        };
+    };
+    webhook_api_billing_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

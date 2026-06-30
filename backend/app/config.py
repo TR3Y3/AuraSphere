@@ -38,6 +38,18 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 # Hours a signup email-verification token stays valid.
 VERIFY_TTL_HOURS = int(os.getenv("VERIFY_TTL_HOURS", "48"))
 
+# Billing / plan-gating.
+#   "stub" (default) — no Stripe needed; checkout instantly upgrades the org so
+#     the upgrade→unlock loop is fully testable. Use for dev/demo.
+#   "stripe" — real Stripe Checkout + Billing Portal + webhooks via the Stripe
+#     REST API (set STRIPE_SECRET_KEY / STRIPE_PRICE_ID / STRIPE_WEBHOOK_SECRET).
+BILLING_MODE = os.getenv("BILLING_MODE", "stub").lower()
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID")  # the Pro recurring price
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+# Free-plan ceilings (None = unlimited on Pro).
+FREE_MAX_LOADS = int(os.getenv("FREE_MAX_LOADS", "50"))
+
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")
