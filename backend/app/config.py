@@ -22,6 +22,18 @@ if COOKIE_SAMESITE == "none":
 # Optional parent domain so app.<domain> and api.<domain> share the cookie.
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 
+# Email delivery (signup verification, later notifications).
+# "console" (default) logs the message + returns the verify link in the signup
+# response so the flow is testable without a mailbox; "smtp" sends for real.
+EMAIL_DELIVERY = os.getenv("EMAIL_DELIVERY", "console").lower()
+EMAIL_FROM = os.getenv("EMAIL_FROM", "no-reply@aurasphere.app")
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+# Hours a signup email-verification token stays valid.
+VERIFY_TTL_HOURS = int(os.getenv("VERIFY_TTL_HOURS", "48"))
+
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")

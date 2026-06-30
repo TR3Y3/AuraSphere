@@ -1,4 +1,5 @@
-"""Authentication endpoints: login, logout, current identity."""
+"""Authentication endpoints: signup, login, logout, current identity, email verify."""
+import re
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -6,16 +7,58 @@ from sqlalchemy.orm import Session as DbSession
 
 from app import config
 from app.database import get_db
+from app.defaults import ensure_default_pipeline
 from app.deps import get_current_user
-from app.models import Organization, Session as SessionModel, User
-from app.schemas.auth import LoginRequest, MeOut
+from app.email import send_verification_email
+from app.models import (
+    EmailVerificationToken,
+    Organization,
+    Session as SessionModel,
+    User,
+)
+from app.schemas.auth import (
+    LoginRequest,
+    MeOut,
+    SignupRequest,
+    SignupResult,
+    VerifyEmailRequest,
+)
 from app.security import (
     generate_session_token,
+    hash_password,
     hash_token,
     verify_password,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+def _unique_slug(db: DbSession, name: str) -> str:
+    """A URL-safe, globally unique org slug derived from the org name."""
+    base = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "org"
+    slug = base
+    n = 2
+    while db.query(Organization).filter(Organization.slug == slug).first() is not None:
+        slug = f"{base}-{n}"
+        n += 1
+    return slug
+
+
+def _issue_verification(db: DbSession, user: User) -> str:
+    """Supersede any prior tokens and return a fresh verify URL for the user."""
+    db.query(EmailVerificationToken).filter(
+        EmailVerificationToken.user_id == user.id
+    ).delete()
+    token = generate_session_token()
+    db.add(
+        EmailVerificationToken(
+            user_id=user.id,
+            token_hash=hash_token(token),
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(hours=config.VERIFY_TTL_HOURS),
+        )
+    )
+    return f"{config.FRONTEND_ORIGIN}/verify?token={token}"
 
 
 def _set_session_cookie(response: Response, token: str) -> None:
@@ -29,6 +72,91 @@ def _set_session_cookie(response: Response, token: str) -> None:
         domain=config.COOKIE_DOMAIN,
         path="/",
     )
+
+
+@router.post("/signup", response_model=SignupResult, status_code=status.HTTP_201_CREATED)
+def signup(payload: SignupRequest, response: Response, db: DbSession = Depends(get_db)):
+    """Self-serve: create a new brokerage (org) + its owner, log them in, and
+    send an email-verification link."""
+    email = payload.email.lower()
+    if db.query(User).filter(User.email == email).first() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        )
+
+    org = Organization(name=payload.organization_name, slug=_unique_slug(db, payload.organization_name))
+    db.add(org)
+    db.flush()  # assign org.id
+
+    user = User(
+        organization_id=org.id,
+        email=email,
+        password_hash=hash_password(payload.password),
+        full_name=payload.full_name,
+        role="owner",
+        is_active=True,
+    )
+    db.add(user)
+    db.flush()  # assign user.id
+
+    ensure_default_pipeline(db, org.id)
+    verify_url = _issue_verification(db, user)
+
+    token = generate_session_token()
+    db.add(
+        SessionModel(
+            user_id=user.id,
+            token_hash=hash_token(token),
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(hours=config.SESSION_TTL_HOURS),
+        )
+    )
+    db.commit()
+    db.refresh(user)
+    db.refresh(org)
+
+    send_verification_email(user.email, verify_url)
+    _set_session_cookie(response, token)
+    # Surface the link only in console mode (no real mailbox) for testability.
+    exposed = verify_url if config.EMAIL_DELIVERY != "smtp" else None
+    return SignupResult(user=user, organization=org, verify_url=exposed)
+
+
+@router.post("/verify", response_model=MeOut)
+def verify_email(payload: VerifyEmailRequest, db: DbSession = Depends(get_db)):
+    row = (
+        db.query(EmailVerificationToken)
+        .filter(EmailVerificationToken.token_hash == hash_token(payload.token))
+        .first()
+    )
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification link")
+    expires = row.expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if expires < datetime.now(timezone.utc):
+        db.delete(row)
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification link has expired")
+
+    user = db.query(User).filter(User.id == row.user_id).first()
+    if user.email_verified_at is None:
+        user.email_verified_at = datetime.now(timezone.utc)
+    db.delete(row)
+    db.commit()
+    db.refresh(user)
+    org = db.query(Organization).filter(Organization.id == user.organization_id).first()
+    return MeOut(user=user, organization=org)
+
+
+@router.post("/resend-verification", status_code=status.HTTP_204_NO_CONTENT)
+def resend_verification(db: DbSession = Depends(get_db), user: User = Depends(get_current_user)):
+    if user.email_verified_at is not None:
+        return  # already verified — no-op
+    verify_url = _issue_verification(db, user)
+    db.commit()
+    send_verification_email(user.email, verify_url)
 
 
 @router.post("/login", response_model=MeOut)

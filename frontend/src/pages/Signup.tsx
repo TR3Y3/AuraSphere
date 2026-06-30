@@ -6,15 +6,17 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ApiError } from '../lib/api'
 
-// Mirror the backend's validation; the backend remains the source of truth.
+// Mirror the backend's validation; the backend stays the source of truth.
 const schema = z.object({
+  organization_name: z.string().min(1, 'Company name is required'),
+  full_name: z.string().min(1, 'Your name is required'),
   email: z.string().email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(8, 'At least 8 characters'),
 })
 type FormValues = z.infer<typeof schema>
 
-export function Login() {
-  const { me, login } = useAuth()
+export function Signup() {
+  const { me, signup } = useAuth()
   const navigate = useNavigate()
   const [formError, setFormError] = useState<string | null>(null)
   const {
@@ -28,10 +30,15 @@ export function Login() {
   const onSubmit = async (values: FormValues) => {
     setFormError(null)
     try {
-      await login(values.email, values.password)
+      await signup({
+        organization_name: values.organization_name,
+        full_name: values.full_name,
+        email: values.email,
+        password: values.password,
+      })
       navigate('/', { replace: true })
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Login failed')
+      setFormError(err instanceof ApiError ? err.message : 'Sign up failed')
     }
   }
 
@@ -42,29 +49,39 @@ export function Login() {
           <span className="logo-mark">A</span>
           <div>
             <b>AuraSphere</b>
-            <small>CRM</small>
+            <small>Start your brokerage</small>
           </div>
         </div>
 
         {formError && <div className="notice err">{formError}</div>}
 
         <div className="field">
-          <label className="cl">Email</label>
+          <label className="cl">Company name</label>
+          <input className="ti" {...register('organization_name')} />
+          {errors.organization_name && <span className="err-text">{errors.organization_name.message}</span>}
+        </div>
+        <div className="field">
+          <label className="cl">Your name</label>
+          <input className="ti" {...register('full_name')} />
+          {errors.full_name && <span className="err-text">{errors.full_name.message}</span>}
+        </div>
+        <div className="field">
+          <label className="cl">Work email</label>
           <input className="ti" type="email" autoComplete="username" {...register('email')} />
           {errors.email && <span className="err-text">{errors.email.message}</span>}
         </div>
         <div className="field">
           <label className="cl">Password</label>
-          <input className="ti" type="password" autoComplete="current-password" {...register('password')} />
+          <input className="ti" type="password" autoComplete="new-password" {...register('password')} />
           {errors.password && <span className="err-text">{errors.password.message}</span>}
         </div>
 
         <button className="btn" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
+          {isSubmitting ? 'Creating your workspace…' : 'Create account'}
         </button>
 
         <p className="muted" style={{ textAlign: 'center', marginTop: 14, fontSize: 13 }}>
-          New here? <Link to="/signup">Start your brokerage</Link>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </form>
     </div>

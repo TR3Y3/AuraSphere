@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { api } from '../lib/api'
 import { SearchPalette } from './SearchPalette'
 
 const NAV = [
@@ -26,6 +27,35 @@ function useClickOutside(onOut: () => void) {
     return () => document.removeEventListener('mousedown', h)
   }, [onOut])
   return ref
+}
+
+// Nudge owners whose email isn't verified yet; lets them resend the link.
+function VerifyBanner() {
+  const { me } = useAuth()
+  const [sent, setSent] = useState<'idle' | 'sending' | 'done'>('idle')
+  if (!me || me.user.email_verified) return null
+
+  const resend = async () => {
+    setSent('sending')
+    try {
+      await api.post('/api/auth/resend-verification')
+      setSent('done')
+    } catch {
+      setSent('idle')
+    }
+  }
+
+  return (
+    <div className="notice" style={{ background: 'rgba(227,147,60,0.14)', color: 'var(--warn)',
+      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+      <span style={{ flex: 1 }}>⚠ Verify your email ({me.user.email}) to secure your account.</span>
+      {sent === 'done'
+        ? <span className="muted" style={{ fontSize: 13 }}>Link sent — check your inbox.</span>
+        : <button className="btn sm" onClick={resend} disabled={sent === 'sending'}>
+            {sent === 'sending' ? 'Sending…' : 'Resend link'}
+          </button>}
+    </div>
+  )
 }
 
 export function Layout() {
@@ -125,6 +155,7 @@ export function Layout() {
       </header>
 
       <div className="app-content">
+        <VerifyBanner />
         <Outlet />
       </div>
 

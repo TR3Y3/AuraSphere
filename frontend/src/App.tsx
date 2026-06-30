@@ -3,6 +3,8 @@ import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
+import { Signup } from './pages/Signup'
+import { Verify } from './pages/Verify'
 import { Dashboard } from './pages/Dashboard'
 import { CompaniesPage } from './features/companies/CompaniesPage'
 import { CompanyDetailPage } from './features/companies/CompanyDetailPage'
@@ -24,6 +26,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/verify" element={<Verify />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
