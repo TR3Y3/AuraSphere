@@ -2,7 +2,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class CarrierBase(BaseModel):
@@ -55,3 +55,21 @@ class CarrierOut(CarrierBase):
     created_by: int | None
     created_at: datetime
     updated_at: datetime
+
+    @computed_field
+    @property
+    def compliance_issues(self) -> list[str]:
+        """Loud flags — what's missing/wrong for booking this carrier."""
+        issues: list[str] = []
+        if self.status == "deactivated":
+            issues.append("Carrier is deactivated")
+        if self.auto_liability is None:
+            issues.append("No auto liability on file")
+        if self.cargo_coverage is None:
+            issues.append("No cargo coverage on file")
+        return issues
+
+    @computed_field
+    @property
+    def is_compliant(self) -> bool:
+        return len(self.compliance_issues) == 0

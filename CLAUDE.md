@@ -160,7 +160,11 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **S2 (complete)** — Shipper Lead-Gen.
+- Current phase: **F3 (complete)** — Carrier ops (lanes, capacity, compliance flags).
+- Last completed: F3 — carrier lane history, capacity, and loud compliance gating.
+  - Backend: `CarrierOut` gained computed `compliance_issues` (deactivated / no auto-liability / no cargo coverage) + `is_compliant`. New `carrier_capacity` table/model (migration `d6fc5e3bb161`). Router `app/routers/carrier_ops.py` (under `/api/carriers/{id}`): `GET /lanes` — **lane history derived from the carrier's loads** (group origin→dest+equipment, shipment count, last carrier_rate, ordered by id desc so "most recent" is deterministic; no separate table), and capacity CRUD (`GET/POST/DELETE /capacity`: location, radius_miles, weekly_capacity, equipment). 54 tests pass (adds compliance flags, derived lane aggregation, capacity CRUD, isolation).
+  - Frontend: carrier profile **Lanes tab** now shows real lane history + a `CapacityPanel` (add/remove posted capacity). Compliance surfaced loudly: a "✓ Compliant" / "⚠ N compliance issues" badge in the carrier header, full list on the Compliance tab, a ⚠ flag in the carriers list, and **compliance alert badges on a load's carrier panel** when the assigned carrier isn't compliant. `npm run build` passes.
+- Earlier: S2 — Shipper Lead-Gen.
 - Last completed: S2 — the prospect pipeline (find/qualify candidate shippers → convert to Shipper + Contact).
   - Backend: new `prospects` table/model (company + logistics contact fields, freight_fit_score + fit_reason, status [new/approved/dismissed/imported], source, shipper_id/contact_id links). `app/freight_fit.py` scores fit from industry/name keywords (strong=manufacturing/distribution/food/building-materials… → ~85; competitor=broker/3PL/carrier → 10). Router `app/routers/prospects.py`: list (filter status + search, sorted by fit), create (auto-scores + flags `duplicate_of` an existing shipper by name/domain at read time), update (status; re-scores on industry change), delete, and **POST `.../convert`** — creates a Shipper (company) + optional Contact, marks the prospect imported (409 if already). Migration `91b594e52056`. 50 tests pass (adds scoring, dedupe, convert→shipper+contact, double-convert 409, dismiss filter, isolation).
   - Frontend: Lead-Gen page (`src/features/prospects/`) — New/Imported/Dismissed tabs, fit-score badges, dupe alert badge (links to the existing shipper), freight signal text, Approve(convert)/Dismiss/delete, and a manual "+ Add prospect" form. Nav gained **Lead-Gen**. The `add-prospects` skill now writes candidates via `POST /api/prospects` (review/approve in-app). `npm run build` passes.
@@ -193,7 +197,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: F3 — Carrier ops (compliance/insurance gating, lanes & rate history, capacity), or deploy prep (Postgres + cross-site cookie fix) for a live URL.
+- Next concrete step: F4 — Activities + timeline (log calls/emails/notes/tasks on loads/carriers/shippers, "My open tasks"), or F5 — pricing/dashboard analytics.
 - Open decisions / blockers: _none_
 
 ---

@@ -173,6 +173,29 @@ class Carrier(Base):
     )
 
 
+class CarrierCapacity(Base):
+    """A carrier's posted capacity out of a location (F3)."""
+
+    __tablename__ = "carrier_capacity"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    carrier_id: Mapped[int] = mapped_column(
+        ForeignKey("carriers.id"), nullable=False, index=True
+    )
+    location: Mapped[str] = mapped_column(String(160), nullable=False)
+    radius_miles: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    weekly_capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    equipment: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class Pipeline(Base):
     __tablename__ = "pipelines"
 

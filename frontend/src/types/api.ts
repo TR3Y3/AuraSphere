@@ -166,6 +166,61 @@ export interface paths {
         patch: operations["update_carrier_api_carriers__carrier_id__patch"];
         trace?: never;
     };
+    "/api/carriers/{carrier_id}/lanes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Carrier Lanes
+         * @description Aggregate the carrier's loads into lane history (most-run first).
+         */
+        get: operations["carrier_lanes_api_carriers__carrier_id__lanes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carriers/{carrier_id}/capacity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Capacity */
+        get: operations["list_capacity_api_carriers__carrier_id__capacity_get"];
+        put?: never;
+        /** Add Capacity */
+        post: operations["add_capacity_api_carriers__carrier_id__capacity_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carriers/{carrier_id}/capacity/{capacity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Capacity */
+        delete: operations["delete_capacity_api_carriers__carrier_id__capacity__capacity_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pipelines": {
         parameters: {
             query?: never;
@@ -503,6 +558,41 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CapacityCreate */
+        CapacityCreate: {
+            /** Location */
+            location: string;
+            /** Radius Miles */
+            radius_miles?: number | null;
+            /** Weekly Capacity */
+            weekly_capacity?: number | null;
+            /** Equipment */
+            equipment?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** CapacityOut */
+        CapacityOut: {
+            /** Id */
+            id: number;
+            /** Carrier Id */
+            carrier_id: number;
+            /** Location */
+            location: string;
+            /** Radius Miles */
+            radius_miles: number | null;
+            /** Weekly Capacity */
+            weekly_capacity: number | null;
+            /** Equipment */
+            equipment: string | null;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** CarrierCreate */
         CarrierCreate: {
             /** Name */
@@ -594,6 +684,13 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Compliance Issues
+             * @description Loud flags — what's missing/wrong for booking this carrier.
+             */
+            readonly compliance_issues: string[];
+            /** Is Compliant */
+            readonly is_compliant: boolean;
         };
         /** CarrierRef */
         CarrierRef: {
@@ -877,6 +974,24 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * LaneOut
+         * @description A lane the carrier has run, aggregated from its loads.
+         */
+        LaneOut: {
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /** Equipment */
+            equipment?: string | null;
+            /** Shipments */
+            shipments: number;
+            /** Last Rate */
+            last_rate?: string | null;
+            /** Last Ran */
+            last_ran?: string | null;
         };
         /** LoadCreate */
         LoadCreate: {
@@ -2000,6 +2115,133 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CarrierOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    carrier_lanes_api_carriers__carrier_id__lanes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaneOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_capacity_api_carriers__carrier_id__capacity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapacityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_capacity_api_carriers__carrier_id__capacity_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CapacityCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapacityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_capacity_api_carriers__carrier_id__capacity__capacity_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+                capacity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

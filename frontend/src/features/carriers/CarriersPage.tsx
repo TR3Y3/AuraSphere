@@ -54,6 +54,9 @@ export function CarriersPage() {
                 <td><Rating value={c.rating ? Number(c.rating) : null} /></td>
                 <td>
                   <span className={`badge ${c.status === 'active' ? 'b-good' : 'b-muted'}`}>{c.status}</span>
+                  {(c.compliance_issues?.length ?? 0) > 0 && (
+                    <span title={c.compliance_issues!.join('; ')} style={{ marginLeft: 6, color: 'var(--danger)' }}>⚠</span>
+                  )}
                 </td>
                 <td className="t-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn danger sm" onClick={() => { if (confirm(`Delete ${c.name}?`)) del.mutate(c.id) }}>Delete</button>

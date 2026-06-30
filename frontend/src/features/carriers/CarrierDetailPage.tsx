@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useContacts } from '../contacts/api'
 import { useCarrier, useDeleteCarrier } from './api'
 import { CarrierForm } from './CarrierForm'
+import { CapacityPanel } from './CapacityPanel'
+import { useLanes } from './ops'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 
@@ -19,12 +21,13 @@ export function CarrierDetailPage() {
   const [editing, setEditing] = useState(false)
   const { data: c, isLoading, error } = useCarrier(carrierId)
   const { data: contacts } = useContacts({ carrier_id: carrierId, page_size: 100 })
+  const { data: lanesData } = useLanes(carrierId)
   const del = useDeleteCarrier()
 
   if (isLoading) return <p className="muted">Loading…</p>
   if (error || !c) return <div className="notice err">Carrier not found.</div>
 
-  const noInsurance = !c.auto_liability && !c.cargo_coverage
+  const issues = c.compliance_issues ?? []
 
   const overview = (
     <div className="two-col">
@@ -55,7 +58,13 @@ export function CarrierDetailPage() {
 
   const compliance = (
     <Panel title="Compliance & insurance">
-      {noInsurance && <div style={{ marginBottom: 12 }}><AlertBadge>No insurance on file</AlertBadge></div>}
+      {issues.length > 0 ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          {issues.map((i) => <AlertBadge key={i}>{i}</AlertBadge>)}
+        </div>
+      ) : (
+        <div style={{ marginBottom: 12 }}><span className="badge b-good">✓ Compliant</span></div>
+      )}
       <div className="kv">
         <div className="k">Status</div>
         <div><span className={`badge ${c.status === 'active' ? 'b-good' : 'b-muted'}`}>{c.status}</span></div>
@@ -66,9 +75,27 @@ export function CarrierDetailPage() {
   )
 
   const lanes = (
-    <Panel title="Lane history">
-      <span className="muted">Lane &amp; rate history arrives in F3 (carrier ops).</span>
-    </Panel>
+    <div className="two-col">
+      <Panel title="Lane history" pad={false}>
+        <table>
+          <thead><tr><th>Lane</th><th>Equip</th><th>Loads</th><th>Last rate</th></tr></thead>
+          <tbody>
+            {lanesData?.map((ln, i) => (
+              <tr key={i}>
+                <td><strong>{ln.origin}</strong> → {ln.destination}</td>
+                <td>{ln.equipment || '—'}</td>
+                <td>{ln.shipments}</td>
+                <td>{money(ln.last_rate)}</td>
+              </tr>
+            ))}
+            {lanesData && lanesData.length === 0 && (
+              <tr><td colSpan={4} className="muted" style={{ padding: 16 }}>No loads run with this carrier yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </Panel>
+      <CapacityPanel carrierId={c.id} />
+    </div>
   )
 
   return (
@@ -79,7 +106,15 @@ export function CarrierDetailPage() {
         status={c.status}
         statusClass={`st-${c.status}`}
         title={c.name}
-        subtitle={<><Rating value={c.rating ? Number(c.rating) : null} />{c.hq_city ? ` · ${c.hq_city}, ${c.hq_state ?? ''}` : ''}</>}
+        subtitle={
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <Rating value={c.rating ? Number(c.rating) : null} />
+            {c.hq_city ? `· ${c.hq_city}, ${c.hq_state ?? ''}` : ''}
+            {issues.length > 0
+              ? <AlertBadge>{issues.length === 1 ? issues[0] : `${issues.length} compliance issues`}</AlertBadge>
+              : <span className="badge b-good">✓ Compliant</span>}
+          </span>
+        }
         actions={
           <>
             <PinButton entityType="carrier" entityId={c.id} />

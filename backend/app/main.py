@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import config
 from app.routers import (
     auth,
+    carrier_ops,
     carriers,
     companies,
     contacts,
@@ -31,6 +32,7 @@ app.include_router(auth.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(carriers.router)
+app.include_router(carrier_ops.router)
 app.include_router(pipelines.router)
 app.include_router(deals.router)
 app.include_router(loads.router)
