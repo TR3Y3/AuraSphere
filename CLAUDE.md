@@ -104,7 +104,7 @@ activities         (call / email / note / task)             [F4]
 
 **Load status workflow:** `quote → tendered → offered → covered → dispatched → in_transit → delivered → invoiced`, plus terminal `lost` / `tonu`. The board groups loads by status.
 
-> **Interim (during F1):** Shippers are currently backed by the original `companies` table/`/api/companies` (renamed in the UI). The formal `companies → shippers` rename and `deals → loads` rework land in **F2**, where loads reference `shipper_id`/`carrier_id` and the FKs get finalized together. New work (Carriers, the load board) uses the target names.
+> **Interim:** Shippers are still backed by the original `companies` table/`/api/companies` (relabeled "Shippers" in the UI); `loads.shipper_id` FKs to `companies.id`. The formal `companies → shippers` table/endpoint rename is deferred (low-risk, cosmetic) — do it in a dedicated cleanup pass. `deals` were superseded by `loads`: the deals **backend** remains as legacy (still tested) but is unused by the UI; remove it when convenient.
 
 Ownership rules within a tenant: `admin`/`owner` see and edit all records in their org; `member` sees all records but list views default to a toggleable "My records" filter. Records are reassignable by the owner or an org admin.
 
@@ -160,9 +160,12 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **F1 (complete)** — freight pivot: accounts split + app shell.
+- Current phase: **F2 (complete)** — Loads + load board + dashboard pins.
 - Direction: AuraSphere is now a **freight TMS + brokerage CRM** (own product). Foundation phases 0–3 stand; the F-phases pivot the domain. See "What you are building" + the F-phases above.
-- Last completed: F1 — Carriers + the reusable record shell.
+- Last completed: F2 — the Load (shipment) record + status board, plus "+ New load"/"+ New quote" and dashboard pins.
+  - Backend: new `loads` table/model (reference auto `L-1000xx`, status workflow, shipper/carrier/contact FKs, commodity/weight/equipment, origin+destination city/state + dates, miles, customer_rate + carrier_rate; **margin derived** customer−carrier in the schema). `app/workflow.py` defines the pipeline (quote→tendered→offered→covered→dispatched→in_transit→delivered→invoiced) + terminal lost/tonu. Loads router: list (filter status/statuses/shipper/carrier/owner + search + pagination), CRUD, `PATCH /loads/{id}/status` (board drag; stamps `delivered_at`), `GET /loads/board` (pipeline meta). A quote = a load created in `quote` status. New `pins` table/model + router (per-user dashboard widgets: load/contact/carrier/shipper + note + remind_at; entity label/link resolved at read time; idempotent per entity). Two migrations: `a1196e601f28` (loads), `9adac6a6f15f` (pins). 39 tests pass (adds load CRUD/margin/status/board/isolation + pin resolve/reminder/dedupe/per-user/isolation).
+  - Frontend: loads feature (`src/features/loads/`) — status board (dnd-kit, optimistic status change), board/list toggle, "My loads", `LoadForm` (mode load|quote), Quotes page (quote/tendered/offered + "+ New quote"), and the **hero load detail** (status header, status dropdown, KPI strip with margin, Route & Stops P1→D1, carrier/customer panel). Pins feature (`src/features/pins/`) — `PinButton` on load/carrier/shipper/contact detail; dashboard renders pinned widgets with editable note + reminder. Nav → Loads · Quotes · Carriers · Shippers · Contacts; "+ New" menu + ⌘K search updated to loads. Old `deals` frontend removed (loads supersede it; deals backend left as legacy). `npm run build` passes.
+- Earlier: F1.5 — top app bar + per-tenant branding (organizations.accent_color); F1 — Carriers + reusable record shell.
   - Backend: new `carriers` table/model (MC/DOT, hq, phone/email, status, rating, on-time/tracking/bounce, auto-liability + cargo, equipment) with full CRUD (`app/routers/carriers.py`), org-scoped + ownership, search/pagination. Contacts can now link a **shipper (company) or carrier** — added `contacts.carrier_id` (nullable FK), validated in-org (422), embedded `carrier {id,name}` on `ContactOut`. One Alembic migration (`275491d1d606`) creates `carriers` + adds `contacts.carrier_id` (batch mode for SQLite FK). 26 tests pass (adds carrier CRUD/search/isolation + contact→carrier link + cross-org reject).
   - Frontend: reusable shell in `src/components/shell.tsx` — `RecordHeader` (status hero), `KpiStrip`, `Panel`, `Tabs`, `AlertBadge`, `Rating`. Carriers feature (`src/features/carriers/`): list (rating + status badges), profile (status header + KPI strip + Overview/Compliance/Lanes tabs, compliance shows an alert badge when no insurance), create/edit form. Nav relabeled to **Shippers · Carriers · Contacts · Deals**; dashboard cards updated; contact form/detail gained a Carrier link. `npm run build` passes.
   - **Interim debt (resolve in F2):** Shippers are still the `companies` table/`/api/companies`; UI says "Shippers" but URLs are `/companies`. The formal `companies→shippers` + `deals→loads` rename lands in F2 with the load board.
@@ -183,7 +186,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: Phase 4 — Activities + timeline (log call/email/note/task/meeting, task due dates + completion, chronological timeline on contact/company/deal detail pages, a "My open tasks" view).
+- Next concrete step: F3 — Carrier ops (compliance/insurance gating, lanes & lane-rate history, capacity) OR a signature feature (S1 Live Quote Desk / S2 Shipper Lead-Gen).
 - Open decisions / blockers: _none_
 
 ---

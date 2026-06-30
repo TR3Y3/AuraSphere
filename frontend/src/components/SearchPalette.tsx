@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, type CompanyPage, type CarrierPage, type ContactPage, type DealPage } from '../lib/api'
+import { api, type CompanyPage, type CarrierPage, type ContactPage, type LoadPage } from '../lib/api'
 
 interface Result {
   type: string
@@ -25,18 +25,18 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
     let cancelled = false
     const t = setTimeout(async () => {
       const params = { search: term, page_size: 5 }
-      const [shippers, carriers, contacts, deals] = await Promise.all([
+      const [loads, shippers, carriers, contacts] = await Promise.all([
+        api.get<LoadPage>('/api/loads', params).catch(() => null),
         api.get<CompanyPage>('/api/companies', params).catch(() => null),
         api.get<CarrierPage>('/api/carriers', params).catch(() => null),
         api.get<ContactPage>('/api/contacts', params).catch(() => null),
-        api.get<DealPage>('/api/deals', params).catch(() => null),
       ])
       if (cancelled) return
       const merged: Result[] = [
+        ...(loads?.items ?? []).map((l) => ({ type: 'Load', label: l.reference ?? `Load ${l.id}`, to: `/loads/${l.id}` })),
         ...(shippers?.items ?? []).map((s) => ({ type: 'Shipper', label: s.name, to: `/companies/${s.id}` })),
         ...(carriers?.items ?? []).map((c) => ({ type: 'Carrier', label: c.name, to: `/carriers/${c.id}` })),
         ...(contacts?.items ?? []).map((c) => ({ type: 'Contact', label: `${c.first_name} ${c.last_name ?? ''}`.trim(), to: `/contacts/${c.id}` })),
-        ...(deals?.items ?? []).map((d) => ({ type: 'Deal', label: d.name, to: `/deals/${d.id}` })),
       ]
       setResults(merged)
       setActive(0)

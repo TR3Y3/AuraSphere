@@ -240,6 +240,119 @@ export interface paths {
         patch: operations["change_stage_api_deals__deal_id__stage_patch"];
         trace?: never;
     };
+    "/api/loads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Loads */
+        get: operations["list_loads_api_loads_get"];
+        put?: never;
+        /** Create Load */
+        post: operations["create_load_api_loads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Board Meta
+         * @description The ordered pipeline statuses that make up the board columns.
+         */
+        get: operations["board_meta_api_loads_board_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Load */
+        get: operations["get_load_api_loads__load_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Load */
+        delete: operations["delete_load_api_loads__load_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Load */
+        patch: operations["update_load_api_loads__load_id__patch"];
+        trace?: never;
+    };
+    "/api/loads/{load_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change Status
+         * @description Board drag / action-row target: move a load to another status.
+         */
+        patch: operations["change_status_api_loads__load_id__status_patch"];
+        trace?: never;
+    };
+    "/api/pins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pins */
+        get: operations["list_pins_api_pins_get"];
+        put?: never;
+        /** Create Pin */
+        post: operations["create_pin_api_pins_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pins/{pin_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Pin */
+        delete: operations["delete_pin_api_pins__pin_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Pin */
+        patch: operations["update_pin_api_pins__pin_id__patch"];
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -639,6 +752,150 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** LoadCreate */
+        LoadCreate: {
+            /** Shipper Id */
+            shipper_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
+            /** Primary Contact Id */
+            primary_contact_id?: number | null;
+            /** Commodity */
+            commodity?: string | null;
+            /** Weight */
+            weight?: number | null;
+            /** Equipment */
+            equipment?: string | null;
+            /** Origin City */
+            origin_city?: string | null;
+            /** Origin State */
+            origin_state?: string | null;
+            /** Dest City */
+            dest_city?: string | null;
+            /** Dest State */
+            dest_state?: string | null;
+            /** Pickup Date */
+            pickup_date?: string | null;
+            /** Delivery Date */
+            delivery_date?: string | null;
+            /** Total Miles */
+            total_miles?: number | null;
+            /** Customer Rate */
+            customer_rate?: number | string | null;
+            /** Carrier Rate */
+            carrier_rate?: number | string | null;
+            /** Status */
+            status?: string | null;
+            /** Owner Id */
+            owner_id?: number | null;
+        };
+        /** LoadOut */
+        LoadOut: {
+            /** Shipper Id */
+            shipper_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
+            /** Primary Contact Id */
+            primary_contact_id?: number | null;
+            /** Commodity */
+            commodity?: string | null;
+            /** Weight */
+            weight?: number | null;
+            /** Equipment */
+            equipment?: string | null;
+            /** Origin City */
+            origin_city?: string | null;
+            /** Origin State */
+            origin_state?: string | null;
+            /** Dest City */
+            dest_city?: string | null;
+            /** Dest State */
+            dest_state?: string | null;
+            /** Pickup Date */
+            pickup_date?: string | null;
+            /** Delivery Date */
+            delivery_date?: string | null;
+            /** Total Miles */
+            total_miles?: number | null;
+            /** Customer Rate */
+            customer_rate?: string | null;
+            /** Carrier Rate */
+            carrier_rate?: string | null;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Reference */
+            reference: string | null;
+            /** Status */
+            status: string;
+            /** Owner Id */
+            owner_id: number | null;
+            /** Created By */
+            created_by: number | null;
+            /** Delivered At */
+            delivered_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            shipper?: components["schemas"]["Ref"] | null;
+            carrier?: components["schemas"]["Ref"] | null;
+            primary_contact?: components["schemas"]["app__schemas__load__ContactRef"] | null;
+            /**
+             * Margin
+             * @description Customer rate − carrier rate (None unless both are set).
+             */
+            readonly margin: string | null;
+        };
+        /** LoadStatusUpdate */
+        LoadStatusUpdate: {
+            /** Status */
+            status: string;
+        };
+        /** LoadUpdate */
+        LoadUpdate: {
+            /** Status */
+            status?: string | null;
+            /** Shipper Id */
+            shipper_id?: number | null;
+            /** Carrier Id */
+            carrier_id?: number | null;
+            /** Primary Contact Id */
+            primary_contact_id?: number | null;
+            /** Commodity */
+            commodity?: string | null;
+            /** Weight */
+            weight?: number | null;
+            /** Equipment */
+            equipment?: string | null;
+            /** Origin City */
+            origin_city?: string | null;
+            /** Origin State */
+            origin_state?: string | null;
+            /** Dest City */
+            dest_city?: string | null;
+            /** Dest State */
+            dest_state?: string | null;
+            /** Pickup Date */
+            pickup_date?: string | null;
+            /** Delivery Date */
+            delivery_date?: string | null;
+            /** Total Miles */
+            total_miles?: number | null;
+            /** Customer Rate */
+            customer_rate?: number | string | null;
+            /** Carrier Rate */
+            carrier_rate?: number | string | null;
+            /** Owner Id */
+            owner_id?: number | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             /**
@@ -713,6 +970,59 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
+        /** Page[LoadOut] */
+        Page_LoadOut_: {
+            /** Items */
+            items: components["schemas"]["LoadOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+        };
+        /** PinCreate */
+        PinCreate: {
+            /** Entity Type */
+            entity_type: string;
+            /** Entity Id */
+            entity_id: number;
+            /** Note */
+            note?: string | null;
+            /** Remind At */
+            remind_at?: string | null;
+        };
+        /** PinOut */
+        PinOut: {
+            /** Id */
+            id: number;
+            /** Entity Type */
+            entity_type: string;
+            /** Entity Id */
+            entity_id: number;
+            /** Note */
+            note: string | null;
+            /** Remind At */
+            remind_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Label */
+            label?: string | null;
+            /** Sublabel */
+            sublabel?: string | null;
+            /** Link */
+            link?: string | null;
+        };
+        /** PinUpdate */
+        PinUpdate: {
+            /** Note */
+            note?: string | null;
+            /** Remind At */
+            remind_at?: string | null;
+        };
         /** PipelineOut */
         PipelineOut: {
             /** Id */
@@ -723,6 +1033,13 @@ export interface components {
             is_default: boolean;
             /** Stages */
             stages: components["schemas"]["StageOut"][];
+        };
+        /** Ref */
+        Ref: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
         };
         /** StageOut */
         StageOut: {
@@ -783,6 +1100,15 @@ export interface components {
         };
         /** ContactRef */
         app__schemas__deal__ContactRef: {
+            /** Id */
+            id: number;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name?: string | null;
+        };
+        /** ContactRef */
+        app__schemas__load__ContactRef: {
             /** Id */
             id: number;
             /** First Name */
@@ -1574,6 +1900,347 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_loads_api_loads_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                status?: string | null;
+                /** @description comma-separated status filter */
+                statuses?: string | null;
+                shipper_id?: number | null;
+                carrier_id?: number | null;
+                owner_id?: number | null;
+                sort?: string;
+                order?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LoadOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_load_api_loads_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoadCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    board_meta_api_loads_board_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    get_load_api_loads__load_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_load_api_loads__load_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_load_api_loads__load_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoadUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_status_api_loads__load_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoadStatusUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_pins_api_pins_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PinOut"][];
+                };
+            };
+        };
+    };
+    create_pin_api_pins_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PinOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_pin_api_pins__pin_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pin_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_pin_api_pins__pin_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pin_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PinOut"];
                 };
             };
             /** @description Validation Error */

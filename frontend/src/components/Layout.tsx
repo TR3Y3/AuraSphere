@@ -5,7 +5,8 @@ import { SearchPalette } from './SearchPalette'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
-  { to: '/deals', label: 'Loads' },
+  { to: '/loads', label: 'Loads' },
+  { to: '/quotes', label: 'Quotes' },
   { to: '/carriers', label: 'Carriers' },
   { to: '/companies', label: 'Shippers' },
   { to: '/contacts', label: 'Contacts' },
@@ -95,9 +96,10 @@ export function Layout() {
           <button className="btn sm" onClick={() => setNewOpen((v) => !v)}>+ New ▾</button>
           {newOpen && (
             <div className="menu-pop">
-              {newItem('New load', '/deals')}
-              {newItem('New shipper', '/companies')}
+              {newItem('New load', '/loads')}
+              {newItem('New quote', '/quotes')}
               {newItem('New carrier', '/carriers')}
+              {newItem('New shipper', '/companies')}
               {newItem('New contact', '/contacts')}
             </div>
           )}

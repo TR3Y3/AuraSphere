@@ -244,6 +244,94 @@ class Deal(Base):
     )
 
 
+class Load(Base):
+    """A shipment — the hero record of the freight TMS (F2).
+
+    A "quote" is simply a load in the `quote` status. Margin is derived
+    (customer_rate − carrier_rate) in the schema layer, not stored.
+    """
+
+    __tablename__ = "loads"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    reference: Mapped[str | None] = mapped_column(String(40), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="quote")
+    shipper_id: Mapped[int | None] = mapped_column(
+        ForeignKey("companies.id"), nullable=True
+    )
+    carrier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carriers.id"), nullable=True
+    )
+    primary_contact_id: Mapped[int | None] = mapped_column(
+        ForeignKey("contacts.id"), nullable=True
+    )
+    commodity: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    weight: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    equipment: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    origin_city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    origin_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    dest_city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    dest_state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    pickup_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    delivery_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    total_miles: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    customer_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    carrier_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    shipper: Mapped["Company | None"] = relationship(foreign_keys=[shipper_id])
+    carrier: Mapped["Carrier | None"] = relationship(foreign_keys=[carrier_id])
+    primary_contact: Mapped["Contact | None"] = relationship(
+        foreign_keys=[primary_contact_id]
+    )
+
+
+class Pin(Base):
+    """A user-pinned dashboard widget: a load/contact/carrier/shipper the
+    user wants front-and-center, optionally with a note and a reminder time.
+    Pins are per-user within an org.
+    """
+
+    __tablename__ = "pins"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
+    entity_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    entity_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    remind_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class Activity(Base):
     __tablename__ = "activities"
 

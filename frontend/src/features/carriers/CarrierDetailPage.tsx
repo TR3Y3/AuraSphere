@@ -4,6 +4,7 @@ import { useContacts } from '../contacts/api'
 import { useCarrier, useDeleteCarrier } from './api'
 import { CarrierForm } from './CarrierForm'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
+import { PinButton } from '../pins/PinButton'
 
 function money(v: string | null | undefined): string {
   if (!v) return '—'
@@ -81,6 +82,7 @@ export function CarrierDetailPage() {
         subtitle={<><Rating value={c.rating ? Number(c.rating) : null} />{c.hq_city ? ` · ${c.hq_city}, ${c.hq_state ?? ''}` : ''}</>}
         actions={
           <>
+            <PinButton entityType="carrier" entityId={c.id} />
             <button className="btn ghost" onClick={() => setEditing((v) => !v)}>{editing ? '✕ Cancel' : '✎ Edit'}</button>
             <button className="btn danger" onClick={() => { if (confirm(`Delete ${c.name}?`)) { del.mutate(c.id); navigate('/carriers') } }}>Delete</button>
           </>
