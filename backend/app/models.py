@@ -52,11 +52,33 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Null until the user confirms their email via the verification link.
+    email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     organization: Mapped["Organization"] = relationship(back_populates="users")
+
+
+class EmailVerificationToken(Base):
+    """A single-use email-verification token (self-serve signup).
+
+    Only the SHA-256 hash is stored, mirroring the sessions table. Issuing a
+    new token for a user supersedes any prior ones.
+    """
+
+    __tablename__ = "email_verification_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class Session(Base):
