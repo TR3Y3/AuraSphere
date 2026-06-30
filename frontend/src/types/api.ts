@@ -445,6 +445,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/loads/{load_id}/checkcalls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Check Calls
+         * @description Newest first — the latest ping is the truck's current position.
+         */
+        get: operations["list_check_calls_api_loads__load_id__checkcalls_get"];
+        put?: never;
+        /** Create Check Call */
+        post: operations["create_check_call_api_loads__load_id__checkcalls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/checkcalls/{call_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Check Call */
+        delete: operations["delete_check_call_api_loads__load_id__checkcalls__call_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/loads/{load_id}/options": {
         parameters: {
             query?: never;
@@ -968,6 +1006,60 @@ export interface components {
             equipment_types?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+        };
+        /** CheckCallCreate */
+        CheckCallCreate: {
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Latitude */
+            latitude?: number | string | null;
+            /** Longitude */
+            longitude?: number | string | null;
+            /** Status Note */
+            status_note?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Eta */
+            eta?: string | null;
+            /** Reported At */
+            reported_at?: string | null;
+            /** Advance Status */
+            advance_status?: string | null;
+        };
+        /** CheckCallOut */
+        CheckCallOut: {
+            /** Id */
+            id: number;
+            /** Load Id */
+            load_id: number;
+            /** City */
+            city: string | null;
+            /** State */
+            state: string | null;
+            /** Latitude */
+            latitude: string | null;
+            /** Longitude */
+            longitude: string | null;
+            /** Status Note */
+            status_note: string | null;
+            /** Note */
+            note: string | null;
+            /** Eta */
+            eta: string | null;
+            /**
+             * Reported At
+             * Format: date-time
+             */
+            reported_at: string;
+            /** Created By */
+            created_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** CompanyCreate */
         CompanyCreate: {
@@ -3148,6 +3240,102 @@ export interface operations {
             path: {
                 load_id: number;
                 doc_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_check_calls_api_loads__load_id__checkcalls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckCallOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_check_call_api_loads__load_id__checkcalls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckCallCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckCallOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_check_call_api_loads__load_id__checkcalls__call_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                call_id: number;
             };
             cookie?: never;
         };

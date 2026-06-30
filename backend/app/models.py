@@ -392,6 +392,40 @@ class Document(Base):
     )
 
 
+class CheckCall(Base):
+    """A tracking ping / check-call on a load (F6).
+
+    A dispatcher (or, later, an ELD/tracking feed) logs the truck's current
+    location, an ETA, and a status note as the load moves. Logging a call
+    can optionally auto-advance the load's status (the tracking hook).
+    """
+
+    __tablename__ = "check_calls"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    load_id: Mapped[int] = mapped_column(
+        ForeignKey("loads.id"), nullable=False, index=True
+    )
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
+    # Free-text status snapshot shown on the timeline ("At pickup", "Rolling", …).
+    status_note: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    eta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reported_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class Pin(Base):
     """A user-pinned dashboard widget: a load/contact/carrier/shipper the
     user wants front-and-center, optionally with a note and a reminder time.
