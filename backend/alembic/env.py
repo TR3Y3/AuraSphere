@@ -18,8 +18,10 @@ from app.database import Base
 import app.models  # noqa: F401  (registers tables on Base.metadata)
 target_metadata = Base.metadata
 
-# Get DATABASE_URL from environment
+# Get DATABASE_URL from environment (normalize Render/Heroku postgres:// scheme)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 
 def run_migrations_offline() -> None:

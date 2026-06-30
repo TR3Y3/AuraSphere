@@ -1,31 +1,58 @@
+# AuraSphere — Render Blueprint (freight TMS + brokerage CRM).
+# Adapted from CALCOR's Render config and updated for this app.
+# Create via Render → New → Blueprint, pointed at this repo.
+#
+# After the first deploy you must set two values (marked `sync: false`):
+#   - backend  FRONTEND_ORIGIN = https://<frontend-url>
+#   - frontend VITE_API_URL    = https://<backend-url>
+# Then seed the first org/admin from the backend Shell:
+#   SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD=... python -m app.seed all
+
+databases:
+  - name: aurasphere-db
+    plan: free
+
 services:
+  # ── Backend: FastAPI JSON API ───────────────────────────────────────
   - type: web
     name: aurasphere-backend
     runtime: python
-    runtimeVersion: 3.11
-    buildCommand: pip install -r backend/requirements.txt && cd backend && alembic upgrade head
-    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: DATABASE_URL
-        scope: run
-      - key: SESSION_SECRET
-        scope: run
-      - key: FRONTEND_ORIGIN
-        scope: run
-    disk:
-      - name: data
-        mountPath: /data
-
-  - type: static
-    name: aurasphere-frontend
-    buildCommand: cd frontend && npm ci && npm run build
-    staticPublishPath: frontend/dist
-    envVars:
-      - key: VITE_API_URL
-        scope: build
-
-  - type: pserv
-    name: aurasphere-postgres
-    ipAllowList: []
+    rootDir: backend
     plan: free
-    postgresVersion: 15
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aurasphere-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      # SPA and API are on different *.onrender.com sites → cross-site cookie.
+      - key: COOKIE_SAMESITE
+        value: "none"
+      # Set to the deployed frontend URL after the first deploy.
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  # ── Frontend: React SPA (static) ────────────────────────────────────
+  - type: web
+    name: aurasphere-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Set to the deployed backend URL after the first deploy.
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      # SPA fallback so client routes (/loads, /carriers, …) resolve.
+      - type: rewrite
+        source: /*
+        destination: /index.html
