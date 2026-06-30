@@ -41,16 +41,19 @@ present in their `companies` list and confirm before researching.
    - `GET /api/companies?search=<name or domain>` — skip/merge if it exists.
    - `GET /api/contacts?search=<email or name>` — avoid duplicate people.
    All reads are org-scoped automatically; never pass an org id.
-3. **Create records through the API.** For survivors:
-   - `POST /api/companies` with `{name, domain, industry, ...}`.
-   - `POST /api/contacts` with the contact fields plus `company_id` from the
-     company just created, so the contact is linked. The API rejects a
-     `company_id` outside the caller's org (422) — that's expected.
-   Set `owner_id` only if the user wants a specific owner; otherwise it
-   defaults to the creator.
-4. **Deliver the batch for review.** End with a table: company, industry,
-   contact name/title, email (+ confidence), and whether it was newly created
-   or matched an existing record. Hand off to `/review-records`.
+3. **Write candidates into the Lead-Gen pipeline (S2).** For survivors,
+   `POST /api/prospects` with `{company_name, domain, industry, city, state,
+   website, contact_name, contact_title, contact_email, contact_phone,
+   source}`. The backend auto-scores **freight-fit** and flags likely
+   duplicates of existing shippers — you do not create Shipper/Contact
+   records directly. The rep reviews on the **Lead-Gen** page and clicks
+   **Approve** to convert a prospect into a Shipper + Contact.
+   (Direct `POST /api/companies` + `/api/contacts` is still fine for a record
+   the user explicitly wants added immediately, bypassing review.)
+4. **Deliver the batch for review.** End with a short table: company,
+   industry, contact name/title, email (+ confidence), freight-fit, and
+   whether it looks like a duplicate. Point the user to the Lead-Gen page (or
+   hand off to `/review-records`).
 
 ## Background Operation
 

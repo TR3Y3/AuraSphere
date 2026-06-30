@@ -160,7 +160,11 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **S1 (complete)** — Live Quote Desk.
+- Current phase: **S2 (complete)** — Shipper Lead-Gen.
+- Last completed: S2 — the prospect pipeline (find/qualify candidate shippers → convert to Shipper + Contact).
+  - Backend: new `prospects` table/model (company + logistics contact fields, freight_fit_score + fit_reason, status [new/approved/dismissed/imported], source, shipper_id/contact_id links). `app/freight_fit.py` scores fit from industry/name keywords (strong=manufacturing/distribution/food/building-materials… → ~85; competitor=broker/3PL/carrier → 10). Router `app/routers/prospects.py`: list (filter status + search, sorted by fit), create (auto-scores + flags `duplicate_of` an existing shipper by name/domain at read time), update (status; re-scores on industry change), delete, and **POST `.../convert`** — creates a Shipper (company) + optional Contact, marks the prospect imported (409 if already). Migration `91b594e52056`. 50 tests pass (adds scoring, dedupe, convert→shipper+contact, double-convert 409, dismiss filter, isolation).
+  - Frontend: Lead-Gen page (`src/features/prospects/`) — New/Imported/Dismissed tabs, fit-score badges, dupe alert badge (links to the existing shipper), freight signal text, Approve(convert)/Dismiss/delete, and a manual "+ Add prospect" form. Nav gained **Lead-Gen**. The `add-prospects` skill now writes candidates via `POST /api/prospects` (review/approve in-app). `npm run build` passes.
+- Earlier: S1 — Live Quote Desk.
 - Direction: AuraSphere is now a **freight TMS + brokerage CRM** (own product). Foundation phases 0–3 stand; the F-phases pivot the domain. See "What you are building" + the F-phases above.
 - Last completed: S1 — the Live Quote Desk (collaborative carrier-option workspace on a load).
   - Backend: new `load_options` table/model (load_id, carrier_id/carrier_name, rate, counter_rate, status [available/not_available/countered/declined/accepted], notes, created_by) + `loads.target_rate` (carrier-side max-buy). Router `app/routers/load_options.py` (nested under `/api/loads/{id}/options`): list (cheapest first), add, update, delete, and **POST `.../accept`** — covers the load with the option's carrier + (counter or) rate, advances quote/tendered/offered → covered, marks the option accepted and declines other open options. Migration `d9f127b2bca1`. 44 tests pass (adds option CRUD, accept-covers-load + margin, counter-rate-wins, in-org carrier check, isolation).
@@ -189,7 +193,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: S2 — Shipper Lead-Gen (find shippers + logistics contacts), then F3 — Carrier ops (compliance gating, lanes & rate history).
+- Next concrete step: F3 — Carrier ops (compliance/insurance gating, lanes & rate history, capacity), or deploy prep (Postgres + cross-site cookie fix) for a live URL.
 - Open decisions / blockers: _none_
 
 ---

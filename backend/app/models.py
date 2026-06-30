@@ -369,6 +369,50 @@ class Pin(Base):
     )
 
 
+class Prospect(Base):
+    """A candidate shipper found by lead-gen, awaiting review (S2).
+
+    Captures the company + a logistics decision-maker contact, a freight-fit
+    score, and a review status. Approving converts it into a Shipper (and an
+    optional Contact) in the CRM.
+    """
+
+    __tablename__ = "prospects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    company_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    domain: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    industry: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    state: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    website: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    contact_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    contact_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    contact_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    freight_fit_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fit_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="new")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    shipper_id: Mapped[int | None] = mapped_column(
+        ForeignKey("companies.id"), nullable=True
+    )
+    contact_id: Mapped[int | None] = mapped_column(
+        ForeignKey("contacts.id"), nullable=True
+    )
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
 class Activity(Base):
     __tablename__ = "activities"
 

@@ -409,6 +409,62 @@ export interface paths {
         patch: operations["update_pin_api_pins__pin_id__patch"];
         trace?: never;
     };
+    "/api/prospects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Prospects */
+        get: operations["list_prospects_api_prospects_get"];
+        put?: never;
+        /** Create Prospect */
+        post: operations["create_prospect_api_prospects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/prospects/{prospect_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Prospect */
+        delete: operations["delete_prospect_api_prospects__prospect_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Prospect */
+        patch: operations["update_prospect_api_prospects__prospect_id__patch"];
+        trace?: never;
+    };
+    "/api/prospects/{prospect_id}/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Convert Prospect
+         * @description Create a Shipper (+ optional Contact) from the prospect; mark imported.
+         */
+        post: operations["convert_prospect_api_prospects__prospect_id__convert_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -810,6 +866,13 @@ export interface components {
             /** Owner Id */
             owner_id?: number | null;
         };
+        /** DuplicateRef */
+        DuplicateRef: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1113,6 +1176,17 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
+        /** Page[ProspectOut] */
+        Page_ProspectOut_: {
+            /** Items */
+            items: components["schemas"]["ProspectOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+        };
         /** PinCreate */
         PinCreate: {
             /** Entity Type */
@@ -1165,6 +1239,120 @@ export interface components {
             is_default: boolean;
             /** Stages */
             stages: components["schemas"]["StageOut"][];
+        };
+        /** ProspectCreate */
+        ProspectCreate: {
+            /** Company Name */
+            company_name: string;
+            /** Domain */
+            domain?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Title */
+            contact_title?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Contact Phone */
+            contact_phone?: string | null;
+            /** Source */
+            source?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Freight Fit Score */
+            freight_fit_score?: number | null;
+            /** Fit Reason */
+            fit_reason?: string | null;
+        };
+        /** ProspectOut */
+        ProspectOut: {
+            /** Company Name */
+            company_name: string;
+            /** Domain */
+            domain?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Title */
+            contact_title?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Contact Phone */
+            contact_phone?: string | null;
+            /** Source */
+            source?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Freight Fit Score */
+            freight_fit_score: number | null;
+            /** Fit Reason */
+            fit_reason: string | null;
+            /** Status */
+            status: string;
+            /** Shipper Id */
+            shipper_id: number | null;
+            /** Contact Id */
+            contact_id: number | null;
+            /** Created By */
+            created_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            duplicate_of?: components["schemas"]["DuplicateRef"] | null;
+        };
+        /** ProspectUpdate */
+        ProspectUpdate: {
+            /** Company Name */
+            company_name?: string | null;
+            /** Domain */
+            domain?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /** Contact Title */
+            contact_title?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Contact Phone */
+            contact_phone?: string | null;
+            /** Source */
+            source?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Status */
+            status?: string | null;
         };
         /** Ref */
         Ref: {
@@ -2537,6 +2725,170 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PinOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_prospects_api_prospects_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                status?: string | null;
+                sort?: string;
+                order?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ProspectOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_prospect_api_prospects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProspectCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProspectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_prospect_api_prospects__prospect_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prospect_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_prospect_api_prospects__prospect_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prospect_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProspectUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProspectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    convert_prospect_api_prospects__prospect_id__convert_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prospect_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProspectOut"];
                 };
             };
             /** @description Validation Error */

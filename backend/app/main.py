@@ -12,6 +12,7 @@ from app.routers import (
     loads,
     pins,
     pipelines,
+    prospects,
     users,
 )
 
@@ -35,6 +36,7 @@ app.include_router(deals.router)
 app.include_router(loads.router)
 app.include_router(load_options.router)
 app.include_router(pins.router)
+app.include_router(prospects.router)
 app.include_router(users.router)
 
 

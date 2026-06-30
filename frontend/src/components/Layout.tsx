@@ -10,6 +10,7 @@ const NAV = [
   { to: '/carriers', label: 'Carriers' },
   { to: '/companies', label: 'Shippers' },
   { to: '/contacts', label: 'Contacts' },
+  { to: '/prospects', label: 'Lead-Gen' },
 ]
 
 // Close a popover when clicking outside it.
