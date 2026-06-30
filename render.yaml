@@ -39,6 +39,15 @@ services:
       # Set to the deployed frontend URL after the first deploy.
       - key: FRONTEND_ORIGIN
         sync: false
+      # Email: real verification emails in production. Default "console" just
+      # logs; set EMAIL_DELIVERY=resend + RESEND_API_KEY to actually send
+      # (Render blocks SMTP ports, so the Resend HTTP API is the way).
+      - key: EMAIL_DELIVERY
+        value: "console"
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

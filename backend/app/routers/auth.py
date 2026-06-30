@@ -118,8 +118,9 @@ def signup(payload: SignupRequest, response: Response, db: DbSession = Depends(g
 
     send_verification_email(user.email, verify_url)
     _set_session_cookie(response, token)
-    # Surface the link only in console mode (no real mailbox) for testability.
-    exposed = verify_url if config.EMAIL_DELIVERY != "smtp" else None
+    # Surface the link only in console mode (no real mailbox) for testability;
+    # when a real provider (resend/smtp) is configured, the email carries it.
+    exposed = verify_url if config.EMAIL_DELIVERY == "console" else None
     return SignupResult(user=user, organization=org, verify_url=exposed)
 
 
