@@ -12,6 +12,13 @@ SESSION_COOKIE_NAME = os.getenv("SESSION_COOKIE_NAME", "aurasphere_session")
 SESSION_TTL_HOURS = int(os.getenv("SESSION_TTL_HOURS", "168"))  # 7 days
 # Cookie flags. Secure must be on in production (https); off for local http.
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+# SameSite policy. Local dev: "lax". When the SPA and API live on different
+# sites (e.g. app.onrender.com + api.onrender.com), the auth cookie must be
+# "none" so the browser sends it on cross-site XHR — and "none" REQUIRES
+# Secure, so we force it on below.
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
+if COOKIE_SAMESITE == "none":
+    COOKIE_SECURE = True
 # Optional parent domain so app.<domain> and api.<domain> share the cookie.
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 
