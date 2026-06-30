@@ -8,6 +8,7 @@ from app.routers import (
     companies,
     contacts,
     deals,
+    load_options,
     loads,
     pins,
     pipelines,
@@ -32,6 +33,7 @@ app.include_router(carriers.router)
 app.include_router(pipelines.router)
 app.include_router(deals.router)
 app.include_router(loads.router)
+app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(users.router)
 

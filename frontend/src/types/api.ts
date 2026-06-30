@@ -317,6 +317,62 @@ export interface paths {
         patch: operations["change_status_api_loads__load_id__status_patch"];
         trace?: never;
     };
+    "/api/loads/{load_id}/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Options */
+        get: operations["list_options_api_loads__load_id__options_get"];
+        put?: never;
+        /** Add Option */
+        post: operations["add_option_api_loads__load_id__options_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/options/{option_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Option */
+        delete: operations["delete_option_api_loads__load_id__options__option_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Option */
+        patch: operations["update_option_api_loads__load_id__options__option_id__patch"];
+        trace?: never;
+    };
+    "/api/loads/{load_id}/options/{option_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Option
+         * @description Cover the load with this option's carrier + rate, mark it accepted.
+         */
+        post: operations["accept_option_api_loads__load_id__options__option_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pins": {
         parameters: {
             query?: never;
@@ -482,6 +538,13 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** CarrierRef */
+        CarrierRef: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
         };
         /** CarrierUpdate */
         CarrierUpdate: {
@@ -784,6 +847,8 @@ export interface components {
             customer_rate?: number | string | null;
             /** Carrier Rate */
             carrier_rate?: number | string | null;
+            /** Target Rate */
+            target_rate?: number | string | null;
             /** Status */
             status?: string | null;
             /** Owner Id */
@@ -821,6 +886,8 @@ export interface components {
             customer_rate?: string | null;
             /** Carrier Rate */
             carrier_rate?: string | null;
+            /** Target Rate */
+            target_rate?: string | null;
             /** Id */
             id: number;
             /** Organization Id */
@@ -893,6 +960,8 @@ export interface components {
             customer_rate?: number | string | null;
             /** Carrier Rate */
             carrier_rate?: number | string | null;
+            /** Target Rate */
+            target_rate?: number | string | null;
             /** Owner Id */
             owner_id?: number | null;
         };
@@ -910,6 +979,69 @@ export interface components {
         MeOut: {
             user: components["schemas"]["UserOut"];
             organization: components["schemas"]["OrganizationOut"];
+        };
+        /** OptionCreate */
+        OptionCreate: {
+            /** Carrier Id */
+            carrier_id?: number | null;
+            /** Carrier Name */
+            carrier_name?: string | null;
+            /** Rate */
+            rate?: number | string | null;
+            /**
+             * Status
+             * @default available
+             */
+            status: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** OptionOut */
+        OptionOut: {
+            /** Id */
+            id: number;
+            /** Load Id */
+            load_id: number;
+            /** Carrier Id */
+            carrier_id: number | null;
+            /** Carrier Name */
+            carrier_name: string | null;
+            /** Rate */
+            rate: string | null;
+            /** Counter Rate */
+            counter_rate: string | null;
+            /** Status */
+            status: string;
+            /** Notes */
+            notes: string | null;
+            /** Created By */
+            created_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            carrier?: components["schemas"]["CarrierRef"] | null;
+        };
+        /** OptionUpdate */
+        OptionUpdate: {
+            /** Carrier Id */
+            carrier_id?: number | null;
+            /** Carrier Name */
+            carrier_name?: string | null;
+            /** Rate */
+            rate?: number | string | null;
+            /** Counter Rate */
+            counter_rate?: number | string | null;
+            /** Status */
+            status?: string | null;
+            /** Notes */
+            notes?: string | null;
         };
         /** OrganizationOut */
         OrganizationOut: {
@@ -2116,6 +2248,170 @@ export interface operations {
                 "application/json": components["schemas"]["LoadStatusUpdate"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_options_api_loads__load_id__options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_option_api_loads__load_id__options_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_option_api_loads__load_id__options__option_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                option_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_option_api_loads__load_id__options__option_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                option_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_option_api_loads__load_id__options__option_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                option_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

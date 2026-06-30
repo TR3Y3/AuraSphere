@@ -284,6 +284,8 @@ class Load(Base):
     total_miles: Mapped[int | None] = mapped_column(Integer, nullable=True)
     customer_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     carrier_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    # Carrier-side target / max buy used by the Quote Desk to grade offers.
+    target_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     delivered_at: Mapped[datetime | None] = mapped_column(
@@ -304,6 +306,41 @@ class Load(Base):
     primary_contact: Mapped["Contact | None"] = relationship(
         foreign_keys=[primary_contact_id]
     )
+
+
+class LoadOption(Base):
+    """A carrier option on a load's Quote Desk (S1).
+
+    Customer-facing and carrier-facing reps add/work options on the same
+    load; accepting one covers the load with that carrier + rate.
+    """
+
+    __tablename__ = "load_options"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    load_id: Mapped[int] = mapped_column(
+        ForeignKey("loads.id"), nullable=False, index=True
+    )
+    carrier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carriers.id"), nullable=True
+    )
+    carrier_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    counter_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="available")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    carrier: Mapped["Carrier | None"] = relationship(foreign_keys=[carrier_id])
 
 
 class Pin(Base):

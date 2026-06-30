@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { KpiStrip, Panel, RecordHeader } from '../../components/shell'
+import { KpiStrip, Panel, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, STATUS_LABEL, money } from './api'
 import { LoadForm } from './LoadForm'
+import { QuoteDesk } from './QuoteDesk'
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -52,6 +53,8 @@ export function LoadDetailPage() {
       {editing ? (
         <Panel><LoadForm existing={l} onDone={() => setEditing(false)} /></Panel>
       ) : (
+        <Tabs tabs={[
+          { key: 'overview', label: 'Overview', content: (
         <div className="two-col">
           <Panel title="Route & stops">
             <div className="kv">
@@ -76,6 +79,9 @@ export function LoadDetailPage() {
             </div>
           </Panel>
         </div>
+          ) },
+          { key: 'quote', label: 'Quote Desk', content: <QuoteDesk load={l} /> },
+        ]} />
       )}
     </section>
   )

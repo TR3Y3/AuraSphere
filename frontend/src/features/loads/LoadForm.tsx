@@ -20,6 +20,7 @@ const schema = z.object({
   delivery_date: z.string().optional(),
   total_miles: z.coerce.number().optional(),
   customer_rate: z.string().optional(),
+  target_rate: z.string().optional(),
   carrier_rate: z.string().optional(),
 })
 type FormValues = z.infer<typeof schema>
@@ -60,6 +61,7 @@ export function LoadForm({
       delivery_date: existing?.delivery_date?.slice(0, 10) ?? '',
       total_miles: existing?.total_miles ?? undefined,
       customer_rate: existing?.customer_rate ?? '',
+      target_rate: existing?.target_rate ?? '',
       carrier_rate: existing?.carrier_rate ?? '',
     },
   })
@@ -79,6 +81,7 @@ export function LoadForm({
       delivery_date: iso(v.delivery_date),
       total_miles: v.total_miles || null,
       customer_rate: v.customer_rate || null,
+      target_rate: v.target_rate || null,
       carrier_rate: isQuote ? null : v.carrier_rate || null,
     }
     if (existing) { await update.mutateAsync(body); onDone() }
@@ -105,6 +108,7 @@ export function LoadForm({
       <div className="field"><label className="cl">Weight (lbs)</label><input className="ti" type="number" {...register('weight')} /></div>
       <div className="field"><label className="cl">Total miles</label><input className="ti" type="number" {...register('total_miles')} /></div>
       <div className="field"><label className="cl">Customer rate ($)</label><input className="ti" type="number" step="0.01" {...register('customer_rate')} /></div>
+      <div className="field"><label className="cl">Target buy ($)</label><input className="ti" type="number" step="0.01" {...register('target_rate')} /></div>
       {!isQuote && (
         <>
           <div className="field">

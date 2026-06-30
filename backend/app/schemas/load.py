@@ -36,6 +36,7 @@ class LoadBase(BaseModel):
     total_miles: int | None = None
     customer_rate: Decimal | None = None
     carrier_rate: Decimal | None = None
+    target_rate: Decimal | None = None
 
 
 class LoadCreate(LoadBase):
@@ -60,6 +61,7 @@ class LoadUpdate(BaseModel):
     total_miles: int | None = None
     customer_rate: Decimal | None = None
     carrier_rate: Decimal | None = None
+    target_rate: Decimal | None = None
     owner_id: int | None = None
 
 
