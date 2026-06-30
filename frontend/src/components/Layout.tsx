@@ -5,12 +5,14 @@ import { SearchPalette } from './SearchPalette'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
+  { to: '/tasks', label: 'Tasks' },
   { to: '/loads', label: 'Loads' },
   { to: '/quotes', label: 'Quotes' },
   { to: '/carriers', label: 'Carriers' },
   { to: '/companies', label: 'Shippers' },
   { to: '/contacts', label: 'Contacts' },
   { to: '/prospects', label: 'Lead-Gen' },
+  { to: '/pricing', label: 'Pricing' },
 ]
 
 // Close a popover when clicking outside it.

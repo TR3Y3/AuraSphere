@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { KpiStrip, Panel, RecordHeader, Tabs } from '../../components/shell'
+import { AlertBadge, KpiStrip, Panel, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
+import { useCarrier } from '../carriers/api'
 import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, STATUS_LABEL, money } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
+import { Timeline } from '../activities/Timeline'
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -13,6 +15,7 @@ export function LoadDetailPage() {
   const [editing, setEditing] = useState(false)
   const { data: l, isLoading, error } = useLoad(loadId)
   const { data: meta } = useBoardMeta()
+  const { data: assignedCarrier } = useCarrier(l?.carrier_id ?? undefined)
   const update = useUpdateLoad(loadId ?? 0)
   const del = useDeleteLoad()
 
@@ -69,6 +72,11 @@ export function LoadDetailPage() {
           </Panel>
 
           <Panel title="Carrier & customer">
+            {assignedCarrier && (assignedCarrier.compliance_issues?.length ?? 0) > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                {assignedCarrier.compliance_issues!.map((i) => <AlertBadge key={i}>{i}</AlertBadge>)}
+              </div>
+            )}
             <div className="kv">
               <div className="k">Shipper</div>
               <div>{l.shipper ? <Link to={`/companies/${l.shipper.id}`}>{l.shipper.name}</Link> : '—'}</div>
@@ -81,6 +89,7 @@ export function LoadDetailPage() {
         </div>
           ) },
           { key: 'quote', label: 'Quote Desk', content: <QuoteDesk load={l} /> },
+          { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_load_id: l.id }} /> },
         ]} />
       )}
     </section>

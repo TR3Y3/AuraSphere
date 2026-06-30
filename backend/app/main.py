@@ -3,9 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import config
 from app.routers import (
+    activities,
     auth,
+    carrier_ops,
     carriers,
     companies,
+    dashboard,
     contacts,
     deals,
     load_options,
@@ -31,12 +34,15 @@ app.include_router(auth.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(carriers.router)
+app.include_router(carrier_ops.router)
 app.include_router(pipelines.router)
 app.include_router(deals.router)
 app.include_router(loads.router)
 app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
+app.include_router(activities.router)
+app.include_router(dashboard.router)
 app.include_router(users.router)
 
 

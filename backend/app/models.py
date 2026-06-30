@@ -173,6 +173,29 @@ class Carrier(Base):
     )
 
 
+class CarrierCapacity(Base):
+    """A carrier's posted capacity out of a location (F3)."""
+
+    __tablename__ = "carrier_capacity"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    carrier_id: Mapped[int] = mapped_column(
+        ForeignKey("carriers.id"), nullable=False, index=True
+    )
+    location: Mapped[str] = mapped_column(String(160), nullable=False)
+    radius_miles: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    weekly_capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    equipment: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class Pipeline(Base):
     __tablename__ = "pipelines"
 
@@ -433,10 +456,16 @@ class Activity(Base):
         ForeignKey("contacts.id"), nullable=True
     )
     related_company_id: Mapped[int | None] = mapped_column(
-        ForeignKey("companies.id"), nullable=True
+        ForeignKey("companies.id"), nullable=True  # the shipper link (companies table)
     )
     related_deal_id: Mapped[int | None] = mapped_column(
-        ForeignKey("deals.id"), nullable=True
+        ForeignKey("deals.id"), nullable=True  # legacy, unused
+    )
+    related_load_id: Mapped[int | None] = mapped_column(
+        ForeignKey("loads.id"), nullable=True
+    )
+    related_carrier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carriers.id"), nullable=True
     )
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

@@ -177,6 +177,22 @@ select.ti { appearance: auto; }
 .deal-card .dc-amt { color: var(--good); font-weight: 700; font-size: 13px; }
 .deal-card .dc-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
+/* ── Timeline ───────────────────────────────────────────────────── */
+.tl-item { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.tl-item:last-child { border-bottom: 0; }
+.tl-ico { font-size: 15px; width: 22px; text-align: center; flex: 0 0 22px; }
+.tl-body { flex: 1; min-width: 0; }
+.tl-subject { font-weight: 600; font-size: 14px; }
+.tl-text { color: var(--text); font-size: 13px; margin-top: 2px; white-space: pre-wrap; }
+.tl-meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.tl-done .tl-subject { text-decoration: line-through; color: var(--muted); }
+.tl-overdue { color: var(--danger); }
+.composer { display: grid; gap: 8px; margin-bottom: 16px; }
+.composer-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.type-pills { display: inline-flex; gap: 4px; }
+.type-pills button { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.type-pills button.on { background: var(--brand-2); border-color: var(--brand-2); color: #fff; }
+
 /* ── Pinned widgets (dashboard) ─────────────────────────────────── */
 .cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .contact-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }

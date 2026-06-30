@@ -12,6 +12,8 @@ import { LoadsPage } from './features/loads/LoadsPage'
 import { QuotesPage } from './features/loads/QuotesPage'
 import { LoadDetailPage } from './features/loads/LoadDetailPage'
 import { ProspectsPage } from './features/prospects/ProspectsPage'
+import { MyTasksPage } from './features/activities/MyTasksPage'
+import { PricingPage } from './features/dashboard/PricingPage'
 import { CarriersPage } from './features/carriers/CarriersPage'
 import { CarrierDetailPage } from './features/carriers/CarrierDetailPage'
 
@@ -34,6 +36,8 @@ function App() {
               <Route path="/loads/:id" element={<LoadDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
               <Route path="/prospects" element={<ProspectsPage />} />
+              <Route path="/tasks" element={<MyTasksPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

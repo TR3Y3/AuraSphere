@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useContact } from './api'
 import { ContactForm } from './ContactForm'
 import { PinButton } from '../pins/PinButton'
+import { Timeline } from '../activities/Timeline'
 
 export function ContactDetailPage() {
   const { id } = useParams()
@@ -63,6 +64,8 @@ export function ContactDetailPage() {
             </div>
           </div>
         )}
+
+        <Timeline scope={{ related_contact_id: contact.id }} />
       </div>
     </section>
   )
