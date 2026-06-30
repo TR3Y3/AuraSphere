@@ -8,6 +8,7 @@ import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, 
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
 import { DocumentsPanel } from './documents'
+import { TrackingPanel } from './tracking'
 import { Timeline } from '../activities/Timeline'
 
 // One-click status targets for the contextual action row.
@@ -131,6 +132,7 @@ export function LoadDetailPage() {
           </Panel>
         </div>
           ) },
+          { key: 'tracking', label: 'Tracking', content: <TrackingPanel load={l} /> },
           { key: 'quote', label: 'Quote Desk', content: <QuoteDesk load={l} /> },
           { key: 'documents', label: 'Documents', content: <DocumentsPanel loadId={l.id} /> },
           { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_load_id: l.id }} /> },

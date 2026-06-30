@@ -1,7 +1,7 @@
 // Reusable record-shell primitives — the AuraSphere look applied across
 // every detail page: status-hero header, contextual action row, KPI strip,
 // titled panels, in-panel tabs, and alert/rating badges.
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 
 export function RecordHeader({
   status,
@@ -50,14 +50,16 @@ export function KpiStrip({ items }: { items: Kpi[] }) {
 export function Panel({
   title,
   pad = true,
+  style,
   children,
 }: {
   title?: ReactNode
   pad?: boolean
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
-    <div className={`panel${pad ? ' panel-pad' : ''}`}>
+    <div className={`panel${pad ? ' panel-pad' : ''}`} style={style}>
       {title && <h2 style={{ border: 0, padding: 0, marginBottom: 12 }}>{title}</h2>}
       {children}
     </div>

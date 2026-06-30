@@ -17,6 +17,7 @@ from app.routers import (
     pins,
     pipelines,
     prospects,
+    tracking,
     users,
 )
 
@@ -40,6 +41,7 @@ app.include_router(pipelines.router)
 app.include_router(deals.router)
 app.include_router(loads.router)
 app.include_router(documents.router)
+app.include_router(tracking.router)
 app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
