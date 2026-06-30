@@ -160,8 +160,11 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **F5 (complete)** — Pricing + dashboard analytics.
-- Last completed: F5 — dashboard KPIs + value-by-status + recent activity, and a lane-pricing reference.
+- Current phase: **Elite TMS polish (complete)** — load workflow polish + document attachments. Next: **F6 (Tracking)**.
+- Last completed: Elite features — one-click load action row, re-book, margin %, and document attachments.
+  - Backend: new `documents` table/model (`organization_id`, `load_id`, filename, content_type, size, kind [rate_con/bol/pod/other], `data` LargeBinary, uploaded_by, created_at) — files stored as bytes in the DB so they persist on managed Postgres without object storage. Router `app/routers/documents.py` (nested under `/api/loads/{id}/documents`): list (newest first), **POST multipart upload** (`UploadFile` + `kind` form field; validates kind, rejects empty, 15 MB cap → 413), `GET /{doc_id}/download` (streams bytes with Content-Disposition), DELETE — all org-scoped (404 cross-org/cross-load). Migration `2085b8d252b6`. Also `POST /api/loads/{id}/duplicate` — re-book: clones lane/shipper/freight into a fresh `quote`, dropping carrier + carrier_rate. 67 tests pass (adds upload/list/download/delete + isolation; duplicate re-book resets status/carrier).
+  - Frontend: load detail gained a **contextual action row** (one-click Cover/Dispatch/Mark Delivered/Lost/TONU + ⎘ Re-book→navigates to the clone), a **Margin %** KPI that turns red with a ⚠ + a loud low-margin notice when below the 12% target (`LOW_MARGIN_PCT`), and a **Documents tab** (`src/features/loads/documents.tsx`) — kind picker + upload, table of files with download links + delete. `api.upload` (multipart, browser-set boundary) + `API_URL` added to `lib/api.ts`; `LoadDocument` type derived from OpenAPI. `Copy`/`Copyable` copy buttons already on key carrier/contact/load details. New `SettingsPage` (`/settings`) + `docs/integrations.md` stub the launch integrations (email logging, DAT, Highway/Carrier411 active-gating, factoring, ELD). Verified live (Playwright screenshot: action row + red 9.1% margin + Documents tab render). `npm run build` passes.
+- Earlier: F5 — dashboard KPIs + value-by-status + recent activity, and a lane-pricing reference.
   - Backend: `app/routers/dashboard.py` (no migration — pure aggregation over the org's loads). `GET /api/dashboard/summary` → loads_total, open_loads, loaded_dollars (excl. lost/tonu), total_margin, avg_margin, value_by_status (count + Σcustomer_rate per pipeline status), my open_tasks count, recent_activity (last 8). `GET /api/pricing/lanes` → org-wide lane aggregation (origin→dest+equipment, loads, avg customer/carrier rate, avg margin), busiest first. 63 tests pass (adds KPI math, value-by-status, lane averages, isolation).
   - Frontend: reworked **Dashboard** (`src/features/dashboard/`) — KPI cards (loaded $, total margin, avg margin, open loads, my tasks), a "pipeline value by status" bar chart, a recent-activity feed, plus the existing pins. New **Pricing** page (`/pricing`, nav "Pricing") — the lane rate table (rate memory for quoting). `npm run build` passes.
 - Earlier: F4 — log calls/emails/notes/tasks against any record; chronological timeline on detail pages; "My open tasks."
@@ -204,7 +207,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: F6 — Tracking (check-calls/pings + a simple map + ETA + status auto-advance hooks), the last core F-phase.
+- Next concrete step: F6 — Tracking (check-calls/pings + a simple map + ETA + status auto-advance hooks), the last core F-phase. ELD integration plugs in here later.
 - Open decisions / blockers: _none_
 
 ---

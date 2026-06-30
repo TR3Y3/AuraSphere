@@ -53,6 +53,14 @@ export function useUpdateLoad(id: number) {
   })
 }
 
+export function useDuplicateLoad() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<Load>(`/api/loads/${id}/duplicate`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loads'] }),
+  })
+}
+
 export function useDeleteLoad() {
   const qc = useQueryClient()
   return useMutation({
@@ -94,4 +102,18 @@ export function money(v: string | null | undefined): string {
   if (v == null || v === '') return '—'
   const n = Number(v)
   return Number.isNaN(n) ? '—' : n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+}
+
+// Margin as a % of the customer rate. Used to flag thin-margin loads.
+export const LOW_MARGIN_PCT = 12
+
+export function marginPct(
+  margin: string | null | undefined,
+  customerRate: string | null | undefined,
+): number | null {
+  if (margin == null || customerRate == null) return null
+  const m = Number(margin)
+  const c = Number(customerRate)
+  if (Number.isNaN(m) || Number.isNaN(c) || c === 0) return null
+  return (m / c) * 100
 }

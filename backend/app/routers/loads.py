@@ -131,6 +131,37 @@ def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
     return load
 
 
+@router.post("/{load_id}/duplicate", response_model=LoadOut, status_code=http.HTTP_201_CREATED)
+def duplicate_load(load_id: int, scope: OrgScope = Depends(get_scope)):
+    """Re-book: clone the load's lane/shipper/freight into a fresh quote
+    (carrier + carrier rate dropped, status reset to quote)."""
+    src = _load(scope, load_id)
+    clone = Load(
+        organization_id=scope.org_id,
+        created_by=scope.user.id,
+        owner_id=scope.user.id,
+        status="quote",
+        shipper_id=src.shipper_id,
+        primary_contact_id=src.primary_contact_id,
+        commodity=src.commodity,
+        weight=src.weight,
+        equipment=src.equipment,
+        origin_city=src.origin_city,
+        origin_state=src.origin_state,
+        dest_city=src.dest_city,
+        dest_state=src.dest_state,
+        total_miles=src.total_miles,
+        customer_rate=src.customer_rate,
+        target_rate=src.target_rate,
+    )
+    scope.db.add(clone)
+    scope.db.flush()
+    clone.reference = f"L-{100000 + clone.id}"
+    scope.db.commit()
+    scope.db.refresh(clone)
+    return clone
+
+
 @router.get("/board", response_model=dict)
 def board_meta():
     """The ordered pipeline statuses that make up the board columns."""

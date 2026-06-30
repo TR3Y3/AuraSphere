@@ -5,7 +5,7 @@
 // via `npm run gen:api` — never hand-written, so they can't drift from the API.
 import type { components } from '../types/api'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export class ApiError extends Error {
   status: number
@@ -28,10 +28,15 @@ function toQuery(params?: Record<string, QueryValue>): string {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  // FormData bodies must NOT carry an explicit Content-Type — the browser sets
+  // the multipart boundary itself.
+  const isForm = options.body instanceof FormData
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: isForm
+      ? { ...(options.headers || {}) }
+      : { 'Content-Type': 'application/json', ...(options.headers || {}) },
   })
 
   if (!res.ok) {
@@ -57,6 +62,9 @@ export const api = {
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   del: (path: string) => request<void>(path, { method: 'DELETE' }),
+  // Multipart upload: let the browser set the Content-Type (with boundary).
+  upload: <T>(path: string, form: FormData) =>
+    request<T>(path, { method: 'POST', body: form, headers: {} }),
 }
 
 type Schemas = components['schemas']
@@ -96,6 +104,7 @@ export type ActivityCreate = Schemas['ActivityCreate']
 export type ActivityPage = Schemas['Page_ActivityOut_']
 export type DashboardSummary = Schemas['DashboardSummary']
 export type LanePrice = Schemas['LanePrice']
+export type LoadDocument = Schemas['DocumentOut']
 export type Pipeline = Schemas['PipelineOut']
 export type Stage = Schemas['StageOut']
 export type Deal = Schemas['DealOut']
