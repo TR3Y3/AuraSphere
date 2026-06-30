@@ -99,6 +99,8 @@ td .sub { color: var(--muted); font-size: 12px; }
 .b-brand { background: rgba(139, 92, 246, 0.16); color: var(--brand); }
 .b-good { background: rgba(63, 185, 80, 0.16); color: var(--good); }
 .b-muted { background: rgba(110, 118, 129, 0.18); color: var(--muted); }
+.b-warn { background: rgba(227, 147, 60, 0.16); color: var(--warn); }
+.b-danger { background: rgba(248, 81, 73, 0.16); color: var(--danger); }
 
 /* ── Buttons ────────────────────────────────────────────────────── */
 .btn {

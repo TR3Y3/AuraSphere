@@ -330,6 +330,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/carriers/{carrier_id}/vetting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Latest Vetting
+         * @description The most recent vetting snapshot, or null if never vetted.
+         */
+        get: operations["latest_vetting_api_carriers__carrier_id__vetting_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carriers/{carrier_id}/vet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Vetting
+         * @description Run a carrier-vetting check (authority + insurance + safety) and store it.
+         */
+        post: operations["run_vetting_api_carriers__carrier_id__vet_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/carriers/{carrier_id}/capacity": {
         parameters: {
             query?: never;
@@ -1167,6 +1207,34 @@ export interface components {
             equipment_types?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+        };
+        /** CarrierVettingOut */
+        CarrierVettingOut: {
+            /** Id */
+            id: number;
+            /** Carrier Id */
+            carrier_id: number;
+            /** Source */
+            source: string;
+            /** Result */
+            result: string;
+            /** Authority Status */
+            authority_status: string | null;
+            /** Insurance On File */
+            insurance_on_file: boolean;
+            /** Safety Rating */
+            safety_rating: string | null;
+            /** Risk Score */
+            risk_score: number | null;
+            /** Flags */
+            flags: string[];
+            /** Checked By */
+            checked_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** CheckCallCreate */
         CheckCallCreate: {
@@ -2948,6 +3016,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LaneOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    latest_vetting_api_carriers__carrier_id__vetting_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierVettingOut"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_vetting_api_carriers__carrier_id__vet_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierVettingOut"];
                 };
             };
             /** @description Validation Error */

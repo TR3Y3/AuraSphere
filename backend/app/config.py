@@ -50,6 +50,13 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 # Free-plan ceilings (None = unlimited on Pro).
 FREE_MAX_LOADS = int(os.getenv("FREE_MAX_LOADS", "50"))
 
+# Carrier vetting (Highway / Carrier411-style authority + insurance + safety).
+#   "stub" (default) — derive a deterministic vetting result from the carrier's
+#     own data (MC/DOT, insurance, rating). No external account needed.
+#   "highway" — call the real provider API (set HIGHWAY_API_KEY).
+VETTING_MODE = os.getenv("VETTING_MODE", "stub").lower()
+HIGHWAY_API_KEY = os.getenv("HIGHWAY_API_KEY")
+
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")
