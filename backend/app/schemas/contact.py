@@ -10,7 +10,8 @@ class ContactBase(BaseModel):
     email: EmailStr | None = None
     phone: str | None = None
     title: str | None = None
-    company_id: int | None = None
+    company_id: int | None = None  # shipper link (companies table, interim)
+    carrier_id: int | None = None
 
 
 class ContactCreate(ContactBase):
@@ -24,11 +25,12 @@ class ContactUpdate(BaseModel):
     phone: str | None = None
     title: str | None = None
     company_id: int | None = None
+    carrier_id: int | None = None
     owner_id: int | None = None
 
 
-class ContactCompany(BaseModel):
-    """Lightweight linked-company summary embedded in a contact."""
+class ContactRef(BaseModel):
+    """Lightweight linked-account summary embedded in a contact."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -45,4 +47,5 @@ class ContactOut(ContactBase):
     created_by: int | None
     created_at: datetime
     updated_at: datetime
-    company: ContactCompany | None = None
+    company: ContactRef | None = None
+    carrier: ContactRef | None = None

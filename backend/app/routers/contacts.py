@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
 from app.deps import OrgScope, get_scope
-from app.models import Company, Contact
+from app.models import Carrier, Company, Contact
 from app.schemas.common import Page
 from app.schemas.contact import ContactCreate, ContactOut, ContactUpdate
 
@@ -21,7 +21,7 @@ SORT_FIELDS = {
 def _get_owned(scope: OrgScope, contact_id: int) -> Contact:
     contact = (
         scope.query(Contact)
-        .options(joinedload(Contact.company))
+        .options(joinedload(Contact.company), joinedload(Contact.carrier))
         .filter(Contact.id == contact_id)
         .first()
     )
@@ -31,14 +31,26 @@ def _get_owned(scope: OrgScope, contact_id: int) -> Contact:
 
 
 def _validate_company(scope: OrgScope, company_id: int | None) -> None:
-    """A linked company must exist within the caller's organization."""
+    """A linked shipper (company) must exist within the caller's organization."""
     if company_id is None:
         return
     exists = scope.query(Company).filter(Company.id == company_id).first()
     if exists is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="company_id does not reference a company in your organization",
+            detail="company_id does not reference a shipper in your organization",
+        )
+
+
+def _validate_carrier(scope: OrgScope, carrier_id: int | None) -> None:
+    """A linked carrier must exist within the caller's organization."""
+    if carrier_id is None:
+        return
+    exists = scope.query(Carrier).filter(Carrier.id == carrier_id).first()
+    if exists is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="carrier_id does not reference a carrier in your organization",
         )
 
 
@@ -48,12 +60,15 @@ def list_contacts(
     search: str | None = None,
     owner_id: int | None = None,
     company_id: int | None = None,
+    carrier_id: int | None = None,
     sort: str = "created_at",
     order: str = "desc",
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=200),
 ):
-    q = scope.query(Contact).options(joinedload(Contact.company))
+    q = scope.query(Contact).options(
+        joinedload(Contact.company), joinedload(Contact.carrier)
+    )
     if search:
         like = f"%{search}%"
         q = q.filter(
@@ -67,6 +82,8 @@ def list_contacts(
         q = q.filter(Contact.owner_id == owner_id)
     if company_id is not None:
         q = q.filter(Contact.company_id == company_id)
+    if carrier_id is not None:
+        q = q.filter(Contact.carrier_id == carrier_id)
 
     total = q.count()
     sort_col = SORT_FIELDS.get(sort, Contact.created_at)
@@ -78,6 +95,7 @@ def list_contacts(
 @router.post("", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
 def create_contact(payload: ContactCreate, scope: OrgScope = Depends(get_scope)):
     _validate_company(scope, payload.company_id)
+    _validate_carrier(scope, payload.carrier_id)
     contact = Contact(
         organization_id=scope.org_id,
         created_by=scope.user.id,
@@ -107,6 +125,8 @@ def update_contact(
     data = payload.model_dump(exclude_unset=True)
     if "company_id" in data:
         _validate_company(scope, data["company_id"])
+    if "carrier_id" in data:
+        _validate_carrier(scope, data["carrier_id"])
     for field, value in data.items():
         setattr(contact, field, value)
     scope.db.commit()

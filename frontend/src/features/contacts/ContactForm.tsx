@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { Contact } from '../../lib/api'
 import { useCompanies } from '../companies/api'
+import { useCarriers } from '../carriers/api'
 import { useUsers } from '../users/api'
 import { useCreateContact, useUpdateContact } from './api'
 
@@ -13,6 +14,7 @@ const schema = z.object({
   phone: z.string().optional(),
   title: z.string().optional(),
   company_id: z.coerce.number().optional(),
+  carrier_id: z.coerce.number().optional(),
   owner_id: z.coerce.number().optional(),
 })
 type FormValues = z.infer<typeof schema>
@@ -25,6 +27,7 @@ export function ContactForm({
   onDone: () => void
 }) {
   const { data: companies } = useCompanies({ page_size: 200, sort: 'name', order: 'asc' })
+  const { data: carriers } = useCarriers({ page_size: 200 })
   const { data: users } = useUsers()
   const create = useCreateContact()
   const update = useUpdateContact(existing?.id ?? 0)
@@ -41,6 +44,7 @@ export function ContactForm({
       phone: existing?.phone ?? '',
       title: existing?.title ?? '',
       company_id: existing?.company_id ?? undefined,
+      carrier_id: existing?.carrier_id ?? undefined,
       owner_id: existing?.owner_id ?? undefined,
     },
   })
@@ -53,6 +57,7 @@ export function ContactForm({
       phone: values.phone || null,
       title: values.title || null,
       company_id: values.company_id || null,
+      carrier_id: values.carrier_id || null,
       owner_id: values.owner_id,
     }
     if (existing) await update.mutateAsync(body)
@@ -85,10 +90,19 @@ export function ContactForm({
         <input className="ti" {...register('title')} />
       </div>
       <div className="field">
-        <label className="cl">Company</label>
+        <label className="cl">Shipper</label>
         <select className="ti" {...register('company_id')}>
           <option value="">(none)</option>
           {companies?.items.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="field">
+        <label className="cl">Carrier</label>
+        <select className="ti" {...register('carrier_id')}>
+          <option value="">(none)</option>
+          {carriers?.items.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>

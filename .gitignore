@@ -13,8 +13,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# NOTE: do NOT use a bare `lib/` here — it would ignore frontend/src/lib/.
+# Python venv libs are already covered by `venv/` / `env/` above.
 parts/
 sdist/
 var/

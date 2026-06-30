@@ -16,6 +16,8 @@ class OrganizationOut(BaseModel):
     name: str
     slug: str
     plan: str
+    accent_color: str | None = None
+    logo_url: str | None = None
 
 
 class UserOut(BaseModel):

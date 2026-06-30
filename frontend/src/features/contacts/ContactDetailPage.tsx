@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useContact } from './api'
 import { ContactForm } from './ContactForm'
+import { PinButton } from '../pins/PinButton'
 
 export function ContactDetailPage() {
   const { id } = useParams()
@@ -28,6 +29,7 @@ export function ContactDetailPage() {
               <div style={{ fontSize: 20, fontWeight: 700 }}>{fullName}</div>
               <div className="muted">{contact.title || 'No title'}</div>
             </div>
+            <PinButton entityType="contact" entityId={contact.id} />
             <button className="btn ghost" onClick={() => setEditing((v) => !v)}>
               {editing ? '✕ Cancel' : '✎ Edit'}
             </button>
@@ -46,10 +48,16 @@ export function ContactDetailPage() {
               <div>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : '—'}</div>
               <div className="k">Phone</div><div>{contact.phone || '—'}</div>
               <div className="k">Title</div><div>{contact.title || '—'}</div>
-              <div className="k">Company</div>
+              <div className="k">Shipper</div>
               <div>
                 {contact.company ? (
                   <Link to={`/companies/${contact.company.id}`}>{contact.company.name}</Link>
+                ) : '—'}
+              </div>
+              <div className="k">Carrier</div>
+              <div>
+                {contact.carrier ? (
+                  <Link to={`/carriers/${contact.carrier.id}`}>{contact.carrier.name}</Link>
                 ) : '—'}
               </div>
             </div>

@@ -18,6 +18,7 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")
+SEED_ORG_ACCENT = os.getenv("SEED_ORG_ACCENT")  # hex like #1f6feb (per-tenant brand)
 SEED_ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL")
 SEED_ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD")
 SEED_ADMIN_NAME = os.getenv("SEED_ADMIN_NAME", "Admin")

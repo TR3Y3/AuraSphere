@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useContacts } from '../contacts/api'
 import { useCompany } from './api'
 import { CompanyForm } from './CompanyForm'
+import { PinButton } from '../pins/PinButton'
 
 export function CompanyDetailPage() {
   const { id } = useParams()
@@ -18,7 +19,7 @@ export function CompanyDetailPage() {
   return (
     <section>
       <p style={{ marginBottom: 14 }}>
-        <Link to="/companies" className="muted">← Companies</Link>
+        <Link to="/companies" className="muted">← Shippers</Link>
       </p>
 
       <div className="profile">
@@ -29,6 +30,7 @@ export function CompanyDetailPage() {
               <div style={{ fontSize: 20, fontWeight: 700 }}>{company.name}</div>
               <div className="muted">{company.industry || 'Industry n/a'}</div>
             </div>
+            <PinButton entityType="shipper" entityId={company.id} />
             <button className="btn ghost" onClick={() => setEditing((v) => !v)}>
               {editing ? '✕ Cancel' : '✎ Edit'}
             </button>

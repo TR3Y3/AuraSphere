@@ -1,0 +1,185 @@
+"""Loads (shipments) CRUD + status-board endpoint (F2, org-scoped).
+
+A quote is a load created with status `quote`. Margin is derived in the
+schema (customer_rate − carrier_rate).
+"""
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status as http
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+
+from app.deps import OrgScope, get_scope
+from app.models import Carrier, Company, Contact, Load
+from app.schemas.common import Page
+from app.schemas.load import LoadCreate, LoadOut, LoadStatusUpdate, LoadUpdate
+from app.workflow import LOAD_PIPELINE, LOAD_STATUSES, is_valid_status
+
+router = APIRouter(prefix="/api/loads", tags=["loads"])
+
+SORT_FIELDS = {
+    "reference": Load.reference,
+    "created_at": Load.created_at,
+    "updated_at": Load.updated_at,
+    "pickup_date": Load.pickup_date,
+    "customer_rate": Load.customer_rate,
+}
+
+
+def _load(scope: OrgScope, load_id: int) -> Load:
+    obj = (
+        scope.query(Load)
+        .options(
+            joinedload(Load.shipper),
+            joinedload(Load.carrier),
+            joinedload(Load.primary_contact),
+        )
+        .filter(Load.id == load_id)
+        .first()
+    )
+    if obj is None:
+        raise HTTPException(status_code=http.HTTP_404_NOT_FOUND, detail="Not found")
+    return obj
+
+
+def _validate_links(scope: OrgScope, shipper_id, carrier_id, contact_id) -> None:
+    if shipper_id is not None and (
+        scope.query(Company).filter(Company.id == shipper_id).first() is None
+    ):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="shipper_id is not a shipper in your organization")
+    if carrier_id is not None and (
+        scope.query(Carrier).filter(Carrier.id == carrier_id).first() is None
+    ):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="carrier_id is not a carrier in your organization")
+    if contact_id is not None and (
+        scope.query(Contact).filter(Contact.id == contact_id).first() is None
+    ):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="primary_contact_id is not a contact in your organization")
+
+
+def _apply_status(load: Load, status_value: str) -> None:
+    if not is_valid_status(status_value):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"invalid status (allowed: {', '.join(LOAD_STATUSES)})")
+    load.status = status_value
+    if status_value == "delivered" and load.delivered_at is None:
+        load.delivered_at = datetime.now(timezone.utc)
+
+
+@router.get("", response_model=Page[LoadOut])
+def list_loads(
+    scope: OrgScope = Depends(get_scope),
+    search: str | None = None,
+    status: str | None = None,
+    statuses: str | None = Query(None, description="comma-separated status filter"),
+    shipper_id: int | None = None,
+    carrier_id: int | None = None,
+    owner_id: int | None = None,
+    sort: str = "created_at",
+    order: str = "desc",
+    page: int = Query(1, ge=1),
+    page_size: int = Query(500, ge=1, le=1000),
+):
+    q = scope.query(Load).options(
+        joinedload(Load.shipper), joinedload(Load.carrier), joinedload(Load.primary_contact)
+    )
+    if search:
+        like = f"%{search}%"
+        q = q.filter(or_(Load.reference.ilike(like), Load.commodity.ilike(like)))
+    if status:
+        q = q.filter(Load.status == status)
+    if statuses:
+        wanted = [s.strip() for s in statuses.split(",") if s.strip()]
+        if wanted:
+            q = q.filter(Load.status.in_(wanted))
+    if shipper_id is not None:
+        q = q.filter(Load.shipper_id == shipper_id)
+    if carrier_id is not None:
+        q = q.filter(Load.carrier_id == carrier_id)
+    if owner_id is not None:
+        q = q.filter(Load.owner_id == owner_id)
+
+    total = q.count()
+    sort_col = SORT_FIELDS.get(sort, Load.created_at)
+    q = q.order_by(sort_col.asc() if order == "asc" else sort_col.desc())
+    items = q.offset((page - 1) * page_size).limit(page_size).all()
+    return Page(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.post("", response_model=LoadOut, status_code=http.HTTP_201_CREATED)
+def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
+    _validate_links(scope, payload.shipper_id, payload.carrier_id, payload.primary_contact_id)
+    status_value = payload.status or "quote"
+    if not is_valid_status(status_value):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="invalid status")
+    load = Load(
+        organization_id=scope.org_id,
+        created_by=scope.user.id,
+        owner_id=payload.owner_id or scope.user.id,
+        status=status_value,
+        **payload.model_dump(exclude={"owner_id", "status"}),
+    )
+    scope.db.add(load)
+    scope.db.flush()  # assign id for the reference
+    load.reference = f"L-{100000 + load.id}"
+    scope.db.commit()
+    scope.db.refresh(load)
+    return load
+
+
+@router.get("/board", response_model=dict)
+def board_meta():
+    """The ordered pipeline statuses that make up the board columns."""
+    return {"pipeline": LOAD_PIPELINE, "statuses": LOAD_STATUSES}
+
+
+@router.get("/{load_id}", response_model=LoadOut)
+def get_load(load_id: int, scope: OrgScope = Depends(get_scope)):
+    return _load(scope, load_id)
+
+
+@router.patch("/{load_id}", response_model=LoadOut)
+def update_load(load_id: int, payload: LoadUpdate, scope: OrgScope = Depends(get_scope)):
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    data = payload.model_dump(exclude_unset=True)
+    if any(k in data for k in ("shipper_id", "carrier_id", "primary_contact_id")):
+        _validate_links(
+            scope,
+            data.get("shipper_id", load.shipper_id),
+            data.get("carrier_id", load.carrier_id),
+            data.get("primary_contact_id", load.primary_contact_id),
+        )
+    if "status" in data and data["status"] is not None:
+        _apply_status(load, data.pop("status"))
+    for field, value in data.items():
+        setattr(load, field, value)
+    scope.db.commit()
+    scope.db.refresh(load)
+    return load
+
+
+@router.patch("/{load_id}/status", response_model=LoadOut)
+def change_status(load_id: int, payload: LoadStatusUpdate, scope: OrgScope = Depends(get_scope)):
+    """Board drag / action-row target: move a load to another status."""
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    _apply_status(load, payload.status)
+    scope.db.commit()
+    scope.db.refresh(load)
+    return load
+
+
+@router.delete("/{load_id}", status_code=http.HTTP_204_NO_CONTENT)
+def delete_load(load_id: int, scope: OrgScope = Depends(get_scope)):
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    scope.db.delete(load)
+    scope.db.commit()
