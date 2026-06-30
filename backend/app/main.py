@@ -8,6 +8,7 @@ from app.routers import (
     carrier_ops,
     carriers,
     companies,
+    dashboard,
     contacts,
     deals,
     load_options,
@@ -41,6 +42,7 @@ app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
 app.include_router(activities.router)
+app.include_router(dashboard.router)
 app.include_router(users.router)
 
 

@@ -556,6 +556,43 @@ export interface paths {
         patch: operations["update_activity_api_activities__activity_id__patch"];
         trace?: never;
     };
+    "/api/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summary */
+        get: operations["summary_api_dashboard_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pricing/lanes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lane Pricing
+         * @description Org-wide lane rate reference, averaged across loads.
+         */
+        get: operations["lane_pricing_api_pricing_lanes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -985,6 +1022,25 @@ export interface components {
             /** Owner Id */
             owner_id?: number | null;
         };
+        /** DashboardSummary */
+        DashboardSummary: {
+            /** Loads Total */
+            loads_total: number;
+            /** Open Loads */
+            open_loads: number;
+            /** Loaded Dollars */
+            loaded_dollars: string;
+            /** Total Margin */
+            total_margin: string;
+            /** Avg Margin */
+            avg_margin: string | null;
+            /** Value By Status */
+            value_by_status: components["schemas"]["StatusValue"][];
+            /** Open Tasks */
+            open_tasks: number;
+            /** Recent Activity */
+            recent_activity: components["schemas"]["ActivityOut"][];
+        };
         /** DealCreate */
         DealCreate: {
             /** Name */
@@ -1107,6 +1163,23 @@ export interface components {
             last_rate?: string | null;
             /** Last Ran */
             last_ran?: string | null;
+        };
+        /** LanePrice */
+        LanePrice: {
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /** Equipment */
+            equipment: string | null;
+            /** Loads */
+            loads: number;
+            /** Avg Customer Rate */
+            avg_customer_rate: string | null;
+            /** Avg Carrier Rate */
+            avg_carrier_rate: string | null;
+            /** Avg Margin */
+            avg_margin: string | null;
         };
         /** LoadCreate */
         LoadCreate: {
@@ -1616,6 +1689,15 @@ export interface components {
             is_won: boolean;
             /** Is Lost */
             is_lost: boolean;
+        };
+        /** StatusValue */
+        StatusValue: {
+            /** Status */
+            status: string;
+            /** Count */
+            count: number;
+            /** Value */
+            value: string;
         };
         /** UserOut */
         UserOut: {
@@ -3404,6 +3486,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_api_dashboard_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardSummary"];
+                };
+            };
+        };
+    };
+    lane_pricing_api_pricing_lanes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanePrice"][];
                 };
             };
         };

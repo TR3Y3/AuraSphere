@@ -160,8 +160,11 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **F4 (complete)** — Activities + timeline.
-- Last completed: F4 — log calls/emails/notes/tasks against any record; chronological timeline on detail pages; "My open tasks."
+- Current phase: **F5 (complete)** — Pricing + dashboard analytics.
+- Last completed: F5 — dashboard KPIs + value-by-status + recent activity, and a lane-pricing reference.
+  - Backend: `app/routers/dashboard.py` (no migration — pure aggregation over the org's loads). `GET /api/dashboard/summary` → loads_total, open_loads, loaded_dollars (excl. lost/tonu), total_margin, avg_margin, value_by_status (count + Σcustomer_rate per pipeline status), my open_tasks count, recent_activity (last 8). `GET /api/pricing/lanes` → org-wide lane aggregation (origin→dest+equipment, loads, avg customer/carrier rate, avg margin), busiest first. 63 tests pass (adds KPI math, value-by-status, lane averages, isolation).
+  - Frontend: reworked **Dashboard** (`src/features/dashboard/`) — KPI cards (loaded $, total margin, avg margin, open loads, my tasks), a "pipeline value by status" bar chart, a recent-activity feed, plus the existing pins. New **Pricing** page (`/pricing`, nav "Pricing") — the lane rate table (rate memory for quoting). `npm run build` passes.
+- Earlier: F4 — log calls/emails/notes/tasks against any record; chronological timeline on detail pages; "My open tasks."
   - Backend: extended the existing `activities` table with `related_load_id` + `related_carrier_id` (migration `ae924513303f`, batch mode for SQLite FK); `related_company_id` is the shipper link. Router `app/routers/activities.py`: list (filter by type/owner/any related_*; `open_tasks=true` → incomplete tasks sorted by due_at), create (validates type ∈ call/email/note/task and every related_* is in-org → 422), update (incl. `completed` bool that toggles `completed_at`), delete. 60 tests pass (adds log/timeline, task completion toggle, type + in-org validation, isolation).
   - Frontend: reusable `Timeline` (`src/features/activities/`) — composer (note/call/email/task pills, due date for tasks) + chronological feed with task complete/reopen + delete. Embedded on load (Activity tab), carrier (Activity tab), shipper, and contact detail. New **My open tasks** page (`/tasks`, nav "Tasks") — due-sorted, overdue in red, linked back to the related record, one-click Done. `npm run build` passes.
 - Earlier: F3 — Carrier ops (lanes, capacity, compliance flags).
@@ -201,7 +204,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: F5 — Pricing + dashboard analytics (margin/loaded-$ KPIs, value by status, lane rate trends, recent activity), then F6 — Tracking.
+- Next concrete step: F6 — Tracking (check-calls/pings + a simple map + ETA + status auto-advance hooks), the last core F-phase.
 - Open decisions / blockers: _none_
 
 ---
