@@ -48,6 +48,17 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      # Billing: default "stub" (upgrades are simulated). Set BILLING_MODE=stripe
+      # + the Stripe keys to take real payments, and point a Stripe webhook at
+      # https://<backend-url>/api/billing/webhook.
+      - key: BILLING_MODE
+        value: "stub"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

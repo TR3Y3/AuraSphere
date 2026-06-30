@@ -5,6 +5,7 @@ from app import config
 from app.routers import (
     activities,
     auth,
+    billing,
     carrier_ops,
     carriers,
     companies,
@@ -33,6 +34,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(billing.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(carriers.router)
