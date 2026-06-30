@@ -313,6 +313,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/loads/{load_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate Load
+         * @description Re-book: clone the load's lane/shipper/freight into a fresh quote
+         *     (carrier + carrier rate dropped, status reset to quote).
+         */
+        post: operations["duplicate_load_api_loads__load_id__duplicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/loads/board": {
         parameters: {
             query?: never;
@@ -370,6 +391,58 @@ export interface paths {
          * @description Board drag / action-row target: move a load to another status.
          */
         patch: operations["change_status_api_loads__load_id__status_patch"];
+        trace?: never;
+    };
+    "/api/loads/{load_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_loads__load_id__documents_get"];
+        put?: never;
+        /** Upload Document */
+        post: operations["upload_document_api_loads__load_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/documents/{doc_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Document */
+        get: operations["download_document_api_loads__load_id__documents__doc_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/documents/{doc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Document */
+        delete: operations["delete_document_api_loads__load_id__documents__doc_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/loads/{load_id}/options": {
@@ -709,6 +782,16 @@ export interface components {
             related_load_id?: number | null;
             /** Related Carrier Id */
             related_carrier_id?: number | null;
+        };
+        /** Body_upload_document_api_loads__load_id__documents_post */
+        Body_upload_document_api_loads__load_id__documents_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /** Kind */
+            kind?: string | null;
         };
         /** CapacityCreate */
         CapacityCreate: {
@@ -1133,6 +1216,28 @@ export interface components {
             stage_id?: number | null;
             /** Owner Id */
             owner_id?: number | null;
+        };
+        /** DocumentOut */
+        DocumentOut: {
+            /** Id */
+            id: number;
+            /** Load Id */
+            load_id: number;
+            /** Filename */
+            filename: string;
+            /** Content Type */
+            content_type: string | null;
+            /** Size */
+            size: number;
+            /** Kind */
+            kind: string | null;
+            /** Uploaded By */
+            uploaded_by: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** DuplicateRef */
         DuplicateRef: {
@@ -2757,6 +2862,37 @@ export interface operations {
             };
         };
     };
+    duplicate_load_api_loads__load_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     board_meta_api_loads_board_get: {
         parameters: {
             query?: never;
@@ -2895,6 +3031,134 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LoadOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_api_loads__load_id__documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_document_api_loads__load_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_api_loads__load_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_document_api_loads__load_id__documents__doc_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                doc_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_document_api_loads__load_id__documents__doc_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                doc_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

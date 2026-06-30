@@ -8,6 +8,7 @@ import { useLanes } from './ops'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 import { Timeline } from '../activities/Timeline'
+import { Copyable } from '../../components/Copy'
 
 function money(v: string | null | undefined): string {
   if (!v) return '—'
@@ -34,11 +35,11 @@ export function CarrierDetailPage() {
     <div className="two-col">
       <Panel title="Company information">
         <div className="kv">
-          <div className="k">MC #</div><div>{c.mc_number || '—'}</div>
-          <div className="k">DOT #</div><div>{c.dot_number || '—'}</div>
+          <div className="k">MC #</div><div><Copyable value={c.mc_number} /></div>
+          <div className="k">DOT #</div><div><Copyable value={c.dot_number} /></div>
           <div className="k">HQ</div><div>{c.hq_city ? `${c.hq_city}, ${c.hq_state ?? ''}` : '—'}</div>
-          <div className="k">Phone</div><div>{c.phone || '—'}</div>
-          <div className="k">Email</div><div>{c.email ? <a href={`mailto:${c.email}`}>{c.email}</a> : '—'}</div>
+          <div className="k">Phone</div><div><Copyable value={c.phone}>{c.phone ? <a href={`tel:${c.phone}`}>{c.phone}</a> : null}</Copyable></div>
+          <div className="k">Email</div><div><Copyable value={c.email}>{c.email ? <a href={`mailto:${c.email}`}>{c.email}</a> : null}</Copyable></div>
           <div className="k">Equipment</div><div>{c.equipment_types || '—'}</div>
         </div>
       </Panel>

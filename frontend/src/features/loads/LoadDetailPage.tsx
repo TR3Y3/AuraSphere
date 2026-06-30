@@ -3,10 +3,21 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AlertBadge, KpiStrip, Panel, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 import { useCarrier } from '../carriers/api'
-import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, STATUS_LABEL, money } from './api'
+import { Copy } from '../../components/Copy'
+import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, STATUS_LABEL, money, marginPct, LOW_MARGIN_PCT } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
+import { DocumentsPanel } from './documents'
 import { Timeline } from '../activities/Timeline'
+
+// One-click status targets for the contextual action row.
+const QUICK_ACTIONS: { status: string; label: string; cls?: string }[] = [
+  { status: 'covered', label: 'Cover' },
+  { status: 'dispatched', label: 'Dispatch' },
+  { status: 'delivered', label: 'Mark Delivered' },
+  { status: 'lost', label: 'Lost', cls: 'danger' },
+  { status: 'tonu', label: 'TONU', cls: 'danger' },
+]
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -18,11 +29,18 @@ export function LoadDetailPage() {
   const { data: assignedCarrier } = useCarrier(l?.carrier_id ?? undefined)
   const update = useUpdateLoad(loadId ?? 0)
   const del = useDeleteLoad()
+  const dup = useDuplicateLoad()
 
   if (isLoading) return <p className="muted">Loading…</p>
   if (error || !l) return <div className="notice err">Load not found.</div>
 
   const route = [l.origin_city, l.dest_city].filter(Boolean).join(' → ')
+  const mPct = marginPct(l.margin, l.customer_rate)
+  const lowMargin = mPct != null && mPct < LOW_MARGIN_PCT
+
+  function rebook() {
+    dup.mutate(l!.id, { onSuccess: (clone) => navigate(`/loads/${clone.id}`) })
+  }
 
   return (
     <section>
@@ -31,7 +49,7 @@ export function LoadDetailPage() {
       <RecordHeader
         status={STATUS_LABEL[l.status] ?? l.status}
         statusClass={`st-${l.status}`}
-        title={l.reference ?? `Load ${l.id}`}
+        title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{l.reference ?? `Load ${l.id}`}<Copy value={l.reference} /></span>}
         subtitle={<>{l.shipper?.name ?? 'No shipper'}{route ? ` · ${route}` : ''}</>}
         actions={
           <>
@@ -46,12 +64,37 @@ export function LoadDetailPage() {
         }
       />
 
+      <div className="action-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0' }}>
+        {QUICK_ACTIONS.filter((a) => a.status !== l.status).map((a) => (
+          <button key={a.status} className={`btn ${a.cls === 'danger' ? 'ghost danger' : 'ghost'}`}
+            onClick={() => update.mutate({ status: a.status })} disabled={update.isPending}>
+            {a.label}
+          </button>
+        ))}
+        <button className="btn ghost" onClick={rebook} disabled={dup.isPending}>
+          {dup.isPending ? 'Re-booking…' : '⎘ Re-book'}
+        </button>
+      </div>
+
       <KpiStrip items={[
         { label: 'Customer rate', value: money(l.customer_rate) },
         { label: 'Carrier rate', value: money(l.carrier_rate) },
         { label: 'Margin', value: l.margin != null ? money(l.margin) : '—' },
+        {
+          label: 'Margin %',
+          value: mPct != null
+            ? <span style={{ color: lowMargin ? 'var(--danger, #f87171)' : undefined }}>
+                {mPct.toFixed(1)}%{lowMargin ? ' ⚠' : ''}
+              </span>
+            : '—',
+        },
         { label: 'Miles', value: l.total_miles ?? '—' },
       ]} />
+      {lowMargin && (
+        <div className="notice err" style={{ marginTop: 8 }}>
+          ⚠ Low margin — {mPct!.toFixed(1)}% is below the {LOW_MARGIN_PCT}% target.
+        </div>
+      )}
 
       {editing ? (
         <Panel><LoadForm existing={l} onDone={() => setEditing(false)} /></Panel>
@@ -89,6 +132,7 @@ export function LoadDetailPage() {
         </div>
           ) },
           { key: 'quote', label: 'Quote Desk', content: <QuoteDesk load={l} /> },
+          { key: 'documents', label: 'Documents', content: <DocumentsPanel loadId={l.id} /> },
           { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_load_id: l.id }} /> },
         ]} />
       )}

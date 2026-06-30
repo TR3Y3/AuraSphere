@@ -78,6 +78,28 @@ def test_board_meta_lists_pipeline(client, seeded):
     assert "lost" in body["statuses"]
 
 
+def test_duplicate_rebooks_as_fresh_quote(client, seeded, db):
+    _login(client, "a@example.com", "password-a")
+    sh = _shipper(db, seeded["org_a"])
+    src = client.post("/api/loads", json={
+        "shipper_id": sh.id, "commodity": "Steel", "equipment": "Flatbed",
+        "origin_city": "Houston", "origin_state": "TX",
+        "customer_rate": "2000.00", "carrier_rate": "1700.00", "status": "delivered",
+    }).json()
+
+    res = client.post(f"/api/loads/{src['id']}/duplicate")
+    assert res.status_code == 201, res.text
+    dup = res.json()
+    assert dup["id"] != src["id"]
+    assert dup["status"] == "quote"
+    assert dup["reference"] != src["reference"]
+    assert dup["commodity"] == "Steel"
+    assert dup["customer_rate"] == "2000.00"
+    # Carrier-side data is dropped on a re-book.
+    assert dup["carrier_id"] is None
+    assert dup["carrier_rate"] is None
+
+
 def test_load_isolation(client, seeded, db):
     _login(client, "a@example.com", "password-a")
     sh = _shipper(db, seeded["org_a"])

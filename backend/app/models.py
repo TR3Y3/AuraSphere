@@ -12,6 +12,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     Numeric,
     String,
     Text,
@@ -364,6 +365,31 @@ class LoadOption(Base):
     )
 
     carrier: Mapped["Carrier | None"] = relationship(foreign_keys=[carrier_id])
+
+
+class Document(Base):
+    """A file attached to a load (rate con / BOL / POD). Stored in the DB so
+    it persists without external object storage; move to S3/R2 at scale.
+    """
+
+    __tablename__ = "documents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    load_id: Mapped[int] = mapped_column(
+        ForeignKey("loads.id"), nullable=False, index=True
+    )
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    content_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    kind: Mapped[str | None] = mapped_column(String(40), nullable=True)  # rate_con/bol/pod/other
+    data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    uploaded_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class Pin(Base):
