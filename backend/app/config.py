@@ -23,10 +23,14 @@ if COOKIE_SAMESITE == "none":
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 
 # Email delivery (signup verification, later notifications).
-# "console" (default) logs the message + returns the verify link in the signup
-# response so the flow is testable without a mailbox; "smtp" sends for real.
+#   "console" (default) — logs the message + returns the verify link in the
+#     signup response so the flow is testable without a mailbox.
+#   "resend"  — Resend HTTP API (set RESEND_API_KEY). Preferred in production;
+#     works on hosts like Render that block outbound SMTP ports.
+#   "smtp"    — classic SMTP (set SMTP_HOST/PORT/USER/PASSWORD).
 EMAIL_DELIVERY = os.getenv("EMAIL_DELIVERY", "console").lower()
 EMAIL_FROM = os.getenv("EMAIL_FROM", "no-reply@aurasphere.app")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER")
