@@ -4,6 +4,7 @@ import { useContacts } from '../contacts/api'
 import { useCompany } from './api'
 import { CompanyForm } from './CompanyForm'
 import { PinButton } from '../pins/PinButton'
+import { Timeline } from '../activities/Timeline'
 
 export function CompanyDetailPage() {
   const { id } = useParams()
@@ -77,6 +78,8 @@ export function CompanyDetailPage() {
             </tbody>
           </table>
         </div>
+
+        <Timeline scope={{ related_company_id: company.id }} />
       </div>
     </section>
   )

@@ -456,10 +456,16 @@ class Activity(Base):
         ForeignKey("contacts.id"), nullable=True
     )
     related_company_id: Mapped[int | None] = mapped_column(
-        ForeignKey("companies.id"), nullable=True
+        ForeignKey("companies.id"), nullable=True  # the shipper link (companies table)
     )
     related_deal_id: Mapped[int | None] = mapped_column(
-        ForeignKey("deals.id"), nullable=True
+        ForeignKey("deals.id"), nullable=True  # legacy, unused
+    )
+    related_load_id: Mapped[int | None] = mapped_column(
+        ForeignKey("loads.id"), nullable=True
+    )
+    related_carrier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("carriers.id"), nullable=True
     )
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

@@ -7,6 +7,7 @@ import { CapacityPanel } from './CapacityPanel'
 import { useLanes } from './ops'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
+import { Timeline } from '../activities/Timeline'
 
 function money(v: string | null | undefined): string {
   if (!v) return '—'
@@ -141,6 +142,7 @@ export function CarrierDetailPage() {
             { key: 'overview', label: 'Overview', content: overview },
             { key: 'compliance', label: 'Compliance', content: compliance },
             { key: 'lanes', label: 'Lanes', content: lanes },
+            { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_carrier_id: c.id }} /> },
           ]}
         />
       )}

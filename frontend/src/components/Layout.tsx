@@ -5,6 +5,7 @@ import { SearchPalette } from './SearchPalette'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
+  { to: '/tasks', label: 'Tasks' },
   { to: '/loads', label: 'Loads' },
   { to: '/quotes', label: 'Quotes' },
   { to: '/carriers', label: 'Carriers' },

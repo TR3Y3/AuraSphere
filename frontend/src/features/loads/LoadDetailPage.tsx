@@ -6,6 +6,7 @@ import { useCarrier } from '../carriers/api'
 import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, STATUS_LABEL, money } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
+import { Timeline } from '../activities/Timeline'
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -88,6 +89,7 @@ export function LoadDetailPage() {
         </div>
           ) },
           { key: 'quote', label: 'Quote Desk', content: <QuoteDesk load={l} /> },
+          { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_load_id: l.id }} /> },
         ]} />
       )}
     </section>

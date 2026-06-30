@@ -160,7 +160,11 @@ Do not start a phase until the previous one runs and its checks pass.
 
 ## Current State / Next Step
 
-- Current phase: **F3 (complete)** — Carrier ops (lanes, capacity, compliance flags).
+- Current phase: **F4 (complete)** — Activities + timeline.
+- Last completed: F4 — log calls/emails/notes/tasks against any record; chronological timeline on detail pages; "My open tasks."
+  - Backend: extended the existing `activities` table with `related_load_id` + `related_carrier_id` (migration `ae924513303f`, batch mode for SQLite FK); `related_company_id` is the shipper link. Router `app/routers/activities.py`: list (filter by type/owner/any related_*; `open_tasks=true` → incomplete tasks sorted by due_at), create (validates type ∈ call/email/note/task and every related_* is in-org → 422), update (incl. `completed` bool that toggles `completed_at`), delete. 60 tests pass (adds log/timeline, task completion toggle, type + in-org validation, isolation).
+  - Frontend: reusable `Timeline` (`src/features/activities/`) — composer (note/call/email/task pills, due date for tasks) + chronological feed with task complete/reopen + delete. Embedded on load (Activity tab), carrier (Activity tab), shipper, and contact detail. New **My open tasks** page (`/tasks`, nav "Tasks") — due-sorted, overdue in red, linked back to the related record, one-click Done. `npm run build` passes.
+- Earlier: F3 — Carrier ops (lanes, capacity, compliance flags).
 - Last completed: F3 — carrier lane history, capacity, and loud compliance gating.
   - Backend: `CarrierOut` gained computed `compliance_issues` (deactivated / no auto-liability / no cargo coverage) + `is_compliant`. New `carrier_capacity` table/model (migration `d6fc5e3bb161`). Router `app/routers/carrier_ops.py` (under `/api/carriers/{id}`): `GET /lanes` — **lane history derived from the carrier's loads** (group origin→dest+equipment, shipment count, last carrier_rate, ordered by id desc so "most recent" is deterministic; no separate table), and capacity CRUD (`GET/POST/DELETE /capacity`: location, radius_miles, weekly_capacity, equipment). 54 tests pass (adds compliance flags, derived lane aggregation, capacity CRUD, isolation).
   - Frontend: carrier profile **Lanes tab** now shows real lane history + a `CapacityPanel` (add/remove posted capacity). Compliance surfaced loudly: a "✓ Compliant" / "⚠ N compliance issues" badge in the carrier header, full list on the Compliance tab, a ⚠ flag in the carriers list, and **compliance alert badges on a load's carrier panel** when the assigned carrier isn't compliant. `npm run build` passes.
@@ -197,7 +201,7 @@ Do not start a phase until the previous one runs and its checks pass.
   - Frontend: `AuthProvider` (resolves `/api/auth/me` on load), `ProtectedRoute`, login page (react-hook-form + zod), logout, React Router v6, TanStack Query provider wired. Typed client regenerated; `npm run build` passes.
   - Tests (`backend/tests/`): 8 passing — login success/failure, `/me` auth gate, logout invalidation, and tenant isolation (user in org A sees only org A's companies; org B's data invisible; unauth rejected).
   - Note: `EmailStr` rejects `.test` TLDs — use real-looking domains (e.g. `admin@example.com`) for seed/admin emails.
-- Next concrete step: F4 — Activities + timeline (log calls/emails/notes/tasks on loads/carriers/shippers, "My open tasks"), or F5 — pricing/dashboard analytics.
+- Next concrete step: F5 — Pricing + dashboard analytics (margin/loaded-$ KPIs, value by status, lane rate trends, recent activity), then F6 — Tracking.
 - Open decisions / blockers: _none_
 
 ---

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import config
 from app.routers import (
+    activities,
     auth,
     carrier_ops,
     carriers,
@@ -39,6 +40,7 @@ app.include_router(loads.router)
 app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
+app.include_router(activities.router)
 app.include_router(users.router)
 
 

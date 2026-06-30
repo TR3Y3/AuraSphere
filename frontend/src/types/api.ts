@@ -520,6 +520,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Activities */
+        get: operations["list_activities_api_activities_get"];
+        put?: never;
+        /** Create Activity */
+        post: operations["create_activity_api_activities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Activity */
+        delete: operations["delete_activity_api_activities__activity_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Activity */
+        patch: operations["update_activity_api_activities__activity_id__patch"];
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -558,6 +594,85 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActivityCreate */
+        ActivityCreate: {
+            /** Type */
+            type: string;
+            /** Subject */
+            subject?: string | null;
+            /** Body */
+            body?: string | null;
+            /** Due At */
+            due_at?: string | null;
+            /** Related Contact Id */
+            related_contact_id?: number | null;
+            /** Related Company Id */
+            related_company_id?: number | null;
+            /** Related Load Id */
+            related_load_id?: number | null;
+            /** Related Carrier Id */
+            related_carrier_id?: number | null;
+            /** Owner Id */
+            owner_id?: number | null;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Type */
+            type: string;
+            /** Subject */
+            subject?: string | null;
+            /** Body */
+            body?: string | null;
+            /** Due At */
+            due_at?: string | null;
+            /** Related Contact Id */
+            related_contact_id?: number | null;
+            /** Related Company Id */
+            related_company_id?: number | null;
+            /** Related Load Id */
+            related_load_id?: number | null;
+            /** Related Carrier Id */
+            related_carrier_id?: number | null;
+            /** Id */
+            id: number;
+            /** Organization Id */
+            organization_id: number;
+            /** Completed At */
+            completed_at: string | null;
+            /** Owner Id */
+            owner_id: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ActivityUpdate */
+        ActivityUpdate: {
+            /** Type */
+            type?: string | null;
+            /** Subject */
+            subject?: string | null;
+            /** Body */
+            body?: string | null;
+            /** Due At */
+            due_at?: string | null;
+            /** Completed */
+            completed?: boolean | null;
+            /** Related Contact Id */
+            related_contact_id?: number | null;
+            /** Related Company Id */
+            related_company_id?: number | null;
+            /** Related Load Id */
+            related_load_id?: number | null;
+            /** Related Carrier Id */
+            related_carrier_id?: number | null;
+        };
         /** CapacityCreate */
         CapacityCreate: {
             /** Location */
@@ -1235,6 +1350,17 @@ export interface components {
             accent_color?: string | null;
             /** Logo Url */
             logo_url?: string | null;
+        };
+        /** Page[ActivityOut] */
+        Page_ActivityOut_: {
+            /** Items */
+            items: components["schemas"]["ActivityOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
         };
         /** Page[CarrierOut] */
         Page_CarrierOut_: {
@@ -3131,6 +3257,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProspectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_activities_api_activities_get: {
+        parameters: {
+            query?: {
+                type?: string | null;
+                owner_id?: number | null;
+                related_contact_id?: number | null;
+                related_company_id?: number | null;
+                related_load_id?: number | null;
+                related_carrier_id?: number | null;
+                open_tasks?: boolean;
+                sort?: string;
+                order?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ActivityOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_activity_api_activities_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_activity_api_activities__activity_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_activity_api_activities__activity_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
                 };
             };
             /** @description Validation Error */
