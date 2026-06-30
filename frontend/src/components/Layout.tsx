@@ -117,6 +117,7 @@ export function Layout() {
           {meOpen && (
             <div className="menu-pop">
               <div className="who">{me?.user.full_name}<br />{me?.user.email}</div>
+              <button onClick={() => { setMeOpen(false); navigate('/settings') }}>⚙ Settings</button>
               <button onClick={() => logout()}>Sign out</button>
             </div>
           )}

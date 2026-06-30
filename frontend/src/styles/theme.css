@@ -244,6 +244,8 @@ select.ti { appearance: auto; }
 .avatar-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-2); color: #fff; border: 0; font-weight: 700; cursor: pointer; font-size: 13px; }
 .app-content { max-width: 1280px; margin: 0 auto; padding: 22px; width: 100%; }
 .page-h { font-size: 20px; font-weight: 700; margin: 0 0 16px; }
+.copy-btn { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 3px; border-radius: 4px; line-height: 1; }
+.copy-btn:hover { color: var(--brand); background: var(--surface-2); }
 
 /* ── Command / search palette ───────────────────────────────────── */
 .palette-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; z-index: 50; }

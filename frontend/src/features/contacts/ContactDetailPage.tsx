@@ -4,6 +4,7 @@ import { useContact } from './api'
 import { ContactForm } from './ContactForm'
 import { PinButton } from '../pins/PinButton'
 import { Timeline } from '../activities/Timeline'
+import { Copyable } from '../../components/Copy'
 
 export function ContactDetailPage() {
   const { id } = useParams()
@@ -46,8 +47,8 @@ export function ContactDetailPage() {
             <h2 style={{ border: 0, padding: 0, marginBottom: 12 }}>Details</h2>
             <div className="kv">
               <div className="k">Email</div>
-              <div>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : '—'}</div>
-              <div className="k">Phone</div><div>{contact.phone || '—'}</div>
+              <div><Copyable value={contact.email}>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : null}</Copyable></div>
+              <div className="k">Phone</div><div><Copyable value={contact.phone}>{contact.phone ? <a href={`tel:${contact.phone}`}>{contact.phone}</a> : null}</Copyable></div>
               <div className="k">Title</div><div>{contact.title || '—'}</div>
               <div className="k">Shipper</div>
               <div>

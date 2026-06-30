@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AlertBadge, KpiStrip, Panel, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 import { useCarrier } from '../carriers/api'
+import { Copy } from '../../components/Copy'
 import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, STATUS_LABEL, money } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
@@ -31,7 +32,7 @@ export function LoadDetailPage() {
       <RecordHeader
         status={STATUS_LABEL[l.status] ?? l.status}
         statusClass={`st-${l.status}`}
-        title={l.reference ?? `Load ${l.id}`}
+        title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{l.reference ?? `Load ${l.id}`}<Copy value={l.reference} /></span>}
         subtitle={<>{l.shipper?.name ?? 'No shipper'}{route ? ` · ${route}` : ''}</>}
         actions={
           <>
