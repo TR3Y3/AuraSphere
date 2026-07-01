@@ -53,6 +53,20 @@ export function useUpdateLoad(id: number) {
   })
 }
 
+export function useDatPost(id: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (posted: boolean) => {
+      if (posted) await api.post<Load>(`/api/loads/${id}/dat-post`)
+      else await api.del(`/api/loads/${id}/dat-post`)
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['loads'] })
+      qc.invalidateQueries({ queryKey: ['load', id] })
+    },
+  })
+}
+
 export function useDuplicateLoad() {
   const qc = useQueryClient()
   return useMutation({

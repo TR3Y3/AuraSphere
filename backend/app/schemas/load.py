@@ -42,6 +42,7 @@ class LoadBase(BaseModel):
 class LoadCreate(LoadBase):
     status: str | None = None  # defaults to "quote"
     owner_id: int | None = None
+    post_to_dat: bool = False  # auto-post to the DAT load board on create
 
 
 class LoadUpdate(BaseModel):
@@ -81,6 +82,8 @@ class LoadOut(LoadBase):
     delivered_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    dat_posting_id: str | None = None
+    dat_posted_at: datetime | None = None
     shipper: Ref | None = None
     carrier: Ref | None = None
     primary_contact: ContactRef | None = None
@@ -92,3 +95,8 @@ class LoadOut(LoadBase):
         if self.customer_rate is None or self.carrier_rate is None:
             return None
         return self.customer_rate - self.carrier_rate
+
+    @computed_field
+    @property
+    def posted_to_dat(self) -> bool:
+        return self.dat_posting_id is not None

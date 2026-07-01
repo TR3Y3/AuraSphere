@@ -364,6 +364,9 @@ class Load(Base):
     carrier_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     # Carrier-side target / max buy used by the Quote Desk to grade offers.
     target_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    # DAT load-board posting (null until posted; id returned by the provider).
+    dat_posting_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    dat_posted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     delivered_at: Mapped[datetime | None] = mapped_column(

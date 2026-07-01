@@ -4,7 +4,7 @@ import { AlertBadge, KpiStrip, Panel, RecordHeader, Tabs } from '../../component
 import { PinButton } from '../pins/PinButton'
 import { useCarrier } from '../carriers/api'
 import { Copy } from '../../components/Copy'
-import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, STATUS_LABEL, money, marginPct, LOW_MARGIN_PCT } from './api'
+import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, useDatPost, STATUS_LABEL, money, marginPct, LOW_MARGIN_PCT } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
 import { DocumentsPanel } from './documents'
@@ -34,6 +34,7 @@ export function LoadDetailPage() {
   const update = useUpdateLoad(loadId ?? 0)
   const del = useDeleteLoad()
   const dup = useDuplicateLoad()
+  const datPost = useDatPost(loadId ?? 0)
 
   if (isLoading) return <p className="muted">Loading…</p>
   if (error || !l) return <div className="notice err">Load not found.</div>
@@ -83,6 +84,12 @@ export function LoadDetailPage() {
         ))}
 
         <div style={{ flex: 1 }} />
+
+        <button className={`btn ${l.posted_to_dat ? 'ghost' : ''}`} onClick={() => datPost.mutate(!l.posted_to_dat)}
+          disabled={datPost.isPending}
+          title={l.posted_to_dat ? 'Remove this load from the DAT load board' : 'Post this load to the DAT load board'}>
+          {datPost.isPending ? '…' : l.posted_to_dat ? '✓ Posted to DAT' : '📡 Post to DAT'}
+        </button>
 
         <button className="btn ghost" onClick={rebook} disabled={dup.isPending}
           title="Re-book: copy this load's lane & shipper into a new quote (drops the carrier) — e.g. to re-run the same lane.">

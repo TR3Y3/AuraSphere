@@ -497,6 +497,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/loads/{load_id}/dat-post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post To Dat
+         * @description Post the load to the DAT load board (idempotent).
+         */
+        post: operations["post_to_dat_api_loads__load_id__dat_post_post"];
+        /**
+         * Remove Dat Post
+         * @description Remove the load's DAT posting.
+         */
+        delete: operations["remove_dat_post_api_loads__load_id__dat_post_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/loads/{load_id}/duplicate": {
         parameters: {
             query?: never;
@@ -1727,6 +1751,11 @@ export interface components {
             status?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /**
+             * Post To Dat
+             * @default false
+             */
+            post_to_dat: boolean;
         };
         /** LoadOut */
         LoadOut: {
@@ -1786,6 +1815,10 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Dat Posting Id */
+            dat_posting_id?: string | null;
+            /** Dat Posted At */
+            dat_posted_at?: string | null;
             shipper?: components["schemas"]["Ref"] | null;
             carrier?: components["schemas"]["Ref"] | null;
             primary_contact?: components["schemas"]["app__schemas__load__ContactRef"] | null;
@@ -1794,6 +1827,8 @@ export interface components {
              * @description Customer rate − carrier rate (None unless both are set).
              */
             readonly margin: string | null;
+            /** Posted To Dat */
+            readonly posted_to_dat: boolean;
         };
         /** LoadStatusUpdate */
         LoadStatusUpdate: {
@@ -3564,6 +3599,68 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_to_dat_api_loads__load_id__dat_post_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_dat_post_api_loads__load_id__dat_post_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
