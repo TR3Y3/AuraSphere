@@ -8,6 +8,7 @@ import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, 
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
 import { DocumentsPanel } from './documents'
+import { MarketRatePanel } from './marketrate'
 import { TrackingPanel } from './tracking'
 import { Timeline } from '../activities/Timeline'
 
@@ -130,6 +131,7 @@ export function LoadDetailPage() {
               <div>{l.primary_contact ? <Link to={`/contacts/${l.primary_contact.id}`}>{l.primary_contact.first_name} {l.primary_contact.last_name ?? ''}</Link> : '—'}</div>
             </div>
           </Panel>
+          <div style={{ gridColumn: '1 / -1' }}><MarketRatePanel load={l} /></div>
         </div>
           ) },
           { key: 'tracking', label: 'Tracking', content: <TrackingPanel load={l} /> },
