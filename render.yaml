@@ -65,6 +65,12 @@ services:
         value: "stub"
       - key: HIGHWAY_API_KEY
         sync: false
+      # DAT market rates: default "stub" (deterministic by lane/miles/equipment).
+      # Set DAT_MODE=dat + DAT_API_KEY for the real DAT RateView API.
+      - key: DAT_MODE
+        value: "stub"
+      - key: DAT_API_KEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

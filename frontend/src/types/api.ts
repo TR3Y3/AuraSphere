@@ -577,6 +577,46 @@ export interface paths {
         patch: operations["change_status_api_loads__load_id__status_patch"];
         trace?: never;
     };
+    "/api/market/rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup Rate
+         * @description DAT spot rate for a lane (used by the Quote Desk / load pricing).
+         */
+        get: operations["lookup_rate_api_market_rate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/market/rate/load/{load_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Load Market Rate
+         * @description Market rate for a specific load, using its lane, equipment, and miles.
+         */
+        get: operations["load_market_rate_api_market_rate_load__load_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/loads/{load_id}/documents": {
         parameters: {
             query?: never;
@@ -1771,6 +1811,29 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** MarketRateOut */
+        MarketRateOut: {
+            /** Source */
+            source: string;
+            /** Equipment */
+            equipment: string | null;
+            /** Miles */
+            miles: number | null;
+            /** Rate Per Mile Low */
+            rate_per_mile_low: number;
+            /** Rate Per Mile Avg */
+            rate_per_mile_avg: number;
+            /** Rate Per Mile High */
+            rate_per_mile_high: number;
+            /** Total Low */
+            total_low: number | null;
+            /** Total Avg */
+            total_avg: number | null;
+            /** Total High */
+            total_high: number | null;
+            /** Confidence */
+            confidence: string;
         };
         /** MeOut */
         MeOut: {
@@ -3650,6 +3713,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_rate_api_market_rate_get: {
+        parameters: {
+            query: {
+                origin: string;
+                dest: string;
+                equipment?: string | null;
+                miles?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketRateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    load_market_rate_api_market_rate_load__load_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketRateOut"];
                 };
             };
             /** @description Validation Error */

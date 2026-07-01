@@ -15,6 +15,7 @@ from app.routers import (
     documents,
     load_options,
     loads,
+    market,
     pins,
     pipelines,
     prospects,
@@ -42,6 +43,7 @@ app.include_router(carrier_ops.router)
 app.include_router(pipelines.router)
 app.include_router(deals.router)
 app.include_router(loads.router)
+app.include_router(market.router)
 app.include_router(documents.router)
 app.include_router(tracking.router)
 app.include_router(load_options.router)

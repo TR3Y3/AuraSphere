@@ -57,6 +57,13 @@ FREE_MAX_LOADS = int(os.getenv("FREE_MAX_LOADS", "50"))
 VETTING_MODE = os.getenv("VETTING_MODE", "stub").lower()
 HIGHWAY_API_KEY = os.getenv("HIGHWAY_API_KEY")
 
+# DAT market rates (spot rate lookup by lane + equipment).
+#   "stub" (default) — deterministic market rate derived from the lane, miles,
+#     and equipment. No DAT account needed.
+#   "dat" — call the real DAT RateView API (set DAT_API_KEY).
+DAT_MODE = os.getenv("DAT_MODE", "stub").lower()
+DAT_API_KEY = os.getenv("DAT_API_KEY")
+
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")
