@@ -13,6 +13,7 @@ from app.routers import (
     contacts,
     deals,
     documents,
+    eld,
     load_options,
     loads,
     market,
@@ -46,6 +47,7 @@ app.include_router(loads.router)
 app.include_router(market.router)
 app.include_router(documents.router)
 app.include_router(tracking.router)
+app.include_router(eld.router)
 app.include_router(load_options.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)

@@ -31,6 +31,21 @@ function useDeleteCheckCall(loadId: number) {
   })
 }
 
+function useEldStatus(loadId: number) {
+  return useQuery({
+    queryKey: ['eld-status', loadId],
+    queryFn: () => api.get<{ connected: boolean; provider: string }>(`/api/loads/${loadId}/eld/status`),
+  })
+}
+
+function useSyncEld(loadId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<CheckCall>(`/api/loads/${loadId}/eld/sync`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['checkcalls', loadId] }),
+  })
+}
+
 function place(c: { city?: string | null; state?: string | null }): string {
   return [c.city, c.state].filter(Boolean).join(', ') || 'Unknown location'
 }
@@ -90,6 +105,8 @@ export function TrackingPanel({ load }: { load: Load }) {
   const { data: meta } = useBoardMeta()
   const add = useAddCheckCall(load.id)
   const del = useDeleteCheckCall(load.id)
+  const { data: eld } = useEldStatus(load.id)
+  const sync = useSyncEld(load.id)
 
   const [form, setForm] = useState({ city: '', state: '', status_note: '', note: '', eta: '', advance_status: '' })
   const latest = calls?.[0]
@@ -110,6 +127,14 @@ export function TrackingPanel({ load }: { load: Load }) {
   return (
     <div className="two-col">
       <Panel title="Current location & ETA">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <span className="muted" style={{ fontSize: 12, flex: 1 }}>
+            ELD: <span className={`badge ${eld?.connected ? 'b-good' : 'b-muted'}`}>{eld?.connected ? eld.provider : 'demo'}</span>
+          </span>
+          <button className="btn ghost sm" onClick={() => sync.mutate()} disabled={sync.isPending}>
+            {sync.isPending ? 'Syncing…' : '⟳ Sync ELD'}
+          </button>
+        </div>
         <RouteMap load={load} latest={latest} />
         <div className="kv" style={{ marginTop: 16 }}>
           <div className="k">Last ping</div>

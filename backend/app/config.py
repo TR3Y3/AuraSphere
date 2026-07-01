@@ -64,6 +64,13 @@ HIGHWAY_API_KEY = os.getenv("HIGHWAY_API_KEY")
 DAT_MODE = os.getenv("DAT_MODE", "stub").lower()
 DAT_API_KEY = os.getenv("DAT_API_KEY")
 
+# ELD / telematics (auto GPS pings feeding a load's tracking / check-calls).
+#   "stub" (default) — synthesize a plausible, progressing location for the
+#     truck. No ELD account needed.
+#   "samsara" — call the real provider API (set ELD_API_KEY).
+ELD_MODE = os.getenv("ELD_MODE", "stub").lower()
+ELD_API_KEY = os.getenv("ELD_API_KEY")
+
 # Seed command inputs (used by `python -m app.seed`)
 SEED_ORG_NAME = os.getenv("SEED_ORG_NAME", "AuraSphere")
 SEED_ORG_SLUG = os.getenv("SEED_ORG_SLUG", "aurasphere")
