@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status as http
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
-from app import plans
+from app import dat, plans
 from app.deps import OrgScope, get_scope
 from app.models import Carrier, Company, Contact, Load, Organization
 from app.schemas.common import Page
@@ -90,6 +90,10 @@ def list_loads(
     shipper_id: int | None = None,
     carrier_id: int | None = None,
     owner_id: int | None = None,
+    equipment: str | None = None,
+    origin_state: str | None = None,
+    dest_state: str | None = None,
+    posted_to_dat: bool | None = None,
     sort: str = "created_at",
     order: str = "desc",
     page: int = Query(1, ge=1),
@@ -113,6 +117,14 @@ def list_loads(
         q = q.filter(Load.carrier_id == carrier_id)
     if owner_id is not None:
         q = q.filter(Load.owner_id == owner_id)
+    if equipment:
+        q = q.filter(Load.equipment.ilike(f"%{equipment}%"))
+    if origin_state:
+        q = q.filter(Load.origin_state.ilike(origin_state))
+    if dest_state:
+        q = q.filter(Load.dest_state.ilike(dest_state))
+    if posted_to_dat is not None:
+        q = q.filter(Load.dat_posting_id.isnot(None) if posted_to_dat else Load.dat_posting_id.is_(None))
 
     total = q.count()
     sort_col = SORT_FIELDS.get(sort, Load.created_at)
@@ -134,13 +146,45 @@ def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
         created_by=scope.user.id,
         owner_id=payload.owner_id or scope.user.id,
         status=status_value,
-        **payload.model_dump(exclude={"owner_id", "status"}),
+        **payload.model_dump(exclude={"owner_id", "status", "post_to_dat"}),
     )
     scope.db.add(load)
     scope.db.flush()  # assign id for the reference
     load.reference = f"L-{100000 + load.id}"
+    if payload.post_to_dat:
+        load.dat_posting_id = dat.post_load(load)
+        load.dat_posted_at = datetime.now(timezone.utc)
     scope.db.commit()
     scope.db.refresh(load)
+    return load
+
+
+@router.post("/{load_id}/dat-post", response_model=LoadOut)
+def post_to_dat(load_id: int, scope: OrgScope = Depends(get_scope)):
+    """Post the load to the DAT load board (idempotent)."""
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    if load.dat_posting_id is None:
+        load.dat_posting_id = dat.post_load(load)
+        load.dat_posted_at = datetime.now(timezone.utc)
+        scope.db.commit()
+        scope.db.refresh(load)
+    return load
+
+
+@router.delete("/{load_id}/dat-post", response_model=LoadOut)
+def remove_dat_post(load_id: int, scope: OrgScope = Depends(get_scope)):
+    """Remove the load's DAT posting."""
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    if load.dat_posting_id is not None:
+        dat.remove_posting(load.dat_posting_id)
+        load.dat_posting_id = None
+        load.dat_posted_at = None
+        scope.db.commit()
+        scope.db.refresh(load)
     return load
 
 

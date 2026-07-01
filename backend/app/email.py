@@ -79,3 +79,23 @@ def send_verification_email(to: str, verify_url: str) -> bool:
         f"{verify_url}\n\n"
         f"This link expires in {config.VERIFY_TTL_HOURS} hours.",
     )
+
+
+def send_password_reset_email(to: str, reset_url: str) -> bool:
+    return send_email(
+        to,
+        "Reset your AuraSphere password",
+        "We received a request to reset your password.\n\n"
+        f"Set a new password here:\n\n{reset_url}\n\n"
+        "If you didn't request this, you can ignore this email.",
+    )
+
+
+def send_invite_email(to: str, org_name: str, invited_by: str, invite_url: str) -> bool:
+    return send_email(
+        to,
+        f"You're invited to {org_name} on AuraSphere",
+        f"{invited_by} invited you to join {org_name} on AuraSphere.\n\n"
+        f"Set your password to get started:\n\n{invite_url}\n\n"
+        f"This link expires in {config.VERIFY_TTL_HOURS} hours.",
+    )

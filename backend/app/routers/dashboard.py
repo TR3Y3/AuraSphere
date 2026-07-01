@@ -18,7 +18,10 @@ from app.workflow import LOAD_PIPELINE
 router = APIRouter(tags=["dashboard"])
 
 TERMINAL = {"lost", "tonu"}
-OPEN_STATUSES = {"quote", "tendered", "offered", "covered", "dispatched", "in_transit"}
+# Quotes live only on the Quotes page — the dashboard measures booked freight
+# (tendered onward), so a quote isn't counted or margined until it's tendered.
+OPEN_STATUSES = {"tendered", "offered", "covered", "dispatched", "in_transit"}
+BOARD_STATUSES = [s for s in LOAD_PIPELINE if s != "quote"]
 
 
 def _loc(city, st) -> str:
@@ -27,12 +30,13 @@ def _loc(city, st) -> str:
 
 @router.get("/api/dashboard/summary", response_model=DashboardSummary)
 def summary(scope: OrgScope = Depends(get_scope)):
-    loads = scope.query(Load).all()
+    # Exclude quotes entirely — they're not booked freight yet.
+    loads = [ld for ld in scope.query(Load).all() if ld.status != "quote"]
 
     loaded = Decimal(0)
     margin_total = Decimal(0)
     margin_n = 0
-    by_status: dict[str, dict] = {s: {"count": 0, "value": Decimal(0)} for s in LOAD_PIPELINE}
+    by_status: dict[str, dict] = {s: {"count": 0, "value": Decimal(0)} for s in BOARD_STATUSES}
 
     for ld in loads:
         cust = ld.customer_rate or Decimal(0)
@@ -47,7 +51,7 @@ def summary(scope: OrgScope = Depends(get_scope)):
 
     value_by_status = [
         StatusValue(status=s, count=by_status[s]["count"], value=by_status[s]["value"])
-        for s in LOAD_PIPELINE if by_status.get(s)
+        for s in BOARD_STATUSES if by_status.get(s)
     ]
 
     open_tasks = (

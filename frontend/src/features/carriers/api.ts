@@ -11,6 +11,9 @@ export interface CarrierListParams {
   search?: string
   owner_id?: number
   status?: string
+  hq_state?: string
+  equipment?: string
+  min_rating?: number
   page?: number
   page_size?: number
 }

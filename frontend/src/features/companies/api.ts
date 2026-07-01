@@ -10,6 +10,7 @@ import {
 export interface CompanyListParams {
   search?: string
   owner_id?: number
+  industry?: string
   sort?: string
   order?: 'asc' | 'desc'
   page?: number

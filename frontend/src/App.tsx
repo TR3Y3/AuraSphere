@@ -5,6 +5,8 @@ import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { Verify } from './pages/Verify'
+import { ForgotPassword } from './pages/ForgotPassword'
+import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
 import { CompaniesPage } from './features/companies/CompaniesPage'
 import { CompanyDetailPage } from './features/companies/CompanyDetailPage'
@@ -28,6 +30,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />

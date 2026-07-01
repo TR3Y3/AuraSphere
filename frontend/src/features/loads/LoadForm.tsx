@@ -22,6 +22,7 @@ const schema = z.object({
   customer_rate: z.string().optional(),
   target_rate: z.string().optional(),
   carrier_rate: z.string().optional(),
+  post_to_dat: z.boolean().optional(),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -63,6 +64,7 @@ export function LoadForm({
       customer_rate: existing?.customer_rate ?? '',
       target_rate: existing?.target_rate ?? '',
       carrier_rate: existing?.carrier_rate ?? '',
+      post_to_dat: false,
     },
   })
 
@@ -85,7 +87,7 @@ export function LoadForm({
       carrier_rate: isQuote ? null : v.carrier_rate || null,
     }
     if (existing) { await update.mutateAsync(body); onDone() }
-    else { const created = await create.mutateAsync({ ...body, status: 'quote' }); onDone(created) }
+    else { const created = await create.mutateAsync({ ...body, status: 'quote', post_to_dat: !!v.post_to_dat }); onDone(created) }
   }
 
   return (
@@ -120,6 +122,13 @@ export function LoadForm({
           </div>
           <div className="field"><label className="cl">Carrier rate ($)</label><input className="ti" type="number" step="0.01" {...register('carrier_rate')} /></div>
         </>
+      )}
+      {!existing && (
+        <div className="field" style={{ gridColumn: '1 / -1' }}>
+          <label className="check" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+            <input type="checkbox" {...register('post_to_dat')} /> 📡 Post to the DAT load board when created
+          </label>
+        </div>
       )}
       <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
         <button className="btn" type="submit" disabled={isSubmitting}>

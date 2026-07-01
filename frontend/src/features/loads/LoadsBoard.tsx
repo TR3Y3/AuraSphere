@@ -10,7 +10,10 @@ function LoadCard({ load }: { load: Load }) {
   return (
     <div ref={setNodeRef} className={`deal-card${isDragging ? ' dragging' : ''}`}
       {...listeners} {...attributes} onClick={() => navigate(`/loads/${load.id}`)}>
-      <div className="dc-name">{load.reference ?? `Load ${load.id}`}</div>
+      <div className="dc-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {load.reference ?? `Load ${load.id}`}
+        {load.posted_to_dat && <span className="badge b-brand" style={{ fontSize: 10 }} title="Posted to DAT">DAT</span>}
+      </div>
       {load.shipper && <div className="dc-sub">{load.shipper.name}</div>}
       {route && <div className="dc-sub">{route}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>

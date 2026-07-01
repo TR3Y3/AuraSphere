@@ -59,6 +59,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Forgot Password
+         * @description Issue a reset link. Always 204 (never reveal whether the email exists).
+         */
+        post: operations["forgot_password_api_auth_forgot_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Password */
+        post: operations["reset_password_api_auth_reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -492,6 +529,30 @@ export interface paths {
         /** Create Load */
         post: operations["create_load_api_loads_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/dat-post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post To Dat
+         * @description Post the load to the DAT load board (idempotent).
+         */
+        post: operations["post_to_dat_api_loads__load_id__dat_post_post"];
+        /**
+         * Remove Dat Post
+         * @description Remove the load's DAT posting.
+         */
+        delete: operations["remove_dat_post_api_loads__load_id__dat_post_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -976,6 +1037,26 @@ export interface paths {
         get: operations["list_users_api_users_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invite User
+         * @description Invite a teammate into the caller's org; they set their own password.
+         */
+        post: operations["invite_user_api_users_invite_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1649,10 +1730,39 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** ForgotPasswordRequest */
+        ForgotPasswordRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** InviteRequest */
+        InviteRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Role
+             * @default member
+             */
+            role: string;
+        };
+        /** InviteResult */
+        InviteResult: {
+            user: components["schemas"]["UserOut"];
+            /** Invite Url */
+            invite_url?: string | null;
         };
         /**
          * LaneOut
@@ -1727,6 +1837,11 @@ export interface components {
             status?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /**
+             * Post To Dat
+             * @default false
+             */
+            post_to_dat: boolean;
         };
         /** LoadOut */
         LoadOut: {
@@ -1786,6 +1901,10 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Dat Posting Id */
+            dat_posting_id?: string | null;
+            /** Dat Posted At */
+            dat_posted_at?: string | null;
             shipper?: components["schemas"]["Ref"] | null;
             carrier?: components["schemas"]["Ref"] | null;
             primary_contact?: components["schemas"]["app__schemas__load__ContactRef"] | null;
@@ -1794,6 +1913,8 @@ export interface components {
              * @description Customer rate − carrier rate (None unless both are set).
              */
             readonly margin: string | null;
+            /** Posted To Dat */
+            readonly posted_to_dat: boolean;
         };
         /** LoadStatusUpdate */
         LoadStatusUpdate: {
@@ -2224,6 +2345,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** ResetPasswordRequest */
+        ResetPasswordRequest: {
+            /** Token */
+            token: string;
+            /** Password */
+            password: string;
+        };
         /** SignupRequest */
         SignupRequest: {
             /** Organization Name */
@@ -2428,6 +2556,70 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    forgot_password_api_auth_forgot_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_auth_reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -3564,6 +3756,68 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_to_dat_api_loads__load_id__dat_post_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_dat_post_api_loads__load_id__dat_post_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4753,6 +5007,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"][];
+                };
+            };
+        };
+    };
+    invite_user_api_users_invite_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

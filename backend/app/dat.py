@@ -73,3 +73,23 @@ def market_rate(origin: str, dest: str, equipment: str | None, miles: int | None
         # fall back to the deterministic stub so the feature always works.
         pass
     return _stub_rate(origin, dest, equipment, miles)
+
+
+def post_load(load) -> str:
+    """Post a load to the DAT load board; returns the board posting id.
+
+    Stub mode returns a synthetic id so the post→board→remove loop works with
+    no DAT account. Real mode (dat) calls the DAT posting API.
+    """
+    if config.DAT_MODE == "dat" and config.DAT_API_KEY:
+        # Real DAT posting API call lands here, returning the posting id.
+        pass
+    return f"DAT-STUB-{load.id}"
+
+
+def remove_posting(posting_id: str) -> None:
+    """Remove a load's DAT posting. No-op in stub mode."""
+    if config.DAT_MODE == "dat" and config.DAT_API_KEY:
+        # Real DAT delete-posting call lands here.
+        pass
+    return None

@@ -29,15 +29,18 @@ def test_summary_kpis_and_value_by_status(client, seeded, db):
     _seed_loads(client, _shipper(db, seeded["org_a"]).id)
 
     s = client.get("/api/dashboard/summary").json()
-    assert s["loads_total"] == 4
-    # loaded $ excludes the lost load: 1000 + 1200 + 900 = 3100
-    assert s["loaded_dollars"] == "3100.00"
-    # margin from the 3 with both rates: 200 + 300 + 200 = 700
-    assert s["total_margin"] == "700.00"
+    # Quotes are excluded from the dashboard entirely (they live in Quotes):
+    # only the delivered, covered, and lost loads count.
+    assert s["loads_total"] == 3
+    # loaded $ excludes the lost (terminal) AND the quote: 1000 + 1200 = 2200
+    assert s["loaded_dollars"] == "2200.00"
+    # margin from the 2 booked loads with both rates: 200 + 300 = 500
+    assert s["total_margin"] == "500.00"
     assert s["avg_margin"] is not None
     statuses = {v["status"]: v for v in s["value_by_status"]}
     assert statuses["covered"]["count"] == 1
-    assert statuses["quote"]["value"] == "900.00"
+    # Quotes never appear in value-by-status.
+    assert "quote" not in statuses
 
 
 def test_lane_pricing_aggregates(client, seeded, db):

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertBadge } from '../../components/shell'
-import { useProspects, useConvertProspect, useUpdateProspect, useDeleteProspect } from './api'
+import { useProspects, useConvertProspect, useUpdateProspect, useDeleteProspect, useImportProspects } from './api'
 import { ProspectForm } from './ProspectForm'
 
 const STATUS_TABS = [
@@ -19,10 +19,18 @@ function fitBadge(score: number | null | undefined) {
 export function ProspectsPage() {
   const [tab, setTab] = useState('new')
   const [creating, setCreating] = useState(false)
-  const { data, isLoading } = useProspects({ status: tab, page_size: 200 })
+  const [search, setSearch] = useState('')
+  const { data, isLoading } = useProspects({ status: tab, search: search || undefined, page_size: 200 })
   const convert = useConvertProspect()
   const update = useUpdateProspect()
   const del = useDeleteProspect()
+  const importCsv = useImportProspects()
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  function onPickCsv(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) importCsv.mutate(file, { onSettled: () => { if (fileRef.current) fileRef.current.value = '' } })
+  }
 
   return (
     <section>
@@ -33,14 +41,30 @@ export function ProspectsPage() {
             <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>{t.label}</button>
           ))}
         </div>
-        <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
+        <input className="ti" style={{ maxWidth: 200, marginLeft: 'auto' }} placeholder="Search company, city, contact…"
+          value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onPickCsv} style={{ display: 'none' }} />
+        <button className="btn ghost" onClick={() => fileRef.current?.click()} disabled={importCsv.isPending}
+          title="Import candidate shippers from a CSV (flexible column names; company name required)">
+          {importCsv.isPending ? 'Importing…' : '⇪ Import CSV'}
+        </button>
+        <button className="btn" onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ Add prospect'}
         </button>
       </div>
 
+      {importCsv.isSuccess && (
+        <div className="notice" style={{ background: 'rgba(63,185,80,0.12)', color: 'var(--good)' }}>
+          Imported {importCsv.data.created} prospect{importCsv.data.created === 1 ? '' : 's'}
+          {importCsv.data.skipped ? ` · skipped ${importCsv.data.skipped} row(s) with no company name` : ''}.
+        </div>
+      )}
+      {importCsv.isError && <div className="notice err">{(importCsv.error as Error).message}</div>}
+
       <p className="muted" style={{ marginTop: -6, marginBottom: 14, fontSize: 13 }}>
-        Candidate shippers to qualify. Run the <code>/add-prospects</code> skill to research and fill this list,
-        then <strong>Approve</strong> the good ones — that creates a Shipper + Contact in the CRM.
+        Candidate shippers to qualify. <strong>Import a CSV</strong> of target companies, add them manually, or run
+        the <code>/add-prospects</code> skill to research them — then <strong>Approve</strong> the good ones, which
+        creates a Shipper + Contact in the CRM.
       </p>
 
       {creating && (

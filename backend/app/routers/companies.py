@@ -47,7 +47,7 @@ def list_companies(
     if owner_id is not None:
         q = q.filter(Company.owner_id == owner_id)
     if industry:
-        q = q.filter(Company.industry == industry)
+        q = q.filter(Company.industry.ilike(f"%{industry}%"))
 
     total = q.count()
     sort_col = SORT_FIELDS.get(sort, Company.created_at)

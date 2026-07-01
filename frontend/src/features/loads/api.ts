@@ -8,6 +8,10 @@ export interface LoadListParams {
   shipper_id?: number
   carrier_id?: number
   owner_id?: number
+  equipment?: string
+  origin_state?: string
+  dest_state?: string
+  posted_to_dat?: boolean
   page_size?: number
 }
 
@@ -46,6 +50,20 @@ export function useUpdateLoad(id: number) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: LoadUpdate) => api.patch<Load>(`/api/loads/${id}`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['loads'] })
+      qc.invalidateQueries({ queryKey: ['load', id] })
+    },
+  })
+}
+
+export function useDatPost(id: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (posted: boolean) => {
+      if (posted) await api.post<Load>(`/api/loads/${id}/dat-post`)
+      else await api.del(`/api/loads/${id}/dat-post`)
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['loads'] })
       qc.invalidateQueries({ queryKey: ['load', id] })

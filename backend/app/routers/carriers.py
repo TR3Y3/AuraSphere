@@ -30,6 +30,9 @@ def list_carriers(
     search: str | None = None,
     owner_id: int | None = None,
     status_filter: str | None = Query(None, alias="status"),
+    hq_state: str | None = None,
+    equipment: str | None = None,
+    min_rating: float | None = None,
     sort: str = "created_at",
     order: str = "desc",
     page: int = Query(1, ge=1),
@@ -49,6 +52,12 @@ def list_carriers(
         q = q.filter(Carrier.owner_id == owner_id)
     if status_filter:
         q = q.filter(Carrier.status == status_filter)
+    if hq_state:
+        q = q.filter(Carrier.hq_state.ilike(hq_state))
+    if equipment:
+        q = q.filter(Carrier.equipment_types.ilike(f"%{equipment}%"))
+    if min_rating is not None:
+        q = q.filter(Carrier.rating >= min_rating)
 
     total = q.count()
     sort_col = SORT_FIELDS.get(sort, Carrier.created_at)

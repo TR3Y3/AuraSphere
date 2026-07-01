@@ -20,6 +20,21 @@ class VerifyEmailRequest(BaseModel):
     token: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str = Field(min_length=8, max_length=128)
+
+
+class InviteRequest(BaseModel):
+    email: EmailStr
+    full_name: str = Field(min_length=1, max_length=255)
+    role: str = "member"
+
+
 class OrganizationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,3 +73,9 @@ class SignupResult(MeOut):
     # Present only in console email mode so the verify flow is testable
     # without a mailbox; omitted once real SMTP is configured.
     verify_url: str | None = None
+
+
+class InviteResult(BaseModel):
+    user: UserOut
+    # Present only in console email mode so the invite is testable without a mailbox.
+    invite_url: str | None = None
