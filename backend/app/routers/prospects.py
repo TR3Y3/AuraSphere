@@ -4,7 +4,10 @@ Prospects are candidate shippers (+ a logistics contact) awaiting review.
 Approving one converts it into a Shipper (company) and an optional Contact.
 The `add-prospects` skill feeds rows in via POST; reps review/convert here.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import csv
+import io
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import func, or_
 
 from app.deps import OrgScope, get_scope
@@ -67,7 +70,14 @@ def list_prospects(
     q = scope.query(Prospect)
     if search:
         like = f"%{search}%"
-        q = q.filter(or_(Prospect.company_name.ilike(like), Prospect.industry.ilike(like)))
+        q = q.filter(or_(
+            Prospect.company_name.ilike(like),
+            Prospect.industry.ilike(like),
+            Prospect.city.ilike(like),
+            Prospect.state.ilike(like),
+            Prospect.domain.ilike(like),
+            Prospect.contact_name.ilike(like),
+        ))
     if status_filter:
         q = q.filter(Prospect.status == status_filter)
 
@@ -100,6 +110,67 @@ def create_prospect(payload: ProspectCreate, scope: OrgScope = Depends(get_scope
     scope.db.commit()
     scope.db.refresh(p)
     return _serialize(scope, p)
+
+
+# Flexible header aliases so reps can upload whatever CSV they already have.
+_CSV_ALIASES = {
+    "company_name": {"company_name", "company", "name", "account", "account_name", "business"},
+    "domain": {"domain", "website", "url", "web"},
+    "industry": {"industry", "sector", "vertical"},
+    "city": {"city", "town"},
+    "state": {"state", "st", "province"},
+    "contact_name": {"contact_name", "contact", "poc", "poc_name", "full_name"},
+    "contact_title": {"contact_title", "title", "role", "position"},
+    "contact_email": {"contact_email", "email", "e-mail", "email_address"},
+    "contact_phone": {"contact_phone", "phone", "phone_number", "tel", "telephone", "mobile"},
+}
+
+
+def _map_row(row: dict) -> dict:
+    # Guard against ragged rows: csv.DictReader puts extra columns in a list
+    # under a None key, and short rows yield None values.
+    norm = {
+        (k or "").strip().lower().replace(" ", "_"): (v.strip() if isinstance(v, str) else "")
+        for k, v in row.items() if k is not None
+    }
+    out: dict = {}
+    for field, aliases in _CSV_ALIASES.items():
+        for a in aliases:
+            if norm.get(a):
+                out[field] = norm[a]
+                break
+    return out
+
+
+@router.post("/import")
+async def import_prospects(file: UploadFile = File(...), scope: OrgScope = Depends(get_scope)):
+    """Bulk-import candidate shippers from a CSV. Flexible headers; rows without
+    a company name are skipped. Each imported row is freight-fit scored."""
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Empty file")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = raw.decode("latin-1")
+
+    reader = csv.DictReader(io.StringIO(text))
+    created = 0
+    skipped = 0
+    for row in reader:
+        data = _map_row(row)
+        if not data.get("company_name"):
+            skipped += 1
+            continue
+        score, reason = score_freight_fit(data.get("industry"), data.get("company_name"))
+        scope.db.add(Prospect(
+            organization_id=scope.org_id, created_by=scope.user.id,
+            freight_fit_score=score, fit_reason=reason, status="new",
+            source="csv_import", **data,
+        ))
+        created += 1
+    scope.db.commit()
+    return {"created": created, "skipped": skipped}
 
 
 @router.patch("/{prospect_id}", response_model=ProspectOut)

@@ -22,6 +22,18 @@ export function useCreateProspect() {
   })
 }
 
+export function useImportProspects() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return api.upload<{ created: number; skipped: number }>('/api/prospects/import', form)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['prospects'] }),
+  })
+}
+
 export function useUpdateProspect() {
   const qc = useQueryClient()
   return useMutation({
