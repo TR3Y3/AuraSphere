@@ -15,7 +15,9 @@ export function LoadsPage() {
   const { data: meta } = useBoardMeta()
   const listKey: LoadListParams = { owner_id: mine ? me?.user.id : undefined, page_size: 1000 }
   const { data, isLoading } = useLoads(listKey)
-  const pipeline = meta?.pipeline ?? []
+  // Quotes live on the Quotes page — the Loads board/list is booked freight only.
+  const pipeline = (meta?.pipeline ?? []).filter((s) => s !== 'quote')
+  const items = (data?.items ?? []).filter((l) => l.status !== 'quote')
 
   return (
     <section>
@@ -42,7 +44,7 @@ export function LoadsPage() {
       {isLoading && <p className="muted">Loading loads…</p>}
 
       {data && view === 'board' && pipeline.length > 0 && (
-        <LoadsBoard pipeline={pipeline} loads={data.items} listKey={listKey} />
+        <LoadsBoard pipeline={pipeline} loads={items} listKey={listKey} />
       )}
 
       {data && view === 'list' && (
@@ -50,7 +52,7 @@ export function LoadsPage() {
           <table>
             <thead><tr><th>Ref</th><th>Status</th><th>Shipper</th><th>Lane</th><th>Customer</th><th>Margin</th></tr></thead>
             <tbody>
-              {data.items.map((l) => (
+              {items.map((l) => (
                 <tr key={l.id} className="row-link" onClick={() => navigate(`/loads/${l.id}`)}>
                   <td><strong>{l.reference}</strong></td>
                   <td><span className="badge b-brand">{STATUS_LABEL[l.status] ?? l.status}</span></td>
@@ -60,7 +62,7 @@ export function LoadsPage() {
                   <td className="dc-amt">{l.margin != null ? money(l.margin) : '—'}</td>
                 </tr>
               ))}
-              {data.items.length === 0 && <tr><td colSpan={6} className="muted" style={{ padding: 22 }}>No loads yet.</td></tr>}
+              {items.length === 0 && <tr><td colSpan={6} className="muted" style={{ padding: 22 }}>No booked loads yet.</td></tr>}
             </tbody>
           </table>
         </div>

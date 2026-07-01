@@ -114,6 +114,9 @@ td .sub { color: var(--muted); font-size: 12px; }
 .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--border); }
 .btn.danger:hover { background: rgba(248, 81, 73, 0.12); border-color: var(--danger); }
 .btn.sm { padding: 6px 10px; font-size: 12px; }
+/* Subtle: de-emphasized secondary/destructive actions kept off to the side. */
+.btn.subtle { background: transparent; color: var(--muted); border: 1px solid transparent; padding: 8px 12px; font-weight: 500; font-size: 13px; }
+.btn.subtle:hover { background: var(--surface-2); color: var(--text); }
 
 /* ── Detail (profile) ───────────────────────────────────────────── */
 .profile { display: grid; gap: 18px; }

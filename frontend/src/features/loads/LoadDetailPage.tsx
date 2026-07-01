@@ -12,14 +12,16 @@ import { MarketRatePanel } from './marketrate'
 import { TrackingPanel } from './tracking'
 import { Timeline } from '../activities/Timeline'
 
-// One-click status targets for the contextual action row.
-const QUICK_ACTIONS: { status: string; label: string; cls?: string }[] = [
+// Forward-progression actions, in pipeline order. Only those ahead of the
+// load's current status are shown; the first one is the primary next step.
+const FORWARD: { status: string; label: string }[] = [
+  { status: 'tendered', label: 'Tender' },
   { status: 'covered', label: 'Cover' },
   { status: 'dispatched', label: 'Dispatch' },
   { status: 'delivered', label: 'Mark Delivered' },
-  { status: 'lost', label: 'Lost', cls: 'danger' },
-  { status: 'tonu', label: 'TONU', cls: 'danger' },
 ]
+const PIPELINE_ORDER = ['quote', 'tendered', 'offered', 'covered', 'dispatched', 'in_transit', 'delivered', 'invoiced']
+const TERMINAL = ['lost', 'tonu']
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -37,8 +39,14 @@ export function LoadDetailPage() {
   if (error || !l) return <div className="notice err">Load not found.</div>
 
   const route = [l.origin_city, l.dest_city].filter(Boolean).join(' → ')
+  const isQuote = l.status === 'quote'
+  const isTerminal = TERMINAL.includes(l.status)
   const mPct = marginPct(l.margin, l.customer_rate)
-  const lowMargin = mPct != null && mPct < LOW_MARGIN_PCT
+  // Quotes aren't measured on margin until they're tendered/booked.
+  const lowMargin = !isQuote && !isTerminal && mPct != null && mPct < LOW_MARGIN_PCT
+
+  const curIdx = PIPELINE_ORDER.indexOf(l.status)
+  const forward = FORWARD.filter((a) => PIPELINE_ORDER.indexOf(a.status) > curIdx)
 
   function rebook() {
     dup.mutate(l!.id, { onSuccess: (clone) => navigate(`/loads/${clone.id}`) })
@@ -61,20 +69,41 @@ export function LoadDetailPage() {
             </select>
             <PinButton entityType="load" entityId={l.id} />
             <button className="btn ghost" onClick={() => setEditing((v) => !v)}>{editing ? '✕ Cancel' : '✎ Edit'}</button>
-            <button className="btn danger" onClick={() => { if (confirm(`Delete ${l.reference}?`)) { del.mutate(l.id); navigate('/loads') } }}>Delete</button>
           </>
         }
       />
 
-      <div className="action-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0' }}>
-        {QUICK_ACTIONS.filter((a) => a.status !== l.status).map((a) => (
-          <button key={a.status} className={`btn ${a.cls === 'danger' ? 'ghost danger' : 'ghost'}`}
+      <div className="action-row" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, margin: '12px 0' }}>
+        {/* Forward progression — the immediate next step is the primary button. */}
+        {forward.map((a, i) => (
+          <button key={a.status} className={`btn ${i === 0 ? '' : 'ghost'}`}
             onClick={() => update.mutate({ status: a.status })} disabled={update.isPending}>
             {a.label}
           </button>
         ))}
-        <button className="btn ghost" onClick={rebook} disabled={dup.isPending}>
-          {dup.isPending ? 'Re-booking…' : '⎘ Re-book'}
+
+        <div style={{ flex: 1 }} />
+
+        <button className="btn ghost" onClick={rebook} disabled={dup.isPending}
+          title="Re-book: copy this load's lane & shipper into a new quote (drops the carrier) — e.g. to re-run the same lane.">
+          {dup.isPending ? 'Copying…' : '⎘ Duplicate'}
+        </button>
+
+        {/* Secondary / destructive actions, de-emphasized and off to the side. */}
+        {!isTerminal && (
+          <>
+            <button className="btn subtle" onClick={() => update.mutate({ status: 'lost' })} disabled={update.isPending}>
+              Mark lost
+            </button>
+            <button className="btn subtle" onClick={() => update.mutate({ status: 'tonu' })} disabled={update.isPending}
+              title="Truck Ordered Not Used — marks the load TONU and keeps the assigned carrier on record.">
+              TONU
+            </button>
+          </>
+        )}
+        <button className="btn subtle" title="Delete load"
+          onClick={() => { if (confirm(`Delete ${l.reference}? This can't be undone.`)) { del.mutate(l.id); navigate('/loads') } }}>
+          🗑
         </button>
       </div>
 
