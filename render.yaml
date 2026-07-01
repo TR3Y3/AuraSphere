@@ -71,6 +71,12 @@ services:
         value: "stub"
       - key: DAT_API_KEY
         sync: false
+      # ELD telematics: default "stub" (synthesized GPS pings). Set
+      # ELD_MODE=samsara + ELD_API_KEY for the real provider.
+      - key: ELD_MODE
+        value: "stub"
+      - key: ELD_API_KEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web
