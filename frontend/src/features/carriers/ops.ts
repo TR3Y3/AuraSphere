@@ -1,5 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type Capacity, type CapacityCreate, type Lane } from '../../lib/api'
+import { api, type Capacity, type CapacityCreate, type CarrierVetting, type Lane } from '../../lib/api'
+
+export function useVetting(carrierId: number | undefined) {
+  return useQuery({
+    queryKey: ['carrier-vetting', carrierId],
+    queryFn: () => api.get<CarrierVetting | null>(`/api/carriers/${carrierId}/vetting`),
+    enabled: carrierId !== undefined,
+  })
+}
+
+export function useRunVetting(carrierId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<CarrierVetting>(`/api/carriers/${carrierId}/vet`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['carrier-vetting', carrierId] }),
+  })
+}
 
 export function useLanes(carrierId: number | undefined) {
   return useQuery({

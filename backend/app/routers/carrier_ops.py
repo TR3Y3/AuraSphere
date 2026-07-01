@@ -5,9 +5,11 @@ is always accurate. Capacity is manually posted per location.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app import vetting
 from app.deps import OrgScope, get_scope
-from app.models import Carrier, CarrierCapacity, Load
+from app.models import Carrier, CarrierCapacity, CarrierVetting, Load
 from app.schemas.carrier_ops import CapacityCreate, CapacityOut, LaneOut
+from app.schemas.vetting import CarrierVettingOut
 
 router = APIRouter(prefix="/api/carriers", tags=["carrier-ops"])
 
@@ -48,6 +50,35 @@ def carrier_lanes(carrier_id: int, scope: OrgScope = Depends(get_scope)):
         else:
             agg["shipments"] += 1
     return sorted(lanes.values(), key=lambda x: x["shipments"], reverse=True)
+
+
+@router.get("/{carrier_id}/vetting", response_model=CarrierVettingOut | None)
+def latest_vetting(carrier_id: int, scope: OrgScope = Depends(get_scope)):
+    """The most recent vetting snapshot, or null if never vetted."""
+    _carrier(scope, carrier_id)
+    return (
+        scope.query(CarrierVetting)
+        .filter(CarrierVetting.carrier_id == carrier_id)
+        .order_by(CarrierVetting.id.desc())
+        .first()
+    )
+
+
+@router.post("/{carrier_id}/vet", response_model=CarrierVettingOut, status_code=status.HTTP_201_CREATED)
+def run_vetting(carrier_id: int, scope: OrgScope = Depends(get_scope)):
+    """Run a carrier-vetting check (authority + insurance + safety) and store it."""
+    carrier = _carrier(scope, carrier_id)
+    result = vetting.vet_carrier(carrier)
+    row = CarrierVetting(
+        organization_id=scope.org_id,
+        carrier_id=carrier_id,
+        checked_by=scope.user.id,
+        **result,
+    )
+    scope.db.add(row)
+    scope.db.commit()
+    scope.db.refresh(row)
+    return row
 
 
 @router.get("/{carrier_id}/capacity", response_model=list[CapacityOut])

@@ -4,7 +4,8 @@ import { useContacts } from '../contacts/api'
 import { useCarrier, useDeleteCarrier } from './api'
 import { CarrierForm } from './CarrierForm'
 import { CapacityPanel } from './CapacityPanel'
-import { useLanes } from './ops'
+import { VettingPanel } from './VettingPanel'
+import { useLanes, useVetting } from './ops'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
 import { Timeline } from '../activities/Timeline'
@@ -24,6 +25,7 @@ export function CarrierDetailPage() {
   const { data: c, isLoading, error } = useCarrier(carrierId)
   const { data: contacts } = useContacts({ carrier_id: carrierId, page_size: 100 })
   const { data: lanesData } = useLanes(carrierId)
+  const { data: vetting } = useVetting(carrierId)
   const del = useDeleteCarrier()
 
   if (isLoading) return <p className="muted">Loading…</p>
@@ -115,6 +117,11 @@ export function CarrierDetailPage() {
             {issues.length > 0
               ? <AlertBadge>{issues.length === 1 ? issues[0] : `${issues.length} compliance issues`}</AlertBadge>
               : <span className="badge b-good">✓ Compliant</span>}
+            {vetting && (
+              <span className={`badge ${vetting.result === 'clear' ? 'b-good' : vetting.result === 'review' ? 'b-warn' : 'b-danger'}`}>
+                {vetting.result === 'clear' ? '✓ Vetted' : vetting.result === 'review' ? '⚠ Vetting: review' : '✕ Vetting: failed'}
+              </span>
+            )}
           </span>
         }
         actions={
@@ -142,6 +149,7 @@ export function CarrierDetailPage() {
           tabs={[
             { key: 'overview', label: 'Overview', content: overview },
             { key: 'compliance', label: 'Compliance', content: compliance },
+            { key: 'vetting', label: 'Vetting', content: <VettingPanel carrierId={c.id} /> },
             { key: 'lanes', label: 'Lanes', content: lanes },
             { key: 'activity', label: 'Activity', content: <Timeline scope={{ related_carrier_id: c.id }} /> },
           ]}

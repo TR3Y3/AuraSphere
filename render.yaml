@@ -59,6 +59,12 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      # Carrier vetting: default "stub" (deterministic from the carrier's data).
+      # Set VETTING_MODE=highway + HIGHWAY_API_KEY for the real provider.
+      - key: VETTING_MODE
+        value: "stub"
+      - key: HIGHWAY_API_KEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

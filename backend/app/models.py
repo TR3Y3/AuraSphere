@@ -8,6 +8,7 @@ relationships.
 from datetime import datetime
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     DateTime,
     ForeignKey,
@@ -217,6 +218,34 @@ class CarrierCapacity(Base):
     equipment: Mapped[str | None] = mapped_column(String(80), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class CarrierVetting(Base):
+    """A carrier-vetting snapshot (Highway / Carrier411-style authority,
+    insurance, and safety check). Each run stores a row; latest = current.
+    """
+
+    __tablename__ = "carrier_vettings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    carrier_id: Mapped[int] = mapped_column(
+        ForeignKey("carriers.id"), nullable=False, index=True
+    )
+    source: Mapped[str] = mapped_column(String(20), nullable=False, default="stub")
+    # clear / review / fail
+    result: Mapped[str] = mapped_column(String(20), nullable=False)
+    authority_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    insurance_on_file: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    safety_rating: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    risk_score: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 0–100, higher = safer
+    flags: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    checked_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
