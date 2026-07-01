@@ -11,9 +11,15 @@ export function CarriersPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
+  const [f, setF] = useState({ status: '', hq_state: '', equipment: '', min_rating: '' })
+  const setFilter = (patch: Partial<typeof f>) => { setF({ ...f, ...patch }); setPage(1) }
 
   const { data, isLoading, error } = useCarriers({
     search: search || undefined,
+    status: f.status || undefined,
+    hq_state: f.hq_state || undefined,
+    equipment: f.equipment || undefined,
+    min_rating: f.min_rating ? Number(f.min_rating) : undefined,
     page,
     page_size: PAGE_SIZE,
   })
@@ -29,6 +35,27 @@ export function CarriersPage() {
         <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ New carrier'}
         </button>
+      </div>
+
+      <div className="toolbar" style={{ gap: 8 }}>
+        <select className="ti" style={{ maxWidth: 140 }} value={f.status} onChange={(e) => setFilter({ status: e.target.value })}>
+          <option value="">Status: any</option>
+          <option value="active">Active</option>
+          <option value="deactivated">Deactivated</option>
+        </select>
+        <input className="ti" style={{ maxWidth: 90 }} placeholder="HQ ST" maxLength={2}
+          value={f.hq_state} onChange={(e) => setFilter({ hq_state: e.target.value.toUpperCase() })} />
+        <input className="ti" style={{ maxWidth: 150 }} placeholder="Equipment"
+          value={f.equipment} onChange={(e) => setFilter({ equipment: e.target.value })} />
+        <select className="ti" style={{ maxWidth: 150 }} value={f.min_rating} onChange={(e) => setFilter({ min_rating: e.target.value })}>
+          <option value="">Rating: any</option>
+          <option value="4">4★ & up</option>
+          <option value="3">3★ & up</option>
+          <option value="2">2★ & up</option>
+        </select>
+        {(f.status || f.hq_state || f.equipment || f.min_rating) && (
+          <button className="btn subtle" onClick={() => setFilter({ status: '', hq_state: '', equipment: '', min_rating: '' })}>Clear</button>
+        )}
       </div>
 
       {creating && (

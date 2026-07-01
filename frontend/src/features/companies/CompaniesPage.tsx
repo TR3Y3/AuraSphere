@@ -10,12 +10,14 @@ export function CompaniesPage() {
   const { me } = useAuth()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [industry, setIndustry] = useState('')
   const [mine, setMine] = useState(false)
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
 
   const { data, isLoading, error } = useCompanies({
     search: search || undefined,
+    industry: industry || undefined,
     owner_id: mine ? me?.user.id : undefined,
     page,
     page_size: PAGE_SIZE,
@@ -35,11 +37,13 @@ export function CompaniesPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
         />
+        <input className="ti" style={{ maxWidth: 170 }} placeholder="Industry"
+          value={industry} onChange={(e) => { setIndustry(e.target.value); setPage(1) }} />
         <label className="check">
           <input type="checkbox" checked={mine} onChange={(e) => { setMine(e.target.checked); setPage(1) }} />
           My records
         </label>
-        <button className="btn" onClick={() => setCreating((v) => !v)}>
+        <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ New shipper'}
         </button>
       </div>

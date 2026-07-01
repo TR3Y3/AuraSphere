@@ -8,6 +8,10 @@ export interface LoadListParams {
   shipper_id?: number
   carrier_id?: number
   owner_id?: number
+  equipment?: string
+  origin_state?: string
+  dest_state?: string
+  posted_to_dat?: boolean
   page_size?: number
 }
 

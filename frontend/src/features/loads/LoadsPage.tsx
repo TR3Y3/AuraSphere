@@ -11,9 +11,18 @@ export function LoadsPage() {
   const [view, setView] = useState<'board' | 'list'>('board')
   const [mine, setMine] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [filters, setFilters] = useState({ search: '', equipment: '', origin_state: '', dest_state: '', posted: '' })
 
   const { data: meta } = useBoardMeta()
-  const listKey: LoadListParams = { owner_id: mine ? me?.user.id : undefined, page_size: 1000 }
+  const listKey: LoadListParams = {
+    owner_id: mine ? me?.user.id : undefined,
+    search: filters.search || undefined,
+    equipment: filters.equipment || undefined,
+    origin_state: filters.origin_state || undefined,
+    dest_state: filters.dest_state || undefined,
+    posted_to_dat: filters.posted === '' ? undefined : filters.posted === 'yes',
+    page_size: 1000,
+  }
   const { data, isLoading } = useLoads(listKey)
   // Quotes live on the Quotes page — the Loads board/list is booked freight only.
   const pipeline = (meta?.pipeline ?? []).filter((s) => s !== 'quote')
@@ -33,6 +42,26 @@ export function LoadsPage() {
         <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ New load'}
         </button>
+      </div>
+
+      <div className="toolbar" style={{ gap: 8 }}>
+        <input className="ti" style={{ maxWidth: 220 }} placeholder="Search ref / commodity"
+          value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} />
+        <input className="ti" style={{ maxWidth: 150 }} placeholder="Equipment"
+          value={filters.equipment} onChange={(e) => setFilters({ ...filters, equipment: e.target.value })} />
+        <input className="ti" style={{ maxWidth: 90 }} placeholder="Orig ST" maxLength={2}
+          value={filters.origin_state} onChange={(e) => setFilters({ ...filters, origin_state: e.target.value.toUpperCase() })} />
+        <input className="ti" style={{ maxWidth: 90 }} placeholder="Dest ST" maxLength={2}
+          value={filters.dest_state} onChange={(e) => setFilters({ ...filters, dest_state: e.target.value.toUpperCase() })} />
+        <select className="ti" style={{ maxWidth: 140 }} value={filters.posted}
+          onChange={(e) => setFilters({ ...filters, posted: e.target.value })}>
+          <option value="">DAT: any</option>
+          <option value="yes">Posted to DAT</option>
+          <option value="no">Not posted</option>
+        </select>
+        {(filters.search || filters.equipment || filters.origin_state || filters.dest_state || filters.posted) && (
+          <button className="btn subtle" onClick={() => setFilters({ search: '', equipment: '', origin_state: '', dest_state: '', posted: '' })}>Clear</button>
+        )}
       </div>
 
       {creating && (

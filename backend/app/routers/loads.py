@@ -90,6 +90,10 @@ def list_loads(
     shipper_id: int | None = None,
     carrier_id: int | None = None,
     owner_id: int | None = None,
+    equipment: str | None = None,
+    origin_state: str | None = None,
+    dest_state: str | None = None,
+    posted_to_dat: bool | None = None,
     sort: str = "created_at",
     order: str = "desc",
     page: int = Query(1, ge=1),
@@ -113,6 +117,14 @@ def list_loads(
         q = q.filter(Load.carrier_id == carrier_id)
     if owner_id is not None:
         q = q.filter(Load.owner_id == owner_id)
+    if equipment:
+        q = q.filter(Load.equipment.ilike(f"%{equipment}%"))
+    if origin_state:
+        q = q.filter(Load.origin_state.ilike(origin_state))
+    if dest_state:
+        q = q.filter(Load.dest_state.ilike(dest_state))
+    if posted_to_dat is not None:
+        q = q.filter(Load.dat_posting_id.isnot(None) if posted_to_dat else Load.dat_posting_id.is_(None))
 
     total = q.count()
     sort_col = SORT_FIELDS.get(sort, Load.created_at)
