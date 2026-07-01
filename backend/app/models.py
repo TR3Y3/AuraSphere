@@ -67,6 +67,22 @@ class User(Base):
     organization: Mapped["Organization"] = relationship(back_populates="users")
 
 
+class PasswordResetToken(Base):
+    """A single-use token for setting/resetting a password (forgot-password and
+    teammate invites both use it). Only the SHA-256 hash is stored.
+    """
+
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class EmailVerificationToken(Base):
     """A single-use email-verification token (self-serve signup).
 

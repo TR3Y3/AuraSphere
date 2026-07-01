@@ -64,6 +64,8 @@ export function Login() {
         </button>
 
         <p className="muted" style={{ textAlign: 'center', marginTop: 14, fontSize: 13 }}>
+          <Link to="/forgot-password">Forgot password?</Link>
+          <span style={{ margin: '0 8px' }}>·</span>
           New here? <Link to="/signup">Start your brokerage</Link>
         </p>
       </form>

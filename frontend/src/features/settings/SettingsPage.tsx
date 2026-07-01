@@ -1,5 +1,6 @@
 import { useAuth } from '../../auth/AuthContext'
 import { BillingPanel } from './BillingPanel'
+import { TeamPanel } from './TeamPanel'
 
 // "Available at launch" surface: integrations are visible here as cards with
 // a status, even though the wiring is built later (see docs/integrations.md).
@@ -57,6 +58,8 @@ export function SettingsPage() {
           <div className="k">You</div><div>{me.user.full_name} · <span className="badge b-muted">{me.user.role}</span></div>
         </div>
       </div>
+
+      <TeamPanel />
 
       <BillingPanel />
 

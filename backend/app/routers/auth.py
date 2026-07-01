@@ -9,16 +9,19 @@ from app import config
 from app.database import get_db
 from app.defaults import ensure_default_pipeline
 from app.deps import get_current_user
-from app.email import send_verification_email
+from app.email import send_password_reset_email, send_verification_email
 from app.models import (
     EmailVerificationToken,
     Organization,
+    PasswordResetToken,
     Session as SessionModel,
     User,
 )
 from app.schemas.auth import (
+    ForgotPasswordRequest,
     LoginRequest,
     MeOut,
+    ResetPasswordRequest,
     SignupRequest,
     SignupResult,
     VerifyEmailRequest,
@@ -59,6 +62,24 @@ def _issue_verification(db: DbSession, user: User) -> str:
         )
     )
     return f"{config.FRONTEND_ORIGIN}/verify?token={token}"
+
+
+def issue_password_reset(db: DbSession, user: User) -> str:
+    """Supersede prior reset tokens and return a fresh set-password URL.
+
+    Shared by forgot-password and teammate invites.
+    """
+    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user.id).delete()
+    token = generate_session_token()
+    db.add(
+        PasswordResetToken(
+            user_id=user.id,
+            token_hash=hash_token(token),
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(hours=config.VERIFY_TTL_HOURS),
+        )
+    )
+    return f"{config.FRONTEND_ORIGIN}/reset-password?token={token}"
 
 
 def _set_session_cookie(response: Response, token: str) -> None:
@@ -158,6 +179,54 @@ def resend_verification(db: DbSession = Depends(get_db), user: User = Depends(ge
     verify_url = _issue_verification(db, user)
     db.commit()
     send_verification_email(user.email, verify_url)
+
+
+@router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
+def forgot_password(payload: ForgotPasswordRequest, db: DbSession = Depends(get_db)):
+    """Issue a reset link. Always 204 (never reveal whether the email exists)."""
+    user = db.query(User).filter(User.email == payload.email.lower()).first()
+    if user is not None:
+        reset_url = issue_password_reset(db, user)
+        db.commit()
+        send_password_reset_email(user.email, reset_url)
+
+
+@router.post("/reset-password", response_model=MeOut)
+def reset_password(payload: ResetPasswordRequest, response: Response, db: DbSession = Depends(get_db)):
+    row = (
+        db.query(PasswordResetToken)
+        .filter(PasswordResetToken.token_hash == hash_token(payload.token))
+        .first()
+    )
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or used reset link")
+    expires = row.expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if expires < datetime.now(timezone.utc):
+        db.delete(row)
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Reset link has expired")
+
+    user = db.query(User).filter(User.id == row.user_id).first()
+    user.password_hash = hash_password(payload.password)
+    user.is_active = True
+    # Setting a password via an emailed link proves email ownership.
+    if user.email_verified_at is None:
+        user.email_verified_at = datetime.now(timezone.utc)
+    db.delete(row)
+
+    # Log them straight in on success.
+    token = generate_session_token()
+    db.add(SessionModel(
+        user_id=user.id, token_hash=hash_token(token),
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=config.SESSION_TTL_HOURS),
+    ))
+    db.commit()
+    db.refresh(user)
+    _set_session_cookie(response, token)
+    org = db.query(Organization).filter(Organization.id == user.organization_id).first()
+    return MeOut(user=user, organization=org)
 
 
 @router.post("/login", response_model=MeOut)
