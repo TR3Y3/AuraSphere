@@ -14,6 +14,7 @@ from app.routers import (
     deals,
     documents,
     eld,
+    feedback,
     load_options,
     loads,
     market,
@@ -53,6 +54,7 @@ app.include_router(pins.router)
 app.include_router(prospects.router)
 app.include_router(activities.router)
 app.include_router(dashboard.router)
+app.include_router(feedback.router)
 app.include_router(users.router)
 
 

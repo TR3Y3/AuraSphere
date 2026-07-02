@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { usePins, useUpdatePin, useDeletePin } from '../features/pins/api'
 import { useSummary, money } from '../features/dashboard/api'
+import { GettingStarted } from '../features/dashboard/GettingStarted'
 import { STATUS_LABEL } from '../features/loads/api'
 import { TYPE_ICON } from '../features/activities/api'
 
@@ -28,6 +29,8 @@ export function Dashboard() {
   return (
     <section>
       <h1 className="page-h">Welcome back, {me.user.full_name.split(' ')[0]}</h1>
+
+      <GettingStarted />
 
       <div className="cards">
         <div className="card"><div className="k">Loaded $</div><div className="v">{money(s?.loaded_dollars)}</div></div>

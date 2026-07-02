@@ -31,6 +31,8 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 EMAIL_DELIVERY = os.getenv("EMAIL_DELIVERY", "console").lower()
 EMAIL_FROM = os.getenv("EMAIL_FROM", "no-reply@aurasphere.app")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+# Where in-app tester feedback is emailed (falls back to the from-address).
+FEEDBACK_EMAIL = os.getenv("FEEDBACK_EMAIL") or os.getenv("EMAIL_FROM", "no-reply@aurasphere.app")
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER")

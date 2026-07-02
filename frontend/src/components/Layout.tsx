@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { api } from '../lib/api'
 import { SearchPalette } from './SearchPalette'
+import { FeedbackButton } from './Feedback'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
@@ -138,6 +139,7 @@ export function Layout() {
           )}
         </div>
 
+        <FeedbackButton />
         <button className="iconbtn" title="Notifications">🔔</button>
 
         <div className="menu" ref={meRef}>
