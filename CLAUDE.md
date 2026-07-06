@@ -158,7 +158,17 @@ Do not start a phase until the previous one runs and its checks pass.
 9. If intended behavior is unclear, ask one specific question instead of guessing.
 10. At the END of every session, update the section below.
 
-## Current State / Next Step
+## Launch audit log (readiness pass, 2026-07-06)
+
+**Phase 1 — architecture/tenancy verification (no code changes):**
+- Stack confirmed as locked spec: FastAPI 0.104 / SQLAlchemy 2.0 / Alembic / Pydantic v2 / psycopg2 (Postgres prod, SQLite dev-test); React 18 + Vite + TS, TanStack Query, RHF+zod, dnd-kit; typed client generated from OpenAPI. No SDK deps for Stripe/Resend (httpx).
+- Deployment target: Render Blueprint (`render.yaml`) — backend web service (migrate-on-build: `alembic upgrade head`), frontend static site w/ SPA rewrite, managed Postgres. Secrets are `sync:false` env vars; stub/console modes are the defaults for email/billing/vetting/DAT/ELD.
+- Multi-tenancy enforcement verified by sweep: all business queries go through `OrgScope.query()` (pre-filtered `organization_id`); the only raw `db.query` uses are auth flows (globally-unique email/token lookups — correct) and org-self lookups filtered to `scope.org_id`. Client never supplies org id.
+- Auth boundary sweep (every endpoint): all business endpoints carry `get_scope`/`get_current_user`/`require_role`. Intentionally public: auth endpoints, `/health`, billing webhook (Stripe-signature-verified, 5-min replay tolerance). **Finding: `GET /api/loads/board` is unauthenticated** — returns only static workflow constants (no org data), low severity, fix for consistency.
+- Sessions: httpOnly cookie, hash-only storage, expiry enforced + expired-session cleanup, `is_active` check on every request. Passwords argon2. Reset/verify/invite tokens single-use, hash-only.
+- Test suite: 121 passing; 28 test files; isolation tests present for every business domain.
+
+
 
 - Current phase: **Test-user readiness** — working through product feedback. Done so far: quotes off the dashboard/board + margin-not-measured-until-tendered, load action-row redesign (subtle Lost/TONU/delete, Duplicate tooltip, contextual forward buttons), DAT auto-post (`loads.dat_posting_id`, `POST/DELETE /api/loads/{id}/dat-post`, form checkbox + board badge), and **teammate invites + password reset** (`password_reset_tokens` table, migration `90ba38485c98`; `POST /api/auth/forgot-password` [always 204, no enumeration] + `/reset-password` [single-use, logs in], `POST /api/users/invite` [owner/admin, creates the user + emails a set-password link]; frontend `/forgot-password` + `/reset-password` pages, login link, Team panel on `/settings`). 113 tests pass. Also done: richer list filters (loads/carriers/shippers), Lead-Gen CSV import + broadened search, **empty-state onboarding** ("Get started" checklist on the dashboard, auto-hides when set up) and an **in-app feedback** widget (💬 in the app bar → `POST /api/feedback` emails the team via the send_email seam; `FEEDBACK_EMAIL` config). 121 tests pass. Remaining: carrier-facing app (big/deferred). Only launch blocker left: **turn on Resend email** (`EMAIL_DELIVERY=resend` + `RESEND_API_KEY`) so signup/invite/reset/feedback emails actually send.
 - Earlier phase: **Product track — ELD telematics integration (complete)**. Next candidates: Gmail email-logging, factoring; or deferred cleanup (companies→shippers rename, remove legacy deals backend).
