@@ -111,10 +111,28 @@ def accept_option(load_id: int, option_id: int, scope: OrgScope = Depends(get_sc
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
     opt = _option(scope, load_id, option_id)
 
-    load.carrier_id = opt.carrier_id
-    load.carrier_rate = opt.counter_rate if opt.counter_rate is not None else opt.rate
-    if load.status in ("quote", "tendered", "offered"):
-        load.status = "covered"
+    # Atomic claim: the status check-and-set happens in ONE UPDATE, so two reps
+    # accepting different options concurrently can't both win — the loser's
+    # UPDATE matches zero rows (status already advanced) and gets a 409.
+    rate = opt.counter_rate if opt.counter_rate is not None else opt.rate
+    claimed = (
+        scope.db.query(Load)
+        .filter(
+            Load.id == load_id,
+            Load.organization_id == scope.org_id,
+            Load.status.in_(("quote", "tendered", "offered")),
+        )
+        .update(
+            {"status": "covered", "carrier_id": opt.carrier_id, "carrier_rate": rate},
+            synchronize_session=False,
+        )
+    )
+    if claimed == 0:
+        scope.db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This load is already covered — another option may have been accepted.",
+        )
     opt.status = "accepted"
     # Any other open option steps aside.
     for other in scope.query(LoadOption).filter(

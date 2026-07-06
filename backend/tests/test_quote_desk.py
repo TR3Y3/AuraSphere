@@ -80,3 +80,26 @@ def test_quote_desk_isolation(client, seeded, db):
     _login(client, "b@example.com", "password-b")
     # Org B can't even see org A's load, let alone its options.
     assert client.get(f"/api/loads/{lid}/options").status_code == 404
+
+
+def test_second_accept_conflicts(client, seeded, db):
+    """Two reps accepting different options: the loser gets a clean 409 and the
+    winner's carrier/rate stick (the double-accept race from the launch audit)."""
+    _login(client, "a@example.com", "password-a")
+    lid, cid = _setup(client, db, seeded["org_a"])
+    o1 = client.post(f"/api/loads/{lid}/options", json={"carrier_id": cid, "rate": "1500"}).json()["id"]
+    o2 = client.post(f"/api/loads/{lid}/options", json={"carrier_name": "Rival Trucking", "rate": "1400"}).json()["id"]
+
+    assert client.post(f"/api/loads/{lid}/options/{o1}/accept").status_code == 200
+    res = client.post(f"/api/loads/{lid}/options/{o2}/accept")
+    assert res.status_code == 409
+    load = client.get(f"/api/loads/{lid}").json()
+    assert load["status"] == "covered"
+    assert load["carrier_rate"] == "1500.00"  # winner's rate, not the loser's
+    opts = {o["id"]: o["status"] for o in client.get(f"/api/loads/{lid}/options").json()}
+    assert opts[o1] == "accepted"
+    assert opts[o2] != "accepted"
+
+
+def test_board_meta_requires_auth(client, seeded):
+    assert client.get("/api/loads/board").status_code == 401

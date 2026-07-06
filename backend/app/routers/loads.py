@@ -221,7 +221,7 @@ def duplicate_load(load_id: int, scope: OrgScope = Depends(get_scope)):
 
 
 @router.get("/board", response_model=dict)
-def board_meta():
+def board_meta(scope: OrgScope = Depends(get_scope)):
     """The ordered pipeline statuses that make up the board columns."""
     return {"pipeline": LOAD_PIPELINE, "statuses": LOAD_STATUSES}
 
