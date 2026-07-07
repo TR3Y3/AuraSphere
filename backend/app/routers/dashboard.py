@@ -10,9 +10,9 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends
 
 from app.deps import OrgScope, get_scope
-from app.models import Activity, Load
+from app.models import Activity, Load, User
 from app.schemas.activity import ActivityOut
-from app.schemas.dashboard import DashboardSummary, LanePrice, StatusValue
+from app.schemas.dashboard import DashboardSummary, LanePrice, RepPerformance, StatusValue
 from app.workflow import LOAD_PIPELINE
 
 router = APIRouter(tags=["dashboard"])
@@ -54,6 +54,29 @@ def summary(scope: OrgScope = Depends(get_scope)):
         for s in BOARD_STATUSES if by_status.get(s)
     ]
 
+    # Rep performance: booked (non-quote) freight by owning rep — the
+    # sales_code pairs with this so an owner sees who's producing at a glance.
+    by_rep: dict[int, dict] = {}
+    for ld in loads:
+        if ld.owner_id is None or ld.status in TERMINAL:
+            continue
+        r = by_rep.setdefault(ld.owner_id, {"loads": 0, "dollars": Decimal(0), "margin": Decimal(0)})
+        r["loads"] += 1
+        r["dollars"] += ld.customer_rate or Decimal(0)
+        if ld.customer_rate is not None and ld.carrier_rate is not None:
+            r["margin"] += ld.customer_rate - ld.carrier_rate
+    reps = []
+    if by_rep:
+        users = {u.id: u for u in scope.query(User).all()}
+        for uid, r in by_rep.items():
+            u = users.get(uid)
+            reps.append(RepPerformance(
+                user_id=uid, name=(u.full_name if u else f"User {uid}"),
+                sales_code=(u.sales_code if u else None),
+                loads=r["loads"], loaded_dollars=r["dollars"], margin=r["margin"],
+            ))
+        reps.sort(key=lambda x: x.margin, reverse=True)
+
     open_tasks = (
         scope.query(Activity)
         .filter(Activity.type == "task", Activity.completed_at.is_(None), Activity.owner_id == scope.user.id)
@@ -71,6 +94,7 @@ def summary(scope: OrgScope = Depends(get_scope)):
         avg_margin=(margin_total / margin_n) if margin_n else None,
         value_by_status=value_by_status,
         open_tasks=open_tasks,
+        rep_performance=reps,
         recent_activity=[ActivityOut.model_validate(a) for a in recent],
     )
 

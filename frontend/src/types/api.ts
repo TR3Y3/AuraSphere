@@ -465,80 +465,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/pipelines": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Pipelines */
-        get: operations["list_pipelines_api_pipelines_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/deals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Deals */
-        get: operations["list_deals_api_deals_get"];
-        put?: never;
-        /** Create Deal */
-        post: operations["create_deal_api_deals_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/deals/{deal_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Deal */
-        get: operations["get_deal_api_deals__deal_id__get"];
-        put?: never;
-        post?: never;
-        /** Delete Deal */
-        delete: operations["delete_deal_api_deals__deal_id__delete"];
-        options?: never;
-        head?: never;
-        /** Update Deal */
-        patch: operations["update_deal_api_deals__deal_id__patch"];
-        trace?: never;
-    };
-    "/api/deals/{deal_id}/stage": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Change Stage
-         * @description Kanban drag target: move a deal to another stage in its pipeline.
-         */
-        patch: operations["change_stage_api_deals__deal_id__stage_patch"];
-        trace?: never;
-    };
     "/api/loads": {
         parameters: {
             query?: never;
@@ -1218,6 +1144,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update User
+         * @description Admin-editable rep settings (currently the sales # / rep code).
+         */
+        patch: operations["update_user_api_users__user_id__patch"];
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1651,6 +1597,8 @@ export interface components {
             website?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
         };
         /** CompanyOut */
         CompanyOut: {
@@ -1670,6 +1618,8 @@ export interface components {
             organization_id: number;
             /** Owner Id */
             owner_id: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
             /** Created By */
             created_by: number | null;
             /**
@@ -1697,6 +1647,8 @@ export interface components {
             website?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
         };
         /** ContactCreate */
         ContactCreate: {
@@ -1797,101 +1749,10 @@ export interface components {
             value_by_status: components["schemas"]["StatusValue"][];
             /** Open Tasks */
             open_tasks: number;
+            /** Rep Performance */
+            rep_performance: components["schemas"]["RepPerformance"][];
             /** Recent Activity */
             recent_activity: components["schemas"]["ActivityOut"][];
-        };
-        /** DealCreate */
-        DealCreate: {
-            /** Name */
-            name: string;
-            /** Amount */
-            amount?: number | string | null;
-            /** Company Id */
-            company_id?: number | null;
-            /** Primary Contact Id */
-            primary_contact_id?: number | null;
-            /** Expected Close Date */
-            expected_close_date?: string | null;
-            /** Pipeline Id */
-            pipeline_id?: number | null;
-            /** Stage Id */
-            stage_id?: number | null;
-            /** Owner Id */
-            owner_id?: number | null;
-        };
-        /** DealOut */
-        DealOut: {
-            /** Name */
-            name: string;
-            /** Amount */
-            amount?: string | null;
-            /** Company Id */
-            company_id?: number | null;
-            /** Primary Contact Id */
-            primary_contact_id?: number | null;
-            /** Expected Close Date */
-            expected_close_date?: string | null;
-            /** Id */
-            id: number;
-            /** Organization Id */
-            organization_id: number;
-            /** Pipeline Id */
-            pipeline_id: number;
-            /** Stage Id */
-            stage_id: number;
-            /** Owner Id */
-            owner_id: number | null;
-            /** Created By */
-            created_by: number | null;
-            /** Closed At */
-            closed_at: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            company?: components["schemas"]["DealRef"] | null;
-            primary_contact?: components["schemas"]["app__schemas__deal__ContactRef"] | null;
-        };
-        /**
-         * DealRef
-         * @description Lightweight linked-record summary embedded on a deal.
-         */
-        DealRef: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-        };
-        /**
-         * DealStageUpdate
-         * @description Body for the kanban drag → stage-change endpoint.
-         */
-        DealStageUpdate: {
-            /** Stage Id */
-            stage_id: number;
-        };
-        /** DealUpdate */
-        DealUpdate: {
-            /** Name */
-            name?: string | null;
-            /** Amount */
-            amount?: number | string | null;
-            /** Company Id */
-            company_id?: number | null;
-            /** Primary Contact Id */
-            primary_contact_id?: number | null;
-            /** Expected Close Date */
-            expected_close_date?: string | null;
-            /** Stage Id */
-            stage_id?: number | null;
-            /** Owner Id */
-            owner_id?: number | null;
         };
         /** DocumentOut */
         DocumentOut: {
@@ -2345,17 +2206,6 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
-        /** Page[DealOut] */
-        Page_DealOut_: {
-            /** Items */
-            items: components["schemas"]["DealOut"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-        };
         /** Page[LoadOut] */
         Page_LoadOut_: {
             /** Items */
@@ -2419,17 +2269,6 @@ export interface components {
             note?: string | null;
             /** Remind At */
             remind_at?: string | null;
-        };
-        /** PipelineOut */
-        PipelineOut: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Is Default */
-            is_default: boolean;
-            /** Stages */
-            stages: components["schemas"]["StageOut"][];
         };
         /** PlanInfo */
         PlanInfo: {
@@ -2570,6 +2409,21 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** RepPerformance */
+        RepPerformance: {
+            /** User Id */
+            user_id: number;
+            /** Name */
+            name: string;
+            /** Sales Code */
+            sales_code?: string | null;
+            /** Loads */
+            loads: number;
+            /** Loaded Dollars */
+            loaded_dollars: string;
+            /** Margin */
+            margin: string;
+        };
         /** ResetPasswordRequest */
         ResetPasswordRequest: {
             /** Token */
@@ -2620,21 +2474,6 @@ export interface components {
             /** Verify Url */
             verify_url?: string | null;
         };
-        /** StageOut */
-        StageOut: {
-            /** Id */
-            id: number;
-            /** Pipeline Id */
-            pipeline_id: number;
-            /** Name */
-            name: string;
-            /** Sort Order */
-            sort_order: number;
-            /** Is Won */
-            is_won: boolean;
-            /** Is Lost */
-            is_lost: boolean;
-        };
         /** StatusValue */
         StatusValue: {
             /** Status */
@@ -2643,6 +2482,11 @@ export interface components {
             count: number;
             /** Value */
             value: string;
+        };
+        /** UserAdminUpdate */
+        UserAdminUpdate: {
+            /** Sales Code */
+            sales_code?: string | null;
         };
         /** UserOut */
         UserOut: {
@@ -2657,6 +2501,8 @@ export interface components {
             full_name: string;
             /** Role */
             role: string;
+            /** Sales Code */
+            sales_code?: string | null;
             /** Is Active */
             is_active: boolean;
             /** Organization Id */
@@ -2694,15 +2540,6 @@ export interface components {
             id: number;
             /** Name */
             name: string;
-        };
-        /** ContactRef */
-        app__schemas__deal__ContactRef: {
-            /** Id */
-            id: number;
-            /** First Name */
-            first_name: string;
-            /** Last Name */
-            last_name?: string | null;
         };
         /** ContactRef */
         app__schemas__load__ContactRef: {
@@ -3748,227 +3585,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_pipelines_api_pipelines_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PipelineOut"][];
-                };
-            };
-        };
-    };
-    list_deals_api_deals_get: {
-        parameters: {
-            query?: {
-                search?: string | null;
-                pipeline_id?: number | null;
-                stage_id?: number | null;
-                owner_id?: number | null;
-                sort?: string;
-                order?: string;
-                page?: number;
-                page_size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Page_DealOut_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_deal_api_deals_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DealCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DealOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_deal_api_deals__deal_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                deal_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DealOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_deal_api_deals__deal_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                deal_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_deal_api_deals__deal_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                deal_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DealUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DealOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    change_stage_api_deals__deal_id__stage_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                deal_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DealStageUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DealOut"];
-                };
             };
             /** @description Validation Error */
             422: {
@@ -5544,6 +5160,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InviteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_user_api_users__user_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserAdminUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
                 };
             };
             /** @description Validation Error */

@@ -15,6 +15,7 @@ class CompanyBase(BaseModel):
 class CompanyCreate(CompanyBase):
     # Optional explicit owner; defaults to the creator when omitted.
     owner_id: int | None = None
+    secondary_owner_id: int | None = None
 
 
 class CompanyUpdate(BaseModel):
@@ -24,6 +25,7 @@ class CompanyUpdate(BaseModel):
     phone: str | None = None
     website: str | None = None
     owner_id: int | None = None
+    secondary_owner_id: int | None = None
 
 
 class CompanyOut(CompanyBase):
@@ -32,6 +34,7 @@ class CompanyOut(CompanyBase):
     id: int
     organization_id: int
     owner_id: int | None
+    secondary_owner_id: int | None = None
     created_by: int | None
     created_at: datetime
     updated_at: datetime

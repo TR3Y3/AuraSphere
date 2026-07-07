@@ -12,6 +12,15 @@ class StatusValue(BaseModel):
     value: Decimal
 
 
+class RepPerformance(BaseModel):
+    user_id: int
+    name: str
+    sales_code: str | None = None
+    loads: int
+    loaded_dollars: Decimal
+    margin: Decimal
+
+
 class DashboardSummary(BaseModel):
     loads_total: int
     open_loads: int
@@ -20,6 +29,7 @@ class DashboardSummary(BaseModel):
     avg_margin: Decimal | None
     value_by_status: list[StatusValue]
     open_tasks: int
+    rep_performance: list["RepPerformance"]
     recent_activity: list[ActivityOut]
 
 

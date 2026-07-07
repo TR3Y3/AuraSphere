@@ -61,3 +61,21 @@ def test_dashboard_isolation(client, seeded):
     assert s["loads_total"] == 0
     assert s["loaded_dollars"] == "0.00" or s["loaded_dollars"] == "0"
     assert client.get("/api/pricing/lanes").json() == []
+
+
+def test_rep_performance_aggregates_by_owner(client, seeded, db):
+    _login(client, "a@example.com", "password-a")
+    sid = _shipper(db, seeded["org_a"]).id
+    mk = lambda **kw: client.post("/api/loads", json={"shipper_id": sid, **kw})
+    mk(customer_rate="1000", carrier_rate="800", status="covered")
+    mk(customer_rate="2000", carrier_rate="1500", status="delivered")
+    mk(customer_rate="900", status="quote")   # quotes excluded
+    mk(customer_rate="500", status="lost")    # terminal excluded
+
+    reps = client.get("/api/dashboard/summary").json()["rep_performance"]
+    assert len(reps) == 1
+    r = reps[0]
+    assert r["loads"] == 2
+    assert r["loaded_dollars"] == "3000.00"
+    assert r["margin"] == "700.00"
+    assert r["name"]

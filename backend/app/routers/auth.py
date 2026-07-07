@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session as DbSession
 
 from app import config
 from app.database import get_db
-from app.defaults import ensure_default_pipeline
 from app.deps import get_current_user
 from app.email import send_password_reset_email, send_verification_email
 from app.models import (
@@ -121,7 +120,6 @@ def signup(payload: SignupRequest, response: Response, db: DbSession = Depends(g
     db.add(user)
     db.flush()  # assign user.id
 
-    ensure_default_pipeline(db, org.id)
     verify_url = _issue_verification(db, user)
 
     token = generate_session_token()

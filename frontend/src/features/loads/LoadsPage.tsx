@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { useBoardMeta, useLoads, STATUS_LABEL, money, type LoadListParams } from './api'
 import { LoadsBoard } from './LoadsBoard'
 import { LoadForm } from './LoadForm'
+import { exportCsv } from '../../lib/csv'
 
 export function LoadsPage() {
   const { me } = useAuth()
@@ -62,6 +63,15 @@ export function LoadsPage() {
         {(filters.search || filters.equipment || filters.origin_state || filters.dest_state || filters.posted) && (
           <button className="btn subtle" onClick={() => setFilters({ search: '', equipment: '', origin_state: '', dest_state: '', posted: '' })}>Clear</button>
         )}
+        <button className="btn subtle" style={{ marginLeft: 'auto' }} title="Export the current view to CSV"
+          onClick={() => exportCsv('loads.csv', items.map((l) => ({
+            reference: l.reference, status: l.status, pickup: l.pickup_date?.slice(0, 10),
+            shipper: l.shipper?.name, carrier: l.carrier?.name,
+            origin: [l.origin_city, l.origin_state].filter(Boolean).join(' '),
+            destination: [l.dest_city, l.dest_state].filter(Boolean).join(' '),
+            equipment: l.equipment, miles: l.total_miles,
+            customer_rate: l.customer_rate, carrier_rate: l.carrier_rate, margin: l.margin,
+          })))}>⇩ CSV</button>
       </div>
 
       {creating && (
@@ -79,19 +89,21 @@ export function LoadsPage() {
       {data && view === 'list' && (
         <div className="panel">
           <table>
-            <thead><tr><th>Ref</th><th>Status</th><th>Shipper</th><th>Lane</th><th>Customer</th><th>Margin</th></tr></thead>
+            <thead><tr><th>Ref</th><th>Status</th><th>Pickup</th><th>Shipper</th><th>Carrier</th><th>Lane</th><th>Customer</th><th>Margin</th></tr></thead>
             <tbody>
               {items.map((l) => (
                 <tr key={l.id} className="row-link" onClick={() => navigate(`/loads/${l.id}`)}>
                   <td><strong>{l.reference}</strong></td>
                   <td><span className="badge b-brand">{STATUS_LABEL[l.status] ?? l.status}</span></td>
+                  <td>{l.pickup_date ? l.pickup_date.slice(0, 10) : '—'}</td>
                   <td>{l.shipper?.name ?? '—'}</td>
+                  <td>{l.carrier?.name ?? <span className="muted">—</span>}</td>
                   <td>{[l.origin_city, l.dest_city].filter(Boolean).join(' → ') || '—'}</td>
                   <td>{money(l.customer_rate)}</td>
                   <td className="dc-amt">{l.margin != null ? money(l.margin) : '—'}</td>
                 </tr>
               ))}
-              {items.length === 0 && <tr><td colSpan={6} className="muted" style={{ padding: 22 }}>No booked loads yet.</td></tr>}
+              {items.length === 0 && <tr><td colSpan={8} className="muted" style={{ padding: 22 }}>No booked loads yet.</td></tr>}
             </tbody>
           </table>
         </div>

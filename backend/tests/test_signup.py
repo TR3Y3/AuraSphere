@@ -25,11 +25,10 @@ def test_signup_creates_org_owner_and_logs_in(client, db):
     assert data["verify_url"] and "/verify?token=" in data["verify_url"]
     assert client.get("/api/auth/me").status_code == 200
 
-    # A default pipeline was provisioned for the new tenant.
-    from app.models import Organization, Pipeline
+    # The new tenant exists and is isolated (legacy pipeline seeding removed).
+    from app.models import Organization
 
-    org = db.query(Organization).filter(Organization.slug == "cade-logistics").first()
-    assert db.query(Pipeline).filter(Pipeline.organization_id == org.id).count() == 1
+    assert db.query(Organization).filter(Organization.slug == "cade-logistics").first() is not None
 
 
 def test_duplicate_email_rejected(client, db):

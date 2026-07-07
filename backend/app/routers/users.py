@@ -8,6 +8,8 @@ from app.deps import OrgScope, get_scope, require_role
 from app.email import send_invite_email
 from app.models import Organization, User
 from app.routers.auth import issue_password_reset
+from pydantic import BaseModel, Field
+
 from app.schemas.auth import InviteRequest, InviteResult, UserOut
 from app.security import hash_password
 
@@ -56,3 +58,26 @@ def invite_user(
     send_invite_email(user.email, org.name, scope.user.full_name, invite_url)
     exposed = invite_url if config.EMAIL_DELIVERY == "console" else None
     return InviteResult(user=user, invite_url=exposed)
+
+
+class UserAdminUpdate(BaseModel):
+    sales_code: str | None = Field(None, max_length=20)
+
+
+@router.patch("/{user_id}", response_model=UserOut)
+def update_user(
+    user_id: int,
+    payload: UserAdminUpdate,
+    scope: OrgScope = Depends(get_scope),
+    _: User = Depends(require_role("owner", "admin")),
+):
+    """Admin-editable rep settings (currently the sales # / rep code)."""
+    user = scope.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    data = payload.model_dump(exclude_unset=True)
+    if "sales_code" in data:
+        user.sales_code = (data["sales_code"] or "").strip().upper() or None
+    scope.db.commit()
+    scope.db.refresh(user)
+    return user

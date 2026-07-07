@@ -53,6 +53,7 @@ class UserOut(BaseModel):
     email: EmailStr
     full_name: str
     role: str
+    sales_code: str | None = None
     is_active: bool
     organization_id: int
     created_at: datetime
