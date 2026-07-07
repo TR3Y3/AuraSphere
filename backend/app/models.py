@@ -207,6 +207,9 @@ class Carrier(Base):
     auto_liability: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     cargo_coverage: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     equipment_types: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Carrier portal access: hash of the carrier's private portal link token
+    # (null = portal not enabled). Regenerating revokes the old link.
+    portal_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
