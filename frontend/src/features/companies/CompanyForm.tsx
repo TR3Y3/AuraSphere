@@ -13,6 +13,7 @@ const schema = z.object({
   phone: z.string().optional(),
   website: z.string().optional(),
   owner_id: z.coerce.number().optional(),
+  secondary_owner_id: z.coerce.number().optional(),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -39,6 +40,7 @@ export function CompanyForm({
       phone: existing?.phone ?? '',
       website: existing?.website ?? '',
       owner_id: existing?.owner_id ?? undefined,
+      secondary_owner_id: existing?.secondary_owner_id ?? undefined,
     },
   })
 
@@ -50,6 +52,7 @@ export function CompanyForm({
       phone: values.phone || null,
       website: values.website || null,
       owner_id: values.owner_id,
+      secondary_owner_id: values.secondary_owner_id || null,
     }
     if (existing) await update.mutateAsync(body)
     else await create.mutateAsync(body)
@@ -80,11 +83,20 @@ export function CompanyForm({
         <input className="ti" {...register('website')} />
       </div>
       <div className="field">
-        <label className="cl">Owner</label>
+        <label className="cl">Primary rep (owner)</label>
         <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => (
-            <option key={u.id} value={u.id}>{u.full_name}</option>
+            <option key={u.id} value={u.id}>{u.full_name}{u.sales_code ? ` · ${u.sales_code}` : ''}</option>
+          ))}
+        </select>
+      </div>
+      <div className="field">
+        <label className="cl">Backup rep (covers when primary is out)</label>
+        <select className="ti" {...register('secondary_owner_id')}>
+          <option value="">(none)</option>
+          {users?.map((u) => (
+            <option key={u.id} value={u.id}>{u.full_name}{u.sales_code ? ` · ${u.sales_code}` : ''}</option>
           ))}
         </select>
       </div>

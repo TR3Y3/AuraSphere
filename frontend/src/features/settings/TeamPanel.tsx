@@ -15,6 +15,12 @@ export function TeamPanel() {
   const [form, setForm] = useState({ email: '', full_name: '', role: 'member' })
   const [inviteLink, setInviteLink] = useState<string | null>(null)
 
+  const setCode = useMutation({
+    mutationFn: ({ id, sales_code }: { id: number; sales_code: string }) =>
+      api.patch<User>(`/api/users/${id}`, { sales_code: sales_code || null }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
+
   const invite = useMutation({
     mutationFn: () => api.post<InviteResult>('/api/users/invite', form),
     onSuccess: (res) => {
@@ -29,13 +35,26 @@ export function TeamPanel() {
       <h2 style={{ border: 0, padding: 0, marginBottom: 12 }}>Team</h2>
 
       <table style={{ marginBottom: canInvite ? 18 : 0 }}>
-        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Sales #</th><th>Status</th></tr></thead>
         <tbody>
           {users?.map((u) => (
             <tr key={u.id}>
               <td>{u.full_name}</td>
               <td>{u.email}</td>
               <td><span className="badge b-muted">{u.role}</span></td>
+              <td>
+                {canInvite ? (
+                  <input className="ti" style={{ width: 90, padding: '5px 8px', fontSize: 13 }}
+                    defaultValue={u.sales_code ?? ''} placeholder="TR-01"
+                    title="Rep code shown on their accounts (press Enter to save)"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') setCode.mutate({ id: u.id, sales_code: (e.target as HTMLInputElement).value })
+                    }}
+                    onBlur={(e) => {
+                      if ((e.target.value || '') !== (u.sales_code ?? '')) setCode.mutate({ id: u.id, sales_code: e.target.value })
+                    }} />
+                ) : (u.sales_code ? <span className="badge b-brand">{u.sales_code}</span> : <span className="muted">—</span>)}
+              </td>
               <td>{u.email_verified ? <span className="badge b-good">active</span> : <span className="badge b-warn">invited</span>}</td>
             </tr>
           ))}

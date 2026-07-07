@@ -45,7 +45,10 @@ def list_companies(
             )
         )
     if owner_id is not None:
-        q = q.filter(Company.owner_id == owner_id)
+        # "My records" / rep filter: a rep covers accounts they own primarily
+        # OR back up as secondary.
+        q = q.filter(or_(Company.owner_id == owner_id,
+                         Company.secondary_owner_id == owner_id))
     if industry:
         q = q.filter(Company.industry.ilike(f"%{industry}%"))
 

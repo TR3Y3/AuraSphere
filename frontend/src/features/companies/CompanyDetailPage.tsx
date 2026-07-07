@@ -4,6 +4,7 @@ import { useContacts } from '../contacts/api'
 import { useCompany } from './api'
 import { CompanyForm } from './CompanyForm'
 import { PinButton } from '../pins/PinButton'
+import { useUsers } from '../users/api'
 import { Timeline } from '../activities/Timeline'
 
 export function CompanyDetailPage() {
@@ -12,6 +13,13 @@ export function CompanyDetailPage() {
   const companyId = id ? Number(id) : undefined
   const [editing, setEditing] = useState(false)
   const { data: company, isLoading, error } = useCompany(companyId)
+  const { data: users } = useUsers()
+  const repLabel = (id: number | null | undefined) => {
+    if (!id) return '—'
+    const u = users?.find((x) => x.id === id)
+    if (!u) return '—'
+    return u.sales_code ? `${u.full_name} · ${u.sales_code}` : u.full_name
+  }
   const { data: contacts } = useContacts({ company_id: companyId, page_size: 100 })
 
   if (isLoading) return <p className="muted">Loading…</p>
@@ -55,6 +63,8 @@ export function CompanyDetailPage() {
                   <a href={company.website} target="_blank" rel="noopener noreferrer">{company.website}</a>
                 ) : '—'}
               </div>
+              <div className="k">Primary rep</div><div>{repLabel(company.owner_id)}</div>
+              <div className="k">Backup rep</div><div>{repLabel(company.secondary_owner_id)}</div>
             </div>
           </div>
         )}

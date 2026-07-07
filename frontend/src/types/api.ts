@@ -1218,6 +1218,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update User
+         * @description Admin-editable rep settings (currently the sales # / rep code).
+         */
+        patch: operations["update_user_api_users__user_id__patch"];
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1651,6 +1671,8 @@ export interface components {
             website?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
         };
         /** CompanyOut */
         CompanyOut: {
@@ -1670,6 +1692,8 @@ export interface components {
             organization_id: number;
             /** Owner Id */
             owner_id: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
             /** Created By */
             created_by: number | null;
             /**
@@ -1697,6 +1721,8 @@ export interface components {
             website?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+            /** Secondary Owner Id */
+            secondary_owner_id?: number | null;
         };
         /** ContactCreate */
         ContactCreate: {
@@ -2644,6 +2670,11 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** UserAdminUpdate */
+        UserAdminUpdate: {
+            /** Sales Code */
+            sales_code?: string | null;
+        };
         /** UserOut */
         UserOut: {
             /** Id */
@@ -2657,6 +2688,8 @@ export interface components {
             full_name: string;
             /** Role */
             role: string;
+            /** Sales Code */
+            sales_code?: string | null;
             /** Is Active */
             is_active: boolean;
             /** Organization Id */
@@ -5544,6 +5577,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InviteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_user_api_users__user_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserAdminUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
                 };
             };
             /** @description Validation Error */
