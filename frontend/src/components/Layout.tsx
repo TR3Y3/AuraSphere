@@ -31,10 +31,17 @@ function useClickOutside(onOut: () => void) {
 }
 
 // Nudge owners whose email isn't verified yet; lets them resend the link.
+// Dismissible per-session so it doesn't nag on every page view.
 function VerifyBanner() {
   const { me } = useAuth()
   const [sent, setSent] = useState<'idle' | 'sending' | 'done'>('idle')
-  if (!me || me.user.email_verified) return null
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem('as_verify_dismissed') === '1')
+  if (!me || me.user.email_verified || dismissed) return null
+
+  const dismiss = () => {
+    sessionStorage.setItem('as_verify_dismissed', '1')
+    setDismissed(true)
+  }
 
   const resend = async () => {
     setSent('sending')
@@ -55,6 +62,8 @@ function VerifyBanner() {
         : <button className="btn sm" onClick={resend} disabled={sent === 'sending'}>
             {sent === 'sending' ? 'Sending…' : 'Resend link'}
           </button>}
+      <button className="iconbtn" title="Dismiss for this session" onClick={dismiss}
+        style={{ color: 'var(--warn)', padding: '2px 6px' }}>✕</button>
     </div>
   )
 }

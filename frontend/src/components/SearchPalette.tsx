@@ -33,9 +33,12 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
       ])
       if (cancelled) return
       const merged: Result[] = [
-        ...(loads?.items ?? []).map((l) => ({ type: 'Load', label: l.reference ?? `Load ${l.id}`, to: `/loads/${l.id}` })),
+        ...(loads?.items ?? []).map((l) => {
+          const lane = [l.origin_city, l.dest_city].filter(Boolean).join(' → ')
+          return { type: 'Load', label: `${l.reference ?? `Load ${l.id}`}${lane ? ` · ${lane}` : ''}`, to: `/loads/${l.id}` }
+        }),
         ...(shippers?.items ?? []).map((s) => ({ type: 'Shipper', label: s.name, to: `/companies/${s.id}` })),
-        ...(carriers?.items ?? []).map((c) => ({ type: 'Carrier', label: c.name, to: `/carriers/${c.id}` })),
+        ...(carriers?.items ?? []).map((c) => ({ type: 'Carrier', label: `${c.name}${c.mc_number ? ` · ${c.mc_number}` : ''}`, to: `/carriers/${c.id}` })),
         ...(contacts?.items ?? []).map((c) => ({ type: 'Contact', label: `${c.first_name} ${c.last_name ?? ''}`.trim(), to: `/contacts/${c.id}` })),
       ]
       setResults(merged)
@@ -44,7 +47,20 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
     return () => { cancelled = true; clearTimeout(t) }
   }, [q])
 
-  const go = (r: Result) => { navigate(r.to); onClose() }
+  const go = (r: Result) => {
+    // Remember the last few visited results for instant re-access.
+    try {
+      const rec: Result[] = JSON.parse(localStorage.getItem('as_recent') || '[]')
+      const next = [r, ...rec.filter((x) => x.to !== r.to)].slice(0, 5)
+      localStorage.setItem('as_recent', JSON.stringify(next))
+    } catch { /* localStorage unavailable — skip recents */ }
+    navigate(r.to)
+    onClose()
+  }
+
+  const recents: Result[] = (() => {
+    try { return JSON.parse(localStorage.getItem('as_recent') || '[]') } catch { return [] }
+  })()
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') onClose()
@@ -58,7 +74,7 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
       <div className="palette" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
-          placeholder="Search shippers, carriers, contacts, deals…"
+          placeholder="Search loads, lanes, shippers, carriers, MC#, contacts…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={onKeyDown}
@@ -72,7 +88,17 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
               <span className="type">{r.type}</span>
             </div>
           ))}
-          {!q.trim() && <div className="palette-empty">Type to search across your records.</div>}
+          {!q.trim() && recents.length > 0 && (
+            <>
+              <div className="palette-empty" style={{ paddingBottom: 4 }}>Recent</div>
+              {recents.map((r) => (
+                <div key={r.to} className="palette-item" onClick={() => go(r)}>
+                  <span>{r.label}</span><span className="type">{r.type}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {!q.trim() && recents.length === 0 && <div className="palette-empty">Type to search across your records.</div>}
         </div>
       </div>
     </div>

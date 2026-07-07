@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { Load } from '../../lib/api'
+import { CityDatalist, splitCityState } from '../../lib/usCities'
 import { useCompanies } from '../companies/api'
 import { useCarriers } from '../carriers/api'
 import { useCreateLoad, useUpdateLoad } from './api'
@@ -45,6 +46,7 @@ export function LoadForm({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -100,9 +102,22 @@ export function LoadForm({
         </select>
       </div>
       <div className="field"><label className="cl">Equipment</label><input className="ti" placeholder="53' Van" {...register('equipment')} /></div>
-      <div className="field"><label className="cl">Origin city</label><input className="ti" {...register('origin_city')} /></div>
+      <CityDatalist />
+      <div className="field"><label className="cl">Origin city</label>
+        <input className="ti" list="us-cities" placeholder="Start typing a city…"
+          {...register('origin_city', { onChange: (e) => {
+            const cs = splitCityState(e.target.value)
+            if (cs) { setValue('origin_city', cs.city); setValue('origin_state', cs.state) }
+          } })} />
+      </div>
       <div className="field"><label className="cl">Origin state</label><input className="ti" maxLength={2} {...register('origin_state')} /></div>
-      <div className="field"><label className="cl">Destination city</label><input className="ti" {...register('dest_city')} /></div>
+      <div className="field"><label className="cl">Destination city</label>
+        <input className="ti" list="us-cities" placeholder="Start typing a city…"
+          {...register('dest_city', { onChange: (e) => {
+            const cs = splitCityState(e.target.value)
+            if (cs) { setValue('dest_city', cs.city); setValue('dest_state', cs.state) }
+          } })} />
+      </div>
       <div className="field"><label className="cl">Destination state</label><input className="ti" maxLength={2} {...register('dest_state')} /></div>
       <div className="field"><label className="cl">Pickup date</label><input className="ti" type="date" {...register('pickup_date')} /></div>
       <div className="field"><label className="cl">Delivery date</label><input className="ti" type="date" {...register('delivery_date')} /></div>

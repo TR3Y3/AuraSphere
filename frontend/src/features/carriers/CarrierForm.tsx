@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { Carrier } from '../../lib/api'
 import { useUsers } from '../users/api'
 import { useCreateCarrier, useUpdateCarrier } from './api'
+import { CityDatalist, splitCityState } from '../../lib/usCities'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -29,6 +30,7 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -86,7 +88,14 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
       </div>
       <div className="field"><label className="cl">MC #</label><input className="ti" {...register('mc_number')} /></div>
       <div className="field"><label className="cl">DOT #</label><input className="ti" {...register('dot_number')} /></div>
-      <div className="field"><label className="cl">HQ city</label><input className="ti" {...register('hq_city')} /></div>
+      <CityDatalist />
+      <div className="field"><label className="cl">HQ city</label>
+        <input className="ti" list="us-cities" placeholder="Start typing a city…"
+          {...register('hq_city', { onChange: (e) => {
+            const cs = splitCityState(e.target.value)
+            if (cs) { setValue('hq_city', cs.city); setValue('hq_state', cs.state) }
+          } })} />
+      </div>
       <div className="field"><label className="cl">HQ state</label><input className="ti" maxLength={2} {...register('hq_state')} /></div>
       <div className="field"><label className="cl">Phone</label><input className="ti" {...register('phone')} /></div>
       <div className="field">

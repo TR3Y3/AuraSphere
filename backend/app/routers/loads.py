@@ -104,7 +104,12 @@ def list_loads(
     )
     if search:
         like = f"%{search}%"
-        q = q.filter(or_(Load.reference.ilike(like), Load.commodity.ilike(like)))
+        q = q.filter(or_(
+            Load.reference.ilike(like),
+            Load.commodity.ilike(like),
+            Load.origin_city.ilike(like),
+            Load.dest_city.ilike(like),
+        ))
     if status:
         q = q.filter(Load.status == status)
     if statuses:
