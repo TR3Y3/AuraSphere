@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { api } from '../lib/api'
 import { SearchPalette } from './SearchPalette'
 import { FeedbackButton } from './Feedback'
 
@@ -34,8 +33,10 @@ function useClickOutside(onOut: () => void) {
   return ref
 }
 
+// TODO: re-enable VerifyBanner when domain + Resend are configured
 // Nudge owners whose email isn't verified yet; lets them resend the link.
 // Dismissible per-session so it doesn't nag on every page view.
+/*
 function VerifyBanner() {
   const { me } = useAuth()
   const [sent, setSent] = useState<'idle' | 'sending' | 'done'>('idle')
@@ -71,6 +72,7 @@ function VerifyBanner() {
     </div>
   )
 }
+*/
 
 export function Layout() {
   const { me, logout } = useAuth()
@@ -182,7 +184,6 @@ export function Layout() {
       </header>
 
       <div className="app-content">
-        <VerifyBanner />
         <Outlet />
       </div>
 
