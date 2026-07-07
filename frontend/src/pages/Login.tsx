@@ -42,7 +42,7 @@ export function Login() {
           <span className="logo-mark">A</span>
           <div>
             <b>AuraSphere</b>
-            <small>CRM</small>
+            <small>Freight TMS</small>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCarriers, useDeleteCarrier } from './api'
 import { CarrierForm } from './CarrierForm'
+import { exportCsv } from '../../lib/csv'
 import { Rating } from '../../components/shell'
 
 const PAGE_SIZE = 10
@@ -32,7 +33,13 @@ export function CarriersPage() {
       <div className="toolbar">
         <input type="search" placeholder="Search name, MC#, DOT#…" value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
-        <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
+        <button className="btn subtle" style={{ marginLeft: 'auto' }} title="Export the current view to CSV"
+          onClick={() => exportCsv('carriers.csv', (data?.items ?? []).map((c) => ({
+            name: c.name, mc_number: c.mc_number, dot_number: c.dot_number,
+            hq: [c.hq_city, c.hq_state].filter(Boolean).join(' '), phone: c.phone, email: c.email,
+            status: c.status, rating: c.rating,
+          })))}>⇩ CSV</button>
+        <button className="btn" onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ New carrier'}
         </button>
       </div>

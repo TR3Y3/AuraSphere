@@ -13,6 +13,10 @@ const NAV = [
   { to: '/carriers', label: 'Carriers' },
   { to: '/companies', label: 'Shippers' },
   { to: '/contacts', label: 'Contacts' },
+]
+
+// Secondary destinations live under "More ▾" to keep the bar uncrowded.
+const MORE_NAV = [
   { to: '/prospects', label: 'Lead-Gen' },
   { to: '/pricing', label: 'Pricing' },
 ]
@@ -74,8 +78,10 @@ export function Layout() {
   const [search, setSearch] = useState(false)
   const [newOpen, setNewOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const newRef = useClickOutside(() => setNewOpen(false))
   const meRef = useClickOutside(() => setMeOpen(false))
+  const moreRef = useClickOutside(() => setMoreOpen(false))
 
   // Per-tenant accent: paint the org's brand color into the theme.
   useEffect(() => {
@@ -127,6 +133,17 @@ export function Layout() {
               {n.label}
             </NavLink>
           ))}
+          <div className="menu" ref={moreRef}>
+            <button className="iconbtn" style={{ fontSize: 14, fontWeight: 500 }}
+              onClick={() => setMoreOpen((v) => !v)}>More ▾</button>
+            {moreOpen && (
+              <div className="menu-pop" style={{ left: 0, right: 'auto' }}>
+                {MORE_NAV.map((n) => (
+                  <button key={n.to} onClick={() => { setMoreOpen(false); navigate(n.to) }}>{n.label}</button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="appbar-spacer" />
@@ -149,7 +166,6 @@ export function Layout() {
         </div>
 
         <FeedbackButton />
-        <button className="iconbtn" title="Notifications">🔔</button>
 
         <div className="menu" ref={meRef}>
           <button className="avatar-btn" onClick={() => setMeOpen((v) => !v)}>

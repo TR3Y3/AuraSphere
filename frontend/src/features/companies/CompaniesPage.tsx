@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { useCompanies, useDeleteCompany } from './api'
+import { exportCsv } from '../../lib/csv'
 import { CompanyForm } from './CompanyForm'
 
 const PAGE_SIZE = 10
@@ -43,7 +44,11 @@ export function CompaniesPage() {
           <input type="checkbox" checked={mine} onChange={(e) => { setMine(e.target.checked); setPage(1) }} />
           My records
         </label>
-        <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setCreating((v) => !v)}>
+        <button className="btn subtle" style={{ marginLeft: 'auto' }} title="Export the current view to CSV"
+          onClick={() => exportCsv('shippers.csv', (data?.items ?? []).map((c) => ({
+            name: c.name, domain: c.domain, industry: c.industry, phone: c.phone, website: c.website,
+          })))}>⇩ CSV</button>
+        <button className="btn" onClick={() => setCreating((v) => !v)}>
           {creating ? '✕ Cancel' : '+ New shipper'}
         </button>
       </div>
