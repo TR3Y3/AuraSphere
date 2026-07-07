@@ -77,6 +77,18 @@ services:
         value: "stub"
       - key: ELD_API_KEY
         sync: false
+      # FMCSA lookup: default "stub". Set FMCSA_MODE=qcmobile + FMCSA_WEBKEY
+      # (free key) for real MC → carrier data.
+      - key: FMCSA_MODE
+        value: "stub"
+      - key: FMCSA_WEBKEY
+        sync: false
+      # Lead-Gen enrichment: default "stub". Set ENRICHMENT_MODE=hunter +
+      # HUNTER_API_KEY for real Hunter.io contact discovery.
+      - key: ENRICHMENT_MODE
+        value: "stub"
+      - key: HUNTER_API_KEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

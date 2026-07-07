@@ -34,6 +34,14 @@ export function useImportProspects() {
   })
 }
 
+export function useEnrichProspect() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<Prospect>(`/api/prospects/${id}/enrich`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['prospects'] }),
+  })
+}
+
 export function useUpdateProspect() {
   const qc = useQueryClient()
   return useMutation({

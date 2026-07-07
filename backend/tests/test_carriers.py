@@ -70,3 +70,18 @@ def test_contact_cannot_link_other_orgs_carrier(client, seeded, db):
         "/api/contacts", json={"first_name": "Cross", "carrier_id": carrier_b.id}
     )
     assert res.status_code == 422
+
+
+def test_mc_lookup_returns_populated_fields(client, seeded):
+    _login(client, "a@example.com", "password-a")
+    r1 = client.get("/api/carriers/lookup", params={"mc": "MC884217"})
+    assert r1.status_code == 200, r1.text
+    body = r1.json()
+    assert body["found"] is True
+    assert body["legal_name"] and body["dot_number"] and body["state"]
+    # Deterministic in stub mode.
+    assert client.get("/api/carriers/lookup", params={"mc": "884217"}).json() == body
+
+
+def test_mc_lookup_requires_auth(client, seeded):
+    assert client.get("/api/carriers/lookup", params={"mc": "1"}).status_code == 401

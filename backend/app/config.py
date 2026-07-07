@@ -80,3 +80,21 @@ SEED_ORG_ACCENT = os.getenv("SEED_ORG_ACCENT")  # hex like #1f6feb (per-tenant b
 SEED_ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL")
 SEED_ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD")
 SEED_ADMIN_NAME = os.getenv("SEED_ADMIN_NAME", "Admin")
+
+# FMCSA carrier lookup (MC → legal name/DOT/address/authority).
+#   "stub" (default) — deterministic plausible data derived from the MC number.
+#   "qcmobile" — real FMCSA QCMobile API (register a free webkey at
+#     https://mobile.fmcsa.dot.gov/QCDevsite/ and set FMCSA_WEBKEY).
+FMCSA_MODE = os.getenv("FMCSA_MODE", "stub").lower()
+FMCSA_WEBKEY = os.getenv("FMCSA_WEBKEY")
+
+# Contact enrichment for Lead-Gen prospects (find the logistics contact).
+#   "stub" (default) — deterministic demo contact derived from the domain.
+#   "hunter" — Hunter.io domain-search (set HUNTER_API_KEY). Same approach as
+#     the working CALCOR integration.
+ENRICHMENT_MODE = os.getenv("ENRICHMENT_MODE", "stub").lower()
+HUNTER_API_KEY = os.getenv("HUNTER_API_KEY")
+
+# Offered-lock window: minutes a load stays locked to a carrier awaiting their
+# rate-con signature before it lazily reverts to Tendered (5–15 typical).
+OFFER_TTL_MINUTES = int(os.getenv("OFFER_TTL_MINUTES", "10"))

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status as http
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
-from app import dat, plans
+from app import dat, offers, plans
 from app.deps import OrgScope, get_scope
 from app.models import Carrier, Company, Contact, Load, Organization
 from app.schemas.common import Page
@@ -51,6 +51,7 @@ def _load(scope: OrgScope, load_id: int) -> Load:
     )
     if obj is None:
         raise HTTPException(status_code=http.HTTP_404_NOT_FOUND, detail="Not found")
+    offers.resolve_offer_expiry(scope.db, obj)  # lazily revert an expired offer
     return obj
 
 
@@ -99,12 +100,29 @@ def list_loads(
     page: int = Query(1, ge=1),
     page_size: int = Query(500, ge=1, le=1000),
 ):
+    # Bulk lazy expiry: any offer past its window reverts to tendered so the
+    # board is correct without a background scheduler (poll = the heartbeat).
+    from datetime import datetime, timezone as _tz
+    expired = (
+        scope.query(Load)
+        .filter(Load.status == "offered", Load.offer_expires_at < datetime.now(_tz.utc))
+        .update({"status": "tendered", "offered_carrier_id": None, "offer_expires_at": None},
+                synchronize_session=False)
+    )
+    if expired:
+        scope.db.commit()
+
     q = scope.query(Load).options(
         joinedload(Load.shipper), joinedload(Load.carrier), joinedload(Load.primary_contact)
     )
     if search:
         like = f"%{search}%"
-        q = q.filter(or_(Load.reference.ilike(like), Load.commodity.ilike(like)))
+        q = q.filter(or_(
+            Load.reference.ilike(like),
+            Load.commodity.ilike(like),
+            Load.origin_city.ilike(like),
+            Load.dest_city.ilike(like),
+        ))
     if status:
         q = q.filter(Load.status == status)
     if statuses:
@@ -221,7 +239,7 @@ def duplicate_load(load_id: int, scope: OrgScope = Depends(get_scope)):
 
 
 @router.get("/board", response_model=dict)
-def board_meta():
+def board_meta(scope: OrgScope = Depends(get_scope)):
     """The ordered pipeline statuses that make up the board columns."""
     return {"pipeline": LOAD_PIPELINE, "statuses": LOAD_STATUSES}
 

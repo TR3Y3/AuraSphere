@@ -2,10 +2,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 
+from app import fmcsa
 from app.deps import OrgScope, get_scope
 from app.models import Carrier
 from app.schemas.carrier import CarrierCreate, CarrierOut, CarrierUpdate
 from app.schemas.common import Page
+from app.schemas.fmcsa import CarrierLookupOut
 
 router = APIRouter(prefix="/api/carriers", tags=["carriers"])
 
@@ -78,6 +80,16 @@ def create_carrier(payload: CarrierCreate, scope: OrgScope = Depends(get_scope))
     scope.db.commit()
     scope.db.refresh(carrier)
     return carrier
+
+
+@router.get("/lookup", response_model=CarrierLookupOut)
+def lookup_carrier(mc: str = Query(..., min_length=1), scope: OrgScope = Depends(get_scope)):
+    """FMCSA lookup: MC/docket number → legal name, DOT, HQ, authority status.
+
+    Powers the Add-Carrier auto-populate. Registered before /{carrier_id} so
+    the literal path wins the route match.
+    """
+    return fmcsa.lookup_mc(mc)
 
 
 @router.get("/{carrier_id}", response_model=CarrierOut)

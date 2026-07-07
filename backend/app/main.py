@@ -1,7 +1,13 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from app import config
+
+log = logging.getLogger("aurasphere")
 from app.routers import (
     activities,
     auth,
@@ -21,6 +27,7 @@ from app.routers import (
     pins,
     pipelines,
     prospects,
+    sign,
     tracking,
     users,
 )
@@ -50,12 +57,36 @@ app.include_router(documents.router)
 app.include_router(tracking.router)
 app.include_router(eld.router)
 app.include_router(load_options.router)
+app.include_router(sign.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
 app.include_router(activities.router)
 app.include_router(dashboard.router)
 app.include_router(feedback.router)
 app.include_router(users.router)
+
+
+# Global handlers: responses produced here flow back through the middleware
+# stack, so unlike raw 500s they carry CORS headers and the browser shows a
+# real error instead of an opaque "network error".
+@app.exception_handler(IntegrityError)
+async def on_integrity_error(request: Request, exc: IntegrityError):
+    """Check-then-insert races (duplicate email/slug/…) land here as a clean
+    409 instead of a raw 500."""
+    log.warning("Integrity conflict on %s %s: %s", request.method, request.url.path, exc.orig)
+    return JSONResponse(
+        status_code=409,
+        content={"detail": "That record conflicts with one that already exists. Refresh and try again."},
+    )
+
+
+@app.exception_handler(Exception)
+async def on_unhandled_error(request: Request, exc: Exception):
+    log.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Something went wrong on our end. Please try again."},
+    )
 
 
 @app.get("/health")
