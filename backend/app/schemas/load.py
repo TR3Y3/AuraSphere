@@ -84,6 +84,8 @@ class LoadOut(LoadBase):
     updated_at: datetime
     dat_posting_id: str | None = None
     dat_posted_at: datetime | None = None
+    offered_carrier_id: int | None = None
+    offer_expires_at: datetime | None = None
     shipper: Ref | None = None
     carrier: Ref | None = None
     primary_contact: ContactRef | None = None

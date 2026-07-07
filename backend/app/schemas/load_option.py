@@ -17,6 +17,8 @@ class CarrierRef(BaseModel):
 class OptionCreate(BaseModel):
     carrier_id: int | None = None
     carrier_name: str | None = None
+    mc_number: str | None = None
+    dot_number: str | None = None
     rate: Decimal | None = None
     status: str = "available"
     notes: str | None = None
@@ -38,6 +40,12 @@ class OptionOut(BaseModel):
     load_id: int
     carrier_id: int | None
     carrier_name: str | None
+    mc_number: str | None = None
+    dot_number: str | None = None
+    source: str = "manual"
+    # Traffic-light bookability, derived from vetting/compliance at read time:
+    # green | orange | red | grey (not in system).
+    carrier_light: str | None = None
     rate: Decimal | None
     counter_rate: Decimal | None
     status: str
@@ -46,3 +54,21 @@ class OptionOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     carrier: CarrierRef | None = None
+
+
+class OfferRequest(BaseModel):
+    option_id: int
+    ttl_minutes: int | None = None  # 5–15; defaults to OFFER_TTL_MINUTES
+
+
+class CoverResult(BaseModel):
+    load: "LoadOut"
+    # Exposed only in console email mode so the sign flow is testable
+    # without a mailbox (same pattern as signup/invite links).
+    sign_url: str | None = None
+    sent_to: str | None = None
+
+
+from app.schemas.load import LoadOut  # noqa: E402 — resolve forward ref
+
+CoverResult.model_rebuild()

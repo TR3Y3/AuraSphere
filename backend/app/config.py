@@ -94,3 +94,7 @@ FMCSA_WEBKEY = os.getenv("FMCSA_WEBKEY")
 #     the working CALCOR integration.
 ENRICHMENT_MODE = os.getenv("ENRICHMENT_MODE", "stub").lower()
 HUNTER_API_KEY = os.getenv("HUNTER_API_KEY")
+
+# Offered-lock window: minutes a load stays locked to a carrier awaiting their
+# rate-con signature before it lazily reverts to Tendered (5–15 typical).
+OFFER_TTL_MINUTES = int(os.getenv("OFFER_TTL_MINUTES", "10"))

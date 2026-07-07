@@ -27,6 +27,7 @@ from app.routers import (
     pins,
     pipelines,
     prospects,
+    sign,
     tracking,
     users,
 )
@@ -56,6 +57,7 @@ app.include_router(documents.router)
 app.include_router(tracking.router)
 app.include_router(eld.router)
 app.include_router(load_options.router)
+app.include_router(sign.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
 app.include_router(activities.router)

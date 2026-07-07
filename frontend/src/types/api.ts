@@ -838,7 +838,11 @@ export interface paths {
         /** List Options */
         get: operations["list_options_api_loads__load_id__options_get"];
         put?: never;
-        /** Add Option */
+        /**
+         * Add Option
+         * @description Rep-entered option. The future carrier app calls offers.create_option
+         *     with source='carrier_app' — same seam, zero rework.
+         */
         post: operations["add_option_api_loads__load_id__options_post"];
         delete?: never;
         options?: never;
@@ -878,6 +882,71 @@ export interface paths {
          * @description Cover the load with this option's carrier + rate, mark it accepted.
          */
         post: operations["accept_option_api_loads__load_id__options__option_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/options/{option_id}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cover With Ratecon
+         * @description One click on a green option: cover the load AND send the rate con to sign.
+         *
+         *     Backend re-checks bookability — the UI only shows this on green, but the
+         *     server is the enforcement point.
+         */
+        post: operations["cover_with_ratecon_api_loads__load_id__options__option_id__cover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/loads/{load_id}/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Offer To Carrier
+         * @description Lock the load to one option's carrier while they sign (Offered status).
+         *
+         *     Atomic tendered/quote → offered claim; expires after ttl_minutes (5–15,
+         *     default OFFER_TTL_MINUTES) and lazily reverts to Tendered. Signing the
+         *     rate con within the window covers the load.
+         */
+        post: operations["offer_to_carrier_api_loads__load_id__offer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sign/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** View Rate Con */
+        get: operations["view_rate_con_api_sign__token__get"];
+        put?: never;
+        /** Sign Rate Con */
+        post: operations["sign_rate_con_api_sign__token__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -975,6 +1044,28 @@ export interface paths {
         head?: never;
         /** Update Prospect */
         patch: operations["update_prospect_api_prospects__prospect_id__patch"];
+        trace?: never;
+    };
+    "/api/prospects/{prospect_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enrich Prospect
+         * @description Find the prospect's logistics contact (Hunter.io seam; stub by default).
+         *
+         *     Fills only EMPTY contact fields — never clobbers data a rep already typed.
+         */
+        post: operations["enrich_prospect_api_prospects__prospect_id__enrich_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/prospects/{prospect_id}/convert": {
@@ -1682,6 +1773,14 @@ export interface components {
             /** Owner Id */
             owner_id?: number | null;
         };
+        /** CoverResult */
+        CoverResult: {
+            load: components["schemas"]["LoadOut"];
+            /** Sign Url */
+            sign_url?: string | null;
+            /** Sent To */
+            sent_to?: string | null;
+        };
         /** DashboardSummary */
         DashboardSummary: {
             /** Loads Total */
@@ -2005,6 +2104,10 @@ export interface components {
             dat_posting_id?: string | null;
             /** Dat Posted At */
             dat_posted_at?: string | null;
+            /** Offered Carrier Id */
+            offered_carrier_id?: number | null;
+            /** Offer Expires At */
+            offer_expires_at?: string | null;
             shipper?: components["schemas"]["Ref"] | null;
             carrier?: components["schemas"]["Ref"] | null;
             primary_contact?: components["schemas"]["app__schemas__load__ContactRef"] | null;
@@ -2098,12 +2201,23 @@ export interface components {
             user: components["schemas"]["UserOut"];
             organization: components["schemas"]["OrganizationOut"];
         };
+        /** OfferRequest */
+        OfferRequest: {
+            /** Option Id */
+            option_id: number;
+            /** Ttl Minutes */
+            ttl_minutes?: number | null;
+        };
         /** OptionCreate */
         OptionCreate: {
             /** Carrier Id */
             carrier_id?: number | null;
             /** Carrier Name */
             carrier_name?: string | null;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
             /** Rate */
             rate?: number | string | null;
             /**
@@ -2124,6 +2238,17 @@ export interface components {
             carrier_id: number | null;
             /** Carrier Name */
             carrier_name: string | null;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
+            /**
+             * Source
+             * @default manual
+             */
+            source: string;
+            /** Carrier Light */
+            carrier_light?: string | null;
             /** Rate */
             rate: string | null;
             /** Counter Rate */
@@ -2451,6 +2576,28 @@ export interface components {
             token: string;
             /** Password */
             password: string;
+        };
+        /** SignRequest */
+        SignRequest: {
+            /** Signer Name */
+            signer_name: string;
+        };
+        /** SignView */
+        SignView: {
+            /** Org Name */
+            org_name: string;
+            /** Load Reference */
+            load_reference: string | null;
+            /** Carrier Name */
+            carrier_name: string | null;
+            /** Html */
+            html: string;
+            /** Signed */
+            signed: boolean;
+            /** Signed At */
+            signed_at: string | null;
+            /** Expired */
+            expired: boolean;
         };
         /** SignupRequest */
         SignupRequest: {
@@ -4670,6 +4817,139 @@ export interface operations {
             };
         };
     };
+    cover_with_ratecon_api_loads__load_id__options__option_id__cover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+                option_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    offer_to_carrier_api_loads__load_id__offer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    view_rate_con_api_sign__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sign_rate_con_api_sign__token__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_pins_api_pins_get: {
         parameters: {
             query?: never;
@@ -4932,6 +5212,37 @@ export interface operations {
                 "application/json": components["schemas"]["ProspectUpdate"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProspectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enrich_prospect_api_prospects__prospect_id__enrich_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prospect_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

@@ -383,6 +383,10 @@ class Load(Base):
     # DAT load-board posting (null until posted; id returned by the provider).
     dat_posting_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
     dat_posted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Offered-lock: while status='offered' the load is held for this carrier
+    # until offer_expires_at; expiry lazily reverts it to tendered.
+    offered_carrier_id: Mapped[int | None] = mapped_column(ForeignKey("carriers.id"), nullable=True)
+    offer_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     delivered_at: Mapped[datetime | None] = mapped_column(
@@ -425,6 +429,12 @@ class LoadOption(Base):
         ForeignKey("carriers.id"), nullable=True
     )
     carrier_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # MC/DOT on the option itself: options can arrive before the carrier exists
+    # in the system (grey status), and the future carrier app submits with MC.
+    mc_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    dot_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # 'manual' (rep-entered) | 'carrier_app' (self-served, once the app lands).
+    source: Mapped[str] = mapped_column(String(20), nullable=False, default="manual")
     rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     counter_rate: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="available")
@@ -438,6 +448,37 @@ class LoadOption(Base):
     )
 
     carrier: Mapped["Carrier | None"] = relationship(foreign_keys=[carrier_id])
+
+
+class RateConfirmation(Base):
+    """A generated rate confirmation awaiting (or holding) a signature.
+
+    The carrier signs via a single-use public token link (hash-only storage,
+    same pattern as reset tokens) — signer name + IP + timestamp + doc hash
+    give ESIGN-act basics without a DocuSign dependency.
+    """
+
+    __tablename__ = "rate_confirmations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    load_id: Mapped[int] = mapped_column(ForeignKey("loads.id"), nullable=False, index=True)
+    option_id: Mapped[int | None] = mapped_column(ForeignKey("load_options.id"), nullable=True)
+    carrier_id: Mapped[int | None] = mapped_column(ForeignKey("carriers.id"), nullable=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    html: Mapped[str] = mapped_column(Text, nullable=False)
+    doc_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    sent_to: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    signer_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    signer_ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class Document(Base):

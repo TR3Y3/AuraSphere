@@ -47,3 +47,38 @@ export function useAcceptOption(loadId: number) {
     },
   })
 }
+
+export interface CoverResult {
+  load: Load
+  sign_url: string | null
+  sent_to: string | null
+}
+
+// Cover Load (green options): race-safe accept + rate con generated + sign
+// link emailed to the carrier in one click.
+export function useCoverOption(loadId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post<CoverResult>(`/api/loads/${loadId}/options/${id}/cover`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['load-options', loadId] })
+      qc.invalidateQueries({ queryKey: ['load', loadId] })
+      qc.invalidateQueries({ queryKey: ['loads'] })
+      qc.invalidateQueries({ queryKey: ['load-docs', loadId] })
+    },
+  })
+}
+
+// Offer: lock the load to this option's carrier while they sign (expires).
+export function useOfferLoad(loadId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { option_id: number; ttl_minutes?: number }) =>
+      api.post<CoverResult>(`/api/loads/${loadId}/offer`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['load-options', loadId] })
+      qc.invalidateQueries({ queryKey: ['load', loadId] })
+      qc.invalidateQueries({ queryKey: ['loads'] })
+    },
+  })
+}
