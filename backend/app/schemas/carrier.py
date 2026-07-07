@@ -2,7 +2,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class CarrierBase(BaseModel):
@@ -51,6 +51,7 @@ class CarrierOut(CarrierBase):
 
     id: int
     organization_id: int
+    portal_token_hash: str | None = Field(default=None, exclude=True)
     owner_id: int | None
     created_by: int | None
     created_at: datetime
@@ -73,3 +74,8 @@ class CarrierOut(CarrierBase):
     @property
     def is_compliant(self) -> bool:
         return len(self.compliance_issues) == 0
+
+    @computed_field
+    @property
+    def portal_enabled(self) -> bool:
+        return self.portal_token_hash is not None

@@ -24,6 +24,7 @@ from app.routers import (
     loads,
     market,
     pins,
+    portal,
     prospects,
     sign,
     tracking,
@@ -54,6 +55,7 @@ app.include_router(tracking.router)
 app.include_router(eld.router)
 app.include_router(load_options.router)
 app.include_router(sign.router)
+app.include_router(portal.router)
 app.include_router(pins.router)
 app.include_router(prospects.router)
 app.include_router(activities.router)

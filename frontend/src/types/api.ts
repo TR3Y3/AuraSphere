@@ -370,6 +370,28 @@ export interface paths {
         patch: operations["update_carrier_api_carriers__carrier_id__patch"];
         trace?: never;
     };
+    "/api/carriers/{carrier_id}/portal-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Portal Link
+         * @description Create (or rotate) the carrier's private portal link. Rotating revokes
+         *     the previous link.
+         */
+        post: operations["generate_portal_link_api_carriers__carrier_id__portal_link_post"];
+        /** Revoke Portal Link */
+        delete: operations["revoke_portal_link_api_carriers__carrier_id__portal_link_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/carriers/{carrier_id}/lanes": {
         parameters: {
             query?: never;
@@ -879,6 +901,120 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portal/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Portal Meta */
+        get: operations["portal_meta_api_portal_meta_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/loads/available": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Available Loads
+         * @description The broker's open board: tendered loads, carrier-safe fields only.
+         */
+        get: operations["available_loads_api_portal_loads_available_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/loads/{load_id}/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Offer
+         * @description Carrier self-serves an offer → appears live in the Quote Desk ('app' badge).
+         */
+        post: operations["submit_offer_api_portal_loads__load_id__offer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/loads/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Loads */
+        get: operations["my_loads_api_portal_loads_mine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/loads/{load_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Document
+         * @description Carrier uploads paperwork (POD/BOL) straight onto their own load.
+         */
+        post: operations["upload_document_api_portal_loads__load_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portal/loads/{load_id}/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gps Ping
+         * @description Phone location share → a check-call feeding the load's tracking map.
+         */
+        post: operations["gps_ping_api_portal_loads__load_id__ping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pins": {
         parameters: {
             query?: never;
@@ -1299,6 +1435,19 @@ export interface components {
             /** Kind */
             kind?: string | null;
         };
+        /** Body_upload_document_api_portal_loads__load_id__documents_post */
+        Body_upload_document_api_portal_loads__load_id__documents_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /**
+             * Kind
+             * @default pod
+             */
+            kind: string;
+        };
         /** CapacityCreate */
         CapacityCreate: {
             /** Location */
@@ -1453,6 +1602,8 @@ export interface components {
             readonly compliance_issues: string[];
             /** Is Compliant */
             readonly is_compliant: boolean;
+            /** Portal Enabled */
+            readonly portal_enabled: boolean;
         };
         /** CarrierRef */
         CarrierRef: {
@@ -2062,6 +2213,13 @@ export interface components {
             user: components["schemas"]["UserOut"];
             organization: components["schemas"]["OrganizationOut"];
         };
+        /** OfferIn */
+        OfferIn: {
+            /** Rate */
+            rate: number | string;
+            /** Notes */
+            notes?: string | null;
+        };
         /** OfferRequest */
         OfferRequest: {
             /** Option Id */
@@ -2270,6 +2428,17 @@ export interface components {
             /** Remind At */
             remind_at?: string | null;
         };
+        /** PingIn */
+        PingIn: {
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+        };
         /** PlanInfo */
         PlanInfo: {
             /** Key */
@@ -2282,6 +2451,73 @@ export interface components {
             blurb: string;
             /** Features */
             features: string[];
+        };
+        /** PortalLoad */
+        PortalLoad: {
+            /** Id */
+            id: number;
+            /** Reference */
+            reference: string | null;
+            /** Origin City */
+            origin_city: string | null;
+            /** Origin State */
+            origin_state: string | null;
+            /** Dest City */
+            dest_city: string | null;
+            /** Dest State */
+            dest_state: string | null;
+            /** Pickup Date */
+            pickup_date: string | null;
+            /** Delivery Date */
+            delivery_date: string | null;
+            /** Equipment */
+            equipment: string | null;
+            /** Commodity */
+            commodity: string | null;
+            /** Weight */
+            weight: number | null;
+            /** Total Miles */
+            total_miles: number | null;
+        };
+        /** PortalMeta */
+        PortalMeta: {
+            /** Carrier Name */
+            carrier_name: string;
+            /** Org Name */
+            org_name: string;
+            /** Accent Color */
+            accent_color?: string | null;
+        };
+        /** PortalMyLoad */
+        PortalMyLoad: {
+            /** Id */
+            id: number;
+            /** Reference */
+            reference: string | null;
+            /** Origin City */
+            origin_city: string | null;
+            /** Origin State */
+            origin_state: string | null;
+            /** Dest City */
+            dest_city: string | null;
+            /** Dest State */
+            dest_state: string | null;
+            /** Pickup Date */
+            pickup_date: string | null;
+            /** Delivery Date */
+            delivery_date: string | null;
+            /** Equipment */
+            equipment: string | null;
+            /** Commodity */
+            commodity: string | null;
+            /** Weight */
+            weight: number | null;
+            /** Total Miles */
+            total_miles: number | null;
+            /** Status */
+            status: string;
+            /** Carrier Rate */
+            carrier_rate: string | null;
         };
         /** PortalOut */
         PortalOut: {
@@ -3396,6 +3632,66 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CarrierOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_portal_link_api_carriers__carrier_id__portal_link_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_portal_link_api_carriers__carrier_id__portal_link_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                carrier_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -4553,6 +4849,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SignView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    portal_meta_api_portal_meta_get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalMeta"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    available_loads_api_portal_loads_available_get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalLoad"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_offer_api_portal_loads__load_id__offer_post: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_loads_api_portal_loads_mine_get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalMyLoad"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_document_api_portal_loads__load_id__documents_post: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_api_portal_loads__load_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gps_ping_api_portal_loads__load_id__ping_post: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */

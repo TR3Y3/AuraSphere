@@ -5,6 +5,7 @@ import { useCarrier, useDeleteCarrier } from './api'
 import { CarrierForm } from './CarrierForm'
 import { CapacityPanel } from './CapacityPanel'
 import { VettingPanel } from './VettingPanel'
+import { PortalPanel } from './PortalPanel'
 import { useLanes, useVetting } from './ops'
 import { AlertBadge, KpiStrip, Panel, Rating, RecordHeader, Tabs } from '../../components/shell'
 import { PinButton } from '../pins/PinButton'
@@ -45,6 +46,7 @@ export function CarrierDetailPage() {
           <div className="k">Equipment</div><div>{c.equipment_types || '—'}</div>
         </div>
       </Panel>
+      <PortalPanel carrier={c} />
       <Panel title="Contacts">
         {contacts && contacts.items.length > 0 ? (
           <ul style={{ margin: 0, paddingLeft: 18 }}>

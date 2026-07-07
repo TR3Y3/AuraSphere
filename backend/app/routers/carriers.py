@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 
-from app import fmcsa
+from app import config, fmcsa
+from app.security import generate_session_token, hash_token
 from app.deps import OrgScope, get_scope
 from app.models import Carrier
 from app.schemas.carrier import CarrierCreate, CarrierOut, CarrierUpdate
@@ -117,4 +118,22 @@ def delete_carrier(carrier_id: int, scope: OrgScope = Depends(get_scope)):
     if not scope.can_edit(carrier):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
     scope.db.delete(carrier)
+    scope.db.commit()
+
+
+@router.post("/{carrier_id}/portal-link", response_model=dict)
+def generate_portal_link(carrier_id: int, scope: OrgScope = Depends(get_scope)):
+    """Create (or rotate) the carrier's private portal link. Rotating revokes
+    the previous link."""
+    carrier = _get_owned(scope, carrier_id)
+    token = generate_session_token()
+    carrier.portal_token_hash = hash_token(token)
+    scope.db.commit()
+    return {"url": f"{config.FRONTEND_ORIGIN}/portal?token={token}"}
+
+
+@router.delete("/{carrier_id}/portal-link", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_portal_link(carrier_id: int, scope: OrgScope = Depends(get_scope)):
+    carrier = _get_owned(scope, carrier_id)
+    carrier.portal_token_hash = None
     scope.db.commit()

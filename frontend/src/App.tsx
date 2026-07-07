@@ -8,6 +8,7 @@ import { Verify } from './pages/Verify'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { SignRateCon } from './pages/SignRateCon'
+import { CarrierPortal } from './pages/CarrierPortal'
 import { Dashboard } from './pages/Dashboard'
 import { CompaniesPage } from './features/companies/CompaniesPage'
 import { CompanyDetailPage } from './features/companies/CompanyDetailPage'
@@ -34,6 +35,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/sign" element={<SignRateCon />} />
+          <Route path="/portal" element={<CarrierPortal />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
