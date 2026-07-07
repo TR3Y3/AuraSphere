@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { Carrier } from '../../lib/api'
+import { api, type Carrier, type CarrierLookup } from '../../lib/api'
 import { useUsers } from '../users/api'
 import { useCreateCarrier, useUpdateCarrier } from './api'
 import { CityDatalist, splitCityState } from '../../lib/usCities'
@@ -27,10 +28,13 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
   const { data: users } = useUsers()
   const create = useCreateCarrier()
   const update = useUpdateCarrier(existing?.id ?? 0)
+  const [looking, setLooking] = useState(false)
+  const [lookupNote, setLookupNote] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -72,6 +76,30 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
     onDone()
   }
 
+  // FMCSA auto-populate: MC number → legal name, DOT, HQ, phone, authority.
+  async function lookupMc() {
+    const mc = (getValues('mc_number') || '').trim()
+    if (!mc) { setLookupNote('Enter an MC number first.'); return }
+    setLooking(true); setLookupNote(null)
+    try {
+      const r = await api.get<CarrierLookup>('/api/carriers/lookup', { mc })
+      if (!r.found) { setLookupNote('No FMCSA record found for that MC.'); return }
+      if (r.legal_name && !getValues('name')) setValue('name', r.legal_name)
+      if (r.dot_number) setValue('dot_number', r.dot_number)
+      if (r.city) setValue('hq_city', r.city)
+      if (r.state) setValue('hq_state', r.state)
+      if (r.phone && !getValues('phone')) setValue('phone', r.phone)
+      setLookupNote(
+        `✓ Found ${r.legal_name ?? 'carrier'} — authority ${r.authority_status ?? 'unknown'}`
+        + (r.source === 'stub' ? ' (demo data until FMCSA key is set)' : ''),
+      )
+    } catch {
+      setLookupNote('Lookup failed — you can still fill fields manually.')
+    } finally {
+      setLooking(false)
+    }
+  }
+
   return (
     <form className="form-grid two-col" onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid' }}>
       <div className="field">
@@ -86,7 +114,16 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
           <option value="deactivated">Deactivated</option>
         </select>
       </div>
-      <div className="field"><label className="cl">MC #</label><input className="ti" {...register('mc_number')} /></div>
+      <div className="field"><label className="cl">MC #</label>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <input className="ti" placeholder="MC123456" {...register('mc_number')} />
+          <button type="button" className="btn ghost" disabled={looking} title="Auto-fill from FMCSA by MC number"
+            onClick={lookupMc}>
+            {looking ? '…' : '⌕ Lookup'}
+          </button>
+        </div>
+        {lookupNote && <span className="muted" style={{ fontSize: 12 }}>{lookupNote}</span>}
+      </div>
       <div className="field"><label className="cl">DOT #</label><input className="ti" {...register('dot_number')} /></div>
       <CityDatalist />
       <div className="field"><label className="cl">HQ city</label>

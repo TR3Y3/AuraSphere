@@ -80,3 +80,10 @@ SEED_ORG_ACCENT = os.getenv("SEED_ORG_ACCENT")  # hex like #1f6feb (per-tenant b
 SEED_ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL")
 SEED_ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD")
 SEED_ADMIN_NAME = os.getenv("SEED_ADMIN_NAME", "Admin")
+
+# FMCSA carrier lookup (MC → legal name/DOT/address/authority).
+#   "stub" (default) — deterministic plausible data derived from the MC number.
+#   "qcmobile" — real FMCSA QCMobile API (register a free webkey at
+#     https://mobile.fmcsa.dot.gov/QCDevsite/ and set FMCSA_WEBKEY).
+FMCSA_MODE = os.getenv("FMCSA_MODE", "stub").lower()
+FMCSA_WEBKEY = os.getenv("FMCSA_WEBKEY")

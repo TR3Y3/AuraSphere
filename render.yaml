@@ -77,6 +77,12 @@ services:
         value: "stub"
       - key: ELD_API_KEY
         sync: false
+      # FMCSA lookup: default "stub". Set FMCSA_MODE=qcmobile + FMCSA_WEBKEY
+      # (free key) for real MC → carrier data.
+      - key: FMCSA_MODE
+        value: "stub"
+      - key: FMCSA_WEBKEY
+        sync: false
 
   # ── Frontend: React SPA (static) ────────────────────────────────────
   - type: web

@@ -328,6 +328,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/carriers/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup Carrier
+         * @description FMCSA lookup: MC/docket number → legal name, DOT, HQ, authority status.
+         *
+         *     Powers the Add-Carrier auto-populate. Registered before /{carrier_id} so
+         *     the literal path wins the route match.
+         */
+        get: operations["lookup_carrier_api_carriers_lookup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/carriers/{carrier_id}": {
         parameters: {
             query?: never;
@@ -915,6 +938,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/prospects/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Prospects
+         * @description Bulk-import candidate shippers from a CSV. Flexible headers; rows without
+         *     a company name are skipped. Each imported row is freight-fit scored.
+         */
+        post: operations["import_prospects_api_prospects_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/prospects/{prospect_id}": {
         parameters: {
             query?: never;
@@ -1020,6 +1064,26 @@ export interface paths {
         get: operations["lane_pricing_api_pricing_lanes_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Feedback
+         * @description Email a tester's feedback to the team, tagged with who/where it came from.
+         */
+        post: operations["send_feedback_api_feedback_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1180,6 +1244,14 @@ export interface components {
             /** Plans */
             plans: components["schemas"]["PlanInfo"][];
         };
+        /** Body_import_prospects_api_prospects_import_post */
+        Body_import_prospects_api_prospects_import_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+        };
         /** Body_upload_document_api_loads__load_id__documents_post */
         Body_upload_document_api_loads__load_id__documents_post: {
             /**
@@ -1262,6 +1334,27 @@ export interface components {
             equipment_types?: string | null;
             /** Owner Id */
             owner_id?: number | null;
+        };
+        /** CarrierLookupOut */
+        CarrierLookupOut: {
+            /** Found */
+            found: boolean;
+            /** Source */
+            source: string;
+            /** Legal Name */
+            legal_name?: string | null;
+            /** Mc Number */
+            mc_number?: string | null;
+            /** Dot Number */
+            dot_number?: string | null;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Authority Status */
+            authority_status?: string | null;
         };
         /** CarrierOut */
         CarrierOut: {
@@ -1729,6 +1822,13 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /** FeedbackIn */
+        FeedbackIn: {
+            /** Message */
+            message: string;
+            /** Page */
+            page?: string | null;
         };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
@@ -3131,6 +3231,9 @@ export interface operations {
                 search?: string | null;
                 owner_id?: number | null;
                 status?: string | null;
+                hq_state?: string | null;
+                equipment?: string | null;
+                min_rating?: number | null;
                 sort?: string;
                 order?: string;
                 page?: number;
@@ -3182,6 +3285,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CarrierOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_carrier_api_carriers_lookup_get: {
+        parameters: {
+            query: {
+                mc: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierLookupOut"];
                 };
             };
             /** @description Validation Error */
@@ -3710,6 +3844,10 @@ export interface operations {
                 shipper_id?: number | null;
                 carrier_id?: number | null;
                 owner_id?: number | null;
+                equipment?: string | null;
+                origin_state?: string | null;
+                dest_state?: string | null;
+                posted_to_dat?: boolean | null;
                 sort?: string;
                 order?: string;
                 page?: number;
@@ -4718,6 +4856,39 @@ export interface operations {
             };
         };
     };
+    import_prospects_api_prospects_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_prospects_api_prospects_import_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_prospect_api_prospects__prospect_id__delete: {
         parameters: {
             query?: never;
@@ -4987,6 +5158,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LanePrice"][];
+                };
+            };
+        };
+    };
+    send_feedback_api_feedback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
