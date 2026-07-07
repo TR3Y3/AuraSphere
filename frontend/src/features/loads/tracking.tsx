@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, type CheckCall, type CheckCallCreate, type Load } from '../../lib/api'
 import { Panel } from '../../components/shell'
 import { useBoardMeta, STATUS_LABEL } from './api'
+import { LiveMap } from './LiveMap'
 
 function useCheckCalls(loadId: number) {
   return useQuery({
@@ -136,6 +137,7 @@ export function TrackingPanel({ load }: { load: Load }) {
           </button>
         </div>
         <RouteMap load={load} latest={latest} />
+        <LiveMap pings={calls ?? []} />
         <div className="kv" style={{ marginTop: 16 }}>
           <div className="k">Last ping</div>
           <div>{latest ? `${place(latest)} · ${when(latest.reported_at)}` : <span className="muted">No check-calls yet</span>}</div>
