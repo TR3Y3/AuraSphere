@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertBadge } from '../../components/shell'
-import { useProspects, useConvertProspect, useUpdateProspect, useDeleteProspect, useImportProspects } from './api'
+import { useProspects, useConvertProspect, useUpdateProspect, useDeleteProspect, useImportProspects, useEnrichProspect } from './api'
 import { ProspectForm } from './ProspectForm'
 
 const STATUS_TABS = [
@@ -25,6 +25,7 @@ export function ProspectsPage() {
   const update = useUpdateProspect()
   const del = useDeleteProspect()
   const importCsv = useImportProspects()
+  const enrich = useEnrichProspect()
   const fileRef = useRef<HTMLInputElement>(null)
 
   function onPickCsv(e: React.ChangeEvent<HTMLInputElement>) {
@@ -104,6 +105,10 @@ export function ProspectsPage() {
                     p.shipper_id ? <Link to={`/companies/${p.shipper_id}`}>View shipper →</Link> : <span className="muted">imported</span>
                   ) : (
                     <>
+                      {p.domain && !p.contact_email && (
+                        <><button className="btn ghost sm" onClick={() => enrich.mutate(p.id)} disabled={enrich.isPending}
+                          title="Find the logistics contact for this domain">☄ Enrich</button>{' '}</>
+                      )}
                       <button className="btn sm" onClick={() => convert.mutate(p.id)} disabled={convert.isPending}>✓ Approve</button>{' '}
                       {p.status !== 'dismissed' && <button className="btn ghost sm" onClick={() => update.mutate({ id: p.id, status: 'dismissed' })}>Dismiss</button>}{' '}
                       <button className="btn danger sm" onClick={() => del.mutate(p.id)}>✕</button>

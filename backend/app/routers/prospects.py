@@ -10,6 +10,7 @@ import io
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import func, or_
 
+from app import enrichment
 from app.deps import OrgScope, get_scope
 from app.freight_fit import score_freight_fit
 from app.models import Company, Contact, Prospect
@@ -185,6 +186,31 @@ def update_prospect(prospect_id: int, payload: ProspectUpdate, scope: OrgScope =
     # Re-score if the industry changed and no manual score override.
     if "industry" in data:
         p.freight_fit_score, p.fit_reason = score_freight_fit(p.industry, p.company_name)
+    scope.db.commit()
+    scope.db.refresh(p)
+    return _serialize(scope, p)
+
+
+@router.post("/{prospect_id}/enrich", response_model=ProspectOut)
+def enrich_prospect(prospect_id: int, scope: OrgScope = Depends(get_scope)):
+    """Find the prospect's logistics contact (Hunter.io seam; stub by default).
+
+    Fills only EMPTY contact fields — never clobbers data a rep already typed.
+    """
+    p = _get_owned(scope, prospect_id)
+    if not p.domain:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Add a domain to this prospect first — enrichment searches by domain.")
+    found = enrichment.enrich_domain(p.domain)
+    if found is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="No contacts found for that domain.")
+    for field in ("contact_name", "contact_title", "contact_email", "contact_phone"):
+        if not getattr(p, field) and found.get(field):
+            setattr(p, field, found[field])
+    src = found.get("source", "stub")
+    note = f"Contact enriched via {'Hunter.io' if src == 'hunter' else 'demo data'}"
+    p.notes = f"{p.notes}\n{note}" if p.notes else note
     scope.db.commit()
     scope.db.refresh(p)
     return _serialize(scope, p)

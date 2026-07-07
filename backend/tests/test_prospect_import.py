@@ -46,3 +46,28 @@ def test_import_is_tenant_isolated(client, seeded, db):
     client.post("/api/auth/logout")
     _login(client, "b@example.com", "password-b")
     assert client.get("/api/prospects").json()["total"] == 0
+
+
+def test_enrich_fills_empty_contact_fields(client, seeded, db):
+    _login(client, "a@example.com", "password-a")
+    pid = client.post("/api/prospects", json={
+        "company_name": "Acme Mfg", "domain": "acmemfg.com", "contact_name": "Keep Me",
+    }).json()["id"]
+
+    p = client.post(f"/api/prospects/{pid}/enrich").json()
+    assert p["contact_name"] == "Keep Me"          # never clobbers typed data
+    assert p["contact_email"] and p["contact_email"].endswith("@acmemfg.com")
+    assert p["contact_title"]
+    # Deterministic in stub mode.
+    p2 = client.post(f"/api/prospects/{pid}/enrich").json()
+    assert p2["contact_email"] == p["contact_email"]
+
+
+def test_enrich_requires_domain_and_is_isolated(client, seeded, db):
+    _login(client, "a@example.com", "password-a")
+    pid = client.post("/api/prospects", json={"company_name": "No Domain Co"}).json()["id"]
+    assert client.post(f"/api/prospects/{pid}/enrich").status_code == 422
+
+    client.post("/api/auth/logout")
+    _login(client, "b@example.com", "password-b")
+    assert client.post(f"/api/prospects/{pid}/enrich").status_code == 404

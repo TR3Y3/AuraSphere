@@ -87,3 +87,10 @@ SEED_ADMIN_NAME = os.getenv("SEED_ADMIN_NAME", "Admin")
 #     https://mobile.fmcsa.dot.gov/QCDevsite/ and set FMCSA_WEBKEY).
 FMCSA_MODE = os.getenv("FMCSA_MODE", "stub").lower()
 FMCSA_WEBKEY = os.getenv("FMCSA_WEBKEY")
+
+# Contact enrichment for Lead-Gen prospects (find the logistics contact).
+#   "stub" (default) — deterministic demo contact derived from the domain.
+#   "hunter" — Hunter.io domain-search (set HUNTER_API_KEY). Same approach as
+#     the working CALCOR integration.
+ENRICHMENT_MODE = os.getenv("ENRICHMENT_MODE", "stub").lower()
+HUNTER_API_KEY = os.getenv("HUNTER_API_KEY")
