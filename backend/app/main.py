@@ -17,7 +17,6 @@ from app.routers import (
     companies,
     dashboard,
     contacts,
-    deals,
     documents,
     eld,
     feedback,
@@ -25,7 +24,6 @@ from app.routers import (
     loads,
     market,
     pins,
-    pipelines,
     prospects,
     sign,
     tracking,
@@ -49,8 +47,6 @@ app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(carriers.router)
 app.include_router(carrier_ops.router)
-app.include_router(pipelines.router)
-app.include_router(deals.router)
 app.include_router(loads.router)
 app.include_router(market.router)
 app.include_router(documents.router)

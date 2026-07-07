@@ -194,7 +194,13 @@ Do not start a phase until the previous one runs and its checks pass.
 
 
 
-- Current phase: **Feature Round 2 (complete)** — evaluate-then-build pass, all greenlit items shipped:
+- Current phase: **Product/UX audit implementation (PROMPT 4, complete)** — audit delivered in chat (9 sections); all self-greenlit items shipped:
+  - Slice 1: nav "More ▾" (Lead-Gen + Pricing; bar was clipping), dead 🔔 removed, login/signup subtitle → "Freight TMS", loads list + Pickup/Carrier columns, client-side **CSV export** (⇩ CSV on Loads/Shippers/Carriers, exports the filtered view; `lib/csv.ts`).
+  - Slice 2: **sales coverage** — `companies.secondary_owner_id` (backup rep; owner filter matches primary OR secondary so "My records" covers backups) + `users.sales_code` (rep # like TR-01; `PATCH /api/users/{id}` owner/admin; inline edit in Settings→Team; badge + "Rep:" filter on Shippers list; both reps on shipper form/detail). Migration `a38a2655414a` (batch FK, roundtrip-tested).
+  - Slice 3: **Rep performance** dashboard panel — booked (non-quote, non-terminal) loads/loaded $/margin per owning rep with sales-code badges, `rep_performance` on DashboardSummary.
+  - Slice 4: **legacy deals/pipelines API removed** — routers/schemas/defaults deleted, signup/seed no longer create pipeline rows, legacy type exports dropped from the frontend client; tables/models kept (additive-only launch policy). 135 tests pass.
+  - Audit verdicts on record: keep Quotes/Quote-Desk naming (helper text suffices), keep the multi-tier cover paths, notifications system = do-not-build until there's something to notify; save-for-later = carrier-level documents, customer-facing quote doc, Pricing+DAT merge, saved views.
+- Earlier phase: **Feature Round 2 (complete)** — evaluate-then-build pass, all greenlit items shipped:
   - **Slice A**: loads search matches lanes (origin/dest city); ⌘K palette shows lane/MC context + recent visits (localStorage), fixed stale placeholder; verify banner dismissible per-session (root cause of "verification annoying/broken" = EMAIL_DELIVERY still console in prod — flip Resend); **city autocomplete** via curated `US_CITIES` "City, ST" datalist (`src/lib/usCities.tsx`, static/offline-safe) on load origin/dest + carrier HQ, auto-fills state.
   - **Slice B**: **FMCSA MC lookup** (`app/fmcsa.py`, `FMCSA_MODE` stub|qcmobile + `FMCSA_WEBKEY`; `GET /api/carriers/lookup?mc=` registered before `/{carrier_id}`) — "⌕ Lookup" in CarrierForm fills legal name/DOT/HQ/phone + authority status; never clobbers typed data.
   - **Slice C**: **Lead-Gen enrichment** (`app/enrichment.py`, adapted from CALCOR's Hunter.io approach; `ENRICHMENT_MODE` stub|hunter + `HUNTER_API_KEY`; `POST /api/prospects/{id}/enrich` fills only empty contact fields, prefers logistics titles) — "☄ Enrich" button on prospect rows.
