@@ -67,55 +67,55 @@ export function ContactForm({
 
   return (
     <form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
-      <div className="field">
-        <label className="cl">First name</label>
+      <label className="field">
+        <span className="cl">First name</span>
         <input className="ti" {...register('first_name')} />
         {errors.first_name && <span className="err-text">{errors.first_name.message}</span>}
-      </div>
-      <div className="field">
-        <label className="cl">Last name</label>
+      </label>
+      <label className="field">
+        <span className="cl">Last name</span>
         <input className="ti" {...register('last_name')} />
-      </div>
-      <div className="field">
-        <label className="cl">Email</label>
+      </label>
+      <label className="field">
+        <span className="cl">Email</span>
         <input className="ti" {...register('email')} />
         {errors.email && <span className="err-text">{errors.email.message}</span>}
-      </div>
-      <div className="field">
-        <label className="cl">Phone</label>
+      </label>
+      <label className="field">
+        <span className="cl">Phone</span>
         <input className="ti" {...register('phone')} />
-      </div>
-      <div className="field">
-        <label className="cl">Title</label>
+      </label>
+      <label className="field">
+        <span className="cl">Title</span>
         <input className="ti" {...register('title')} />
-      </div>
-      <div className="field">
-        <label className="cl">Shipper</label>
+      </label>
+      <label className="field">
+        <span className="cl">Shipper</span>
         <select className="ti" {...register('company_id')}>
           <option value="">(none)</option>
           {companies?.items.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-      </div>
-      <div className="field">
-        <label className="cl">Carrier</label>
+      </label>
+      <label className="field">
+        <span className="cl">Carrier</span>
         <select className="ti" {...register('carrier_id')}>
           <option value="">(none)</option>
           {carriers?.items.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-      </div>
-      <div className="field">
-        <label className="cl">Owner</label>
+      </label>
+      <label className="field">
+        <span className="cl">Owner</span>
         <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => (
             <option key={u.id} value={u.id}>{u.full_name}</option>
           ))}
         </select>
-      </div>
+      </label>
       <div className="form-actions">
         <button className="btn" type="submit" disabled={isSubmitting}>{existing ? 'Save' : 'Create'}</button>
         <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>

@@ -48,16 +48,16 @@ export function Login() {
 
         {formError && <div className="notice err">{formError}</div>}
 
-        <div className="field">
-          <label className="cl">Email</label>
+        <label className="field">
+          <span className="cl">Email</span>
           <input className="ti" type="email" autoComplete="username" {...register('email')} />
           {errors.email && <span className="err-text">{errors.email.message}</span>}
-        </div>
-        <div className="field">
-          <label className="cl">Password</label>
+        </label>
+        <label className="field">
+          <span className="cl">Password</span>
           <input className="ti" type="password" autoComplete="current-password" {...register('password')} />
           {errors.password && <span className="err-text">{errors.password.message}</span>}
-        </div>
+        </label>
 
         <button className="btn" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
@@ -69,6 +69,11 @@ export function Login() {
           New here? <Link to="/signup">Start your brokerage</Link>
         </p>
       </form>
+      <p className="muted" style={{ textAlign: 'center', marginTop: 16, fontSize: 12 }}>
+        <Link to="/terms">Terms</Link>
+        <span style={{ margin: '0 6px' }}>·</span>
+        <Link to="/privacy">Privacy</Link>
+      </p>
     </div>
   )
 }

@@ -102,19 +102,19 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
 
   return (
     <form className="form-grid two-col" onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid' }}>
-      <div className="field">
-        <label className="cl">Carrier name</label>
+      <label className="field">
+        <span className="cl">Carrier name</span>
         <input className="ti" {...register('name')} />
         {errors.name && <span className="err-text">{errors.name.message}</span>}
-      </div>
-      <div className="field">
-        <label className="cl">Status</label>
+      </label>
+      <label className="field">
+        <span className="cl">Status</span>
         <select className="ti" {...register('status')}>
           <option value="active">Active</option>
           <option value="deactivated">Deactivated</option>
         </select>
-      </div>
-      <div className="field"><label className="cl">MC #</label>
+      </label>
+      <label className="field"><span className="cl">MC #</span>
         <div style={{ display: 'flex', gap: 6 }}>
           <input className="ti" placeholder="MC123456" {...register('mc_number')} />
           <button type="button" className="btn ghost" disabled={looking} title="Auto-fill from FMCSA by MC number"
@@ -123,34 +123,34 @@ export function CarrierForm({ existing, onDone }: { existing?: Carrier; onDone: 
           </button>
         </div>
         {lookupNote && <span className="muted" style={{ fontSize: 12 }}>{lookupNote}</span>}
-      </div>
-      <div className="field"><label className="cl">DOT #</label><input className="ti" {...register('dot_number')} /></div>
+      </label>
+      <label className="field"><span className="cl">DOT #</span><input className="ti" {...register('dot_number')} /></label>
       <CityDatalist />
-      <div className="field"><label className="cl">HQ city</label>
+      <label className="field"><span className="cl">HQ city</span>
         <input className="ti" list="us-cities" placeholder="Start typing a city…"
           {...register('hq_city', { onChange: (e) => {
             const cs = splitCityState(e.target.value)
             if (cs) { setValue('hq_city', cs.city); setValue('hq_state', cs.state) }
           } })} />
-      </div>
-      <div className="field"><label className="cl">HQ state</label><input className="ti" maxLength={2} {...register('hq_state')} /></div>
-      <div className="field"><label className="cl">Phone</label><input className="ti" {...register('phone')} /></div>
-      <div className="field">
-        <label className="cl">Email</label>
+      </label>
+      <label className="field"><span className="cl">HQ state</span><input className="ti" maxLength={2} {...register('hq_state')} /></label>
+      <label className="field"><span className="cl">Phone</span><input className="ti" {...register('phone')} /></label>
+      <label className="field">
+        <span className="cl">Email</span>
         <input className="ti" {...register('email')} />
         {errors.email && <span className="err-text">{errors.email.message}</span>}
-      </div>
-      <div className="field"><label className="cl">Rating (0–5)</label><input className="ti" type="number" step="0.1" min="0" max="5" {...register('rating')} /></div>
-      <div className="field"><label className="cl">Equipment types</label><input className="ti" placeholder="Dry Van, Reefer…" {...register('equipment_types')} /></div>
-      <div className="field"><label className="cl">Auto liability ($)</label><input className="ti" type="number" {...register('auto_liability')} /></div>
-      <div className="field"><label className="cl">Cargo coverage ($)</label><input className="ti" type="number" {...register('cargo_coverage')} /></div>
-      <div className="field">
-        <label className="cl">Owner</label>
+      </label>
+      <label className="field"><span className="cl">Rating (0–5)</span><input className="ti" type="number" step="0.1" min="0" max="5" {...register('rating')} /></label>
+      <label className="field"><span className="cl">Equipment types</span><input className="ti" placeholder="Dry Van, Reefer…" {...register('equipment_types')} /></label>
+      <label className="field"><span className="cl">Auto liability ($)</span><input className="ti" type="number" {...register('auto_liability')} /></label>
+      <label className="field"><span className="cl">Cargo coverage ($)</span><input className="ti" type="number" {...register('cargo_coverage')} /></label>
+      <label className="field">
+        <span className="cl">Owner</span>
         <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}
         </select>
-      </div>
+      </label>
       <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
         <button className="btn" type="submit" disabled={isSubmitting}>{existing ? 'Save' : 'Create'}</button>
         <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>

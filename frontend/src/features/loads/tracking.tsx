@@ -151,11 +151,11 @@ export function TrackingPanel({ load }: { load: Load }) {
       <Panel title="Log a check-call">
         <form onSubmit={submit} className="composer">
           <div style={{ display: 'flex', gap: 8 }}>
-            <input className="ti" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-            <input className="ti" style={{ width: 80 }} placeholder="ST" maxLength={2} value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase() })} />
+            <input className="ti" aria-label="City" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+            <input className="ti" aria-label="State" style={{ width: 80 }} placeholder="ST" maxLength={2} value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase() })} />
           </div>
-          <input className="ti" placeholder="Status note (e.g. Loaded, rolling)" value={form.status_note} onChange={(e) => setForm({ ...form, status_note: e.target.value })} />
-          <textarea className="ti" placeholder="Notes (optional)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} />
+          <input className="ti" aria-label="Status note" placeholder="Status note (e.g. Loaded, rolling)" value={form.status_note} onChange={(e) => setForm({ ...form, status_note: e.target.value })} />
+          <textarea className="ti" aria-label="Notes" placeholder="Notes (optional)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} />
           <label className="muted" style={{ fontSize: 12 }}>ETA
             <input className="ti" type="datetime-local" value={form.eta} onChange={(e) => setForm({ ...form, eta: e.target.value })} />
           </label>

@@ -61,45 +61,45 @@ export function CompanyForm({
 
   return (
     <form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
-      <div className="field">
-        <label className="cl">Name</label>
+      <label className="field">
+        <span className="cl">Name</span>
         <input className="ti" placeholder="Acme Corp" {...register('name')} />
         {errors.name && <span className="err-text">{errors.name.message}</span>}
-      </div>
-      <div className="field">
-        <label className="cl">Domain</label>
+      </label>
+      <label className="field">
+        <span className="cl">Domain</span>
         <input className="ti" placeholder="acme.com" {...register('domain')} />
-      </div>
-      <div className="field">
-        <label className="cl">Industry</label>
+      </label>
+      <label className="field">
+        <span className="cl">Industry</span>
         <input className="ti" {...register('industry')} />
-      </div>
-      <div className="field">
-        <label className="cl">Phone</label>
+      </label>
+      <label className="field">
+        <span className="cl">Phone</span>
         <input className="ti" {...register('phone')} />
-      </div>
-      <div className="field">
-        <label className="cl">Website</label>
+      </label>
+      <label className="field">
+        <span className="cl">Website</span>
         <input className="ti" {...register('website')} />
-      </div>
-      <div className="field">
-        <label className="cl">Primary rep (owner)</label>
+      </label>
+      <label className="field">
+        <span className="cl">Primary rep (owner)</span>
         <select className="ti" {...register('owner_id')}>
           <option value="">(me)</option>
           {users?.map((u) => (
             <option key={u.id} value={u.id}>{u.full_name}{u.sales_code ? ` · ${u.sales_code}` : ''}</option>
           ))}
         </select>
-      </div>
-      <div className="field">
-        <label className="cl">Backup rep (covers when primary is out)</label>
+      </label>
+      <label className="field">
+        <span className="cl">Backup rep (covers when primary is out)</span>
         <select className="ti" {...register('secondary_owner_id')}>
           <option value="">(none)</option>
           {users?.map((u) => (
             <option key={u.id} value={u.id}>{u.full_name}{u.sales_code ? ` · ${u.sales_code}` : ''}</option>
           ))}
         </select>
-      </div>
+      </label>
       <div className="form-actions">
         <button className="btn" type="submit" disabled={isSubmitting}>
           {existing ? 'Save' : 'Create'}

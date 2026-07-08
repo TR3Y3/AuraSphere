@@ -42,23 +42,23 @@ export function ProspectForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form className="form-grid two-col" onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid' }}>
-      <div className="field">
-        <label className="cl">Company</label>
+      <label className="field">
+        <span className="cl">Company</span>
         <input className="ti" {...register('company_name')} />
         {errors.company_name && <span className="err-text">{errors.company_name.message}</span>}
-      </div>
-      <div className="field"><label className="cl">Industry</label><input className="ti" placeholder="Manufacturing, Distribution…" {...register('industry')} /></div>
-      <div className="field"><label className="cl">Domain</label><input className="ti" {...register('domain')} /></div>
-      <div className="field"><label className="cl">City</label><input className="ti" {...register('city')} /></div>
-      <div className="field"><label className="cl">State</label><input className="ti" maxLength={2} {...register('state')} /></div>
-      <div className="field"><label className="cl">Contact name</label><input className="ti" {...register('contact_name')} /></div>
-      <div className="field"><label className="cl">Contact title</label><input className="ti" placeholder="Logistics Manager" {...register('contact_title')} /></div>
-      <div className="field">
-        <label className="cl">Contact email</label>
+      </label>
+      <label className="field"><span className="cl">Industry</span><input className="ti" placeholder="Manufacturing, Distribution…" {...register('industry')} /></label>
+      <label className="field"><span className="cl">Domain</span><input className="ti" {...register('domain')} /></label>
+      <label className="field"><span className="cl">City</span><input className="ti" {...register('city')} /></label>
+      <label className="field"><span className="cl">State</span><input className="ti" maxLength={2} {...register('state')} /></label>
+      <label className="field"><span className="cl">Contact name</span><input className="ti" {...register('contact_name')} /></label>
+      <label className="field"><span className="cl">Contact title</span><input className="ti" placeholder="Logistics Manager" {...register('contact_title')} /></label>
+      <label className="field">
+        <span className="cl">Contact email</span>
         <input className="ti" {...register('contact_email')} />
         {errors.contact_email && <span className="err-text">{errors.contact_email.message}</span>}
-      </div>
-      <div className="field"><label className="cl">Contact phone</label><input className="ti" {...register('contact_phone')} /></div>
+      </label>
+      <label className="field"><span className="cl">Contact phone</span><input className="ti" {...register('contact_phone')} /></label>
       <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
         <button className="btn" type="submit" disabled={isSubmitting}>Add prospect</button>
         <button className="btn ghost" type="button" onClick={onDone}>Cancel</button>
