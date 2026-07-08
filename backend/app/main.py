@@ -21,6 +21,7 @@ from app.routers import (
     eld,
     feedback,
     load_options,
+    options_board,
     loads,
     market,
     pins,
@@ -54,6 +55,7 @@ app.include_router(documents.router)
 app.include_router(tracking.router)
 app.include_router(eld.router)
 app.include_router(load_options.router)
+app.include_router(options_board.router)
 app.include_router(sign.router)
 app.include_router(portal.router)
 app.include_router(pins.router)

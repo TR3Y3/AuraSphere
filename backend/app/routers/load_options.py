@@ -39,6 +39,8 @@ def _load(scope: OrgScope, load_id: int) -> Load:
 def _serialize(scope: OrgScope, opt: LoadOption) -> OptionOut:
     out = OptionOut.model_validate(opt)
     out.carrier_light = offers.carrier_light(scope.db, opt)
+    out.expires_at = offers.option_expires_at(opt)
+    out.is_expired = offers.option_is_expired(opt)
     return out
 
 
@@ -126,6 +128,9 @@ def accept_option(load_id: int, option_id: int, scope: OrgScope = Depends(get_sc
     if not scope.can_edit(load):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
     opt = _option(scope, load_id, option_id)
+    if offers.option_is_expired(opt):
+        raise HTTPException(status_code=status.HTTP_410_GONE,
+                            detail="This option has expired — confirm the rate with the carrier and re-add it.")
 
     # Atomic claim: the status check-and-set happens in ONE UPDATE, so two reps
     # accepting different options concurrently can't both win — the loser's
@@ -252,6 +257,9 @@ def offer_to_carrier(load_id: int, payload: OfferRequest, scope: OrgScope = Depe
     if not scope.can_edit(load):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not permitted")
     opt = _option(scope, load_id, payload.option_id)
+    if offers.option_is_expired(opt):
+        raise HTTPException(status_code=status.HTTP_410_GONE,
+                            detail="This option has expired — confirm the rate with the carrier and re-add it.")
     if opt.carrier_id is None:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="Add this carrier to the system before offering the load.")

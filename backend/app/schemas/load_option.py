@@ -54,6 +54,44 @@ class OptionOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     carrier: CarrierRef | None = None
+    # Derived shelf life (created_at + OPTION_TTL_HOURS) — set at read time.
+    expires_at: datetime | None = None
+    is_expired: bool = False
+
+
+class BoardOption(BaseModel):
+    """One row on the org-wide Options board: the option + enough load and
+    carrier context to act without opening the load first."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    load_id: int
+    load_reference: str | None
+    load_status: str
+    origin_city: str | None
+    origin_state: str | None
+    dest_city: str | None
+    dest_state: str | None
+    pickup_date: datetime | None
+    delivery_date: datetime | None
+    equipment: str | None
+    customer_rate: Decimal | None
+    carrier_id: int | None
+    carrier_name: str | None
+    carrier_phone: str | None = None
+    carrier_email: str | None = None
+    mc_number: str | None = None
+    source: str = "manual"
+    carrier_light: str | None = None
+    rate: Decimal | None
+    counter_rate: Decimal | None
+    margin: Decimal | None = None  # customer_rate − (counter or rate)
+    status: str
+    notes: str | None
+    created_at: datetime
+    expires_at: datetime
+    is_expired: bool
+    active: bool
 
 
 class OfferRequest(BaseModel):
