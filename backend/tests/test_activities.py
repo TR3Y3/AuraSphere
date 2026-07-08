@@ -60,7 +60,10 @@ def test_filter_by_load_and_type(client, seeded, db):
     client.post("/api/activities", json={"type": "call", "subject": "Dispatch", "related_load_id": lid})
     client.post("/api/activities", json={"type": "note", "subject": "Misc"})
 
-    assert client.get("/api/activities", params={"related_load_id": lid}).json()["total"] == 1
+    # The load feed = the user's call + the auto-posted "created" system event.
+    feed = client.get("/api/activities", params={"related_load_id": lid}).json()
+    assert feed["total"] == 2
+    assert {a["kind"] for a in feed["items"]} == {"user", "system"}
     assert client.get("/api/activities", params={"type": "call"}).json()["total"] == 1
 
 

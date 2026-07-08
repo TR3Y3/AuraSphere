@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session as DbSession
 
-from app import offers
+from app import events, offers
 from app.database import get_db
 from app.models import Carrier, CheckCall, Document, Load, Organization
 from app.security import hash_token
@@ -181,6 +181,11 @@ async def upload_document(load_id: int, file: UploadFile = File(...), kind: str 
         filename=file.filename or "upload", content_type=file.content_type,
         size=len(data), kind=kind, data=data, uploaded_by=None,
     ))
+    events.log_event(
+        db, org_id=carrier.organization_id, load_id=load.id, event_type="doc_uploaded",
+        subject=f"{carrier.name} uploaded {kind.upper()}: {file.filename or 'file'} (carrier app)",
+        meta={"kind": kind, "source": "carrier_app"},
+    )
     db.commit()
     return {"uploaded": True}
 

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status as http
 
 from app.deps import OrgScope, get_scope
 from app.models import CheckCall, Load
+from app import events
 from app.routers.loads import _apply_status
 from app.schemas.check_call import CheckCallCreate, CheckCallOut
 
@@ -52,7 +53,9 @@ def create_check_call(
 
     # Tracking hook: optionally advance the load's status with the ping.
     if payload.advance_status is not None:
+        old_status = load.status
         _apply_status(load, payload.advance_status)  # validates → 422
+        events.log_status_change(scope.db, load, old_status, load.status, scope.user.id)
 
     scope.db.commit()
     scope.db.refresh(cc)

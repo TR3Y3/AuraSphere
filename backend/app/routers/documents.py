@@ -6,6 +6,7 @@ managed Postgres without an external object store.
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status as http
 from fastapi.responses import Response
 
+from app import events
 from app.deps import OrgScope, get_scope
 from app.models import Document, Load
 from app.schemas.document import DocumentOut
@@ -73,6 +74,12 @@ async def upload_document(
         uploaded_by=scope.user.id,
     )
     scope.db.add(doc)
+    scope.db.flush()
+    events.log_event(
+        scope.db, org_id=scope.org_id, load_id=load_id, event_type="doc_uploaded",
+        subject=f"Document uploaded: {doc.filename}" + (f" ({kind})" if kind else ""),
+        meta={"document_id": doc.id, "kind": kind}, actor_id=scope.user.id,
+    )
     scope.db.commit()
     scope.db.refresh(doc)
     return doc

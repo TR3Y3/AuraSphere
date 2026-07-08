@@ -609,6 +609,27 @@ export interface paths {
         patch: operations["change_status_api_loads__load_id__status_patch"];
         trace?: never;
     };
+    "/api/loads/{load_id}/uncover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Uncover Load
+         * @description Pull the carrier off a booked load and put it back on the board as
+         *     Tendered. Requires a reason code; the reason lands in the load's feed.
+         */
+        post: operations["uncover_load_api_loads__load_id__uncover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/market/rate": {
         parameters: {
             query?: never;
@@ -1168,6 +1189,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/activities/mentions/unseen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unseen Mentions
+         * @description Activities that @mention me, created after my last mark-seen.
+         */
+        get: operations["unseen_mentions_api_activities_mentions_unseen_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/activities/mentions/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Mentions Seen */
+        post: operations["mark_mentions_seen_api_activities_mentions_seen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/activities/{activity_id}": {
         parameters: {
             query?: never;
@@ -1341,6 +1399,8 @@ export interface components {
             related_carrier_id?: number | null;
             /** Owner Id */
             owner_id?: number | null;
+            /** Mentions */
+            mentions?: number[] | null;
         };
         /** ActivityOut */
         ActivityOut: {
@@ -1368,6 +1428,17 @@ export interface components {
             completed_at: string | null;
             /** Owner Id */
             owner_id: number | null;
+            /**
+             * Kind
+             * @default user
+             */
+            kind: string;
+            /** Event Type */
+            event_type?: string | null;
+            /** Meta */
+            meta?: Record<string, never> | null;
+            /** Mentions */
+            mentions?: number[] | null;
             /**
              * Created At
              * Format: date-time
@@ -2136,6 +2207,16 @@ export interface components {
             /** Status */
             status: string;
         };
+        /**
+         * LoadUncover
+         * @description Pull the carrier off a booked load (reason required; note for Other).
+         */
+        LoadUncover: {
+            /** Reason */
+            reason: string;
+            /** Note */
+            note?: string | null;
+        };
         /** LoadUpdate */
         LoadUpdate: {
             /** Status */
@@ -2212,6 +2293,11 @@ export interface components {
         MeOut: {
             user: components["schemas"]["UserOut"];
             organization: components["schemas"]["OrganizationOut"];
+        };
+        /** MentionCount */
+        MentionCount: {
+            /** Count */
+            count: number;
         };
         /** OfferIn */
         OfferIn: {
@@ -4214,6 +4300,41 @@ export interface operations {
             };
         };
     };
+    uncover_load_api_loads__load_id__uncover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                load_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoadUncover"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lookup_rate_api_market_rate_get: {
         parameters: {
             query: {
@@ -5481,6 +5602,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unseen_mentions_api_activities_mentions_unseen_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ActivityOut_"];
+                };
+            };
+        };
+    };
+    mark_mentions_seen_api_activities_mentions_seen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentionCount"];
                 };
             };
         };

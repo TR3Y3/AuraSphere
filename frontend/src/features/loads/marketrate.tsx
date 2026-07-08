@@ -27,6 +27,11 @@ export function MarketRatePanel({ load }: { load: Load }) {
 
   return (
     <Panel title="Market rate (DAT)">
+      {m.source === 'stub' && (
+        <div style={{ marginBottom: 10 }}>
+          <span className="badge b-warn">demo data — set a DAT key to go live</span>
+        </div>
+      )}
       <div className="kpis" style={{ marginBottom: 14 }}>
         <div className="kpi"><div className="kpi-v">{usd(m.total_low)}</div><div className="kpi-k">Low</div></div>
         <div className="kpi"><div className="kpi-v">{usd(m.total_avg)}</div><div className="kpi-k">Market avg</div></div>

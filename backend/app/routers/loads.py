@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status as http
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
-from app import dat, offers, plans
+from app import dat, events, offers, plans
 from app.deps import OrgScope, get_scope
-from app.models import Carrier, Company, Contact, Load, Organization
+from app.models import Carrier, Company, Contact, Load, LoadOption, Organization
 from app.schemas.common import Page
-from app.schemas.load import LoadCreate, LoadOut, LoadStatusUpdate, LoadUpdate
+from app.schemas.load import LoadCreate, LoadOut, LoadStatusUpdate, LoadUncover, LoadUpdate
 from app.workflow import LOAD_PIPELINE, LOAD_STATUSES, is_valid_status
 
 router = APIRouter(prefix="/api/loads", tags=["loads"])
@@ -73,10 +73,26 @@ def _validate_links(scope: OrgScope, shipper_id, carrier_id, contact_id) -> None
                             detail="primary_contact_id is not a contact in your organization")
 
 
-def _apply_status(load: Load, status_value: str) -> None:
+# Statuses that mean "a truck is booked" — none are reachable without a carrier
+# (guarding only `covered` would let a carrier-less load skip to dispatched).
+CARRIER_REQUIRED_STATUSES = {"covered", "dispatched", "in_transit", "delivered", "invoiced"}
+
+_KEEP = object()  # sentinel: "use the carrier already on the load"
+
+
+def _apply_status(load: Load, status_value: str, carrier_id=_KEEP) -> None:
+    """Validate + set a status. `carrier_id` is the carrier the load will have
+    AFTER this request (callers that change carrier in the same call pass the
+    incoming value so the guard sees the final state)."""
     if not is_valid_status(status_value):
         raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail=f"invalid status (allowed: {', '.join(LOAD_STATUSES)})")
+    effective_carrier = load.carrier_id if carrier_id is _KEEP else carrier_id
+    if status_value in CARRIER_REQUIRED_STATUSES and effective_carrier is None:
+        raise HTTPException(
+            status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Assign a carrier before covering this load.",
+        )
     load.status = status_value
     if status_value == "delivered" and load.delivered_at is None:
         load.delivered_at = datetime.now(timezone.utc)
@@ -159,6 +175,9 @@ def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
     if not is_valid_status(status_value):
         raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="invalid status")
+    if status_value in CARRIER_REQUIRED_STATUSES and payload.carrier_id is None:
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Assign a carrier before covering this load.")
     load = Load(
         organization_id=scope.org_id,
         created_by=scope.user.id,
@@ -169,6 +188,11 @@ def create_load(payload: LoadCreate, scope: OrgScope = Depends(get_scope)):
     scope.db.add(load)
     scope.db.flush()  # assign id for the reference
     load.reference = f"L-{100000 + load.id}"
+    events.log_event(
+        scope.db, org_id=scope.org_id, load_id=load.id, event_type="created",
+        subject=f"{'Quote' if status_value == 'quote' else 'Load'} created",
+        actor_id=scope.user.id,
+    )
     if payload.post_to_dat:
         load.dat_posting_id = dat.post_load(load)
         load.dat_posted_at = datetime.now(timezone.utc)
@@ -262,10 +286,21 @@ def update_load(load_id: int, payload: LoadUpdate, scope: OrgScope = Depends(get
             data.get("carrier_id", load.carrier_id),
             data.get("primary_contact_id", load.primary_contact_id),
         )
+    old_status = load.status
+    old_carrier = load.carrier.name if load.carrier else None
     if "status" in data and data["status"] is not None:
-        _apply_status(load, data.pop("status"))
+        # The guard must see the carrier this request leaves on the load.
+        _apply_status(load, data.pop("status"),
+                      carrier_id=data.get("carrier_id", load.carrier_id))
     for field, value in data.items():
         setattr(load, field, value)
+    if "carrier_id" in data:
+        new_carrier = None
+        if load.carrier_id is not None:
+            c = scope.query(Carrier).filter(Carrier.id == load.carrier_id).first()
+            new_carrier = c.name if c else None
+        events.log_carrier_change(scope.db, load, old_carrier, new_carrier, scope.user.id)
+    events.log_status_change(scope.db, load, old_status, load.status, scope.user.id)
     scope.db.commit()
     scope.db.refresh(load)
     return load
@@ -277,7 +312,54 @@ def change_status(load_id: int, payload: LoadStatusUpdate, scope: OrgScope = Dep
     load = _load(scope, load_id)
     if not scope.can_edit(load):
         raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    old_status = load.status
     _apply_status(load, payload.status)
+    events.log_status_change(scope.db, load, old_status, load.status, scope.user.id)
+    scope.db.commit()
+    scope.db.refresh(load)
+    return load
+
+
+UNCOVER_REASONS = ("TONU", "Bounced", "Carrier Fault", "Rate Dispute",
+                   "Capacity Fell Through", "Other")
+
+
+@router.post("/{load_id}/uncover", response_model=LoadOut)
+def uncover_load(load_id: int, payload: LoadUncover, scope: OrgScope = Depends(get_scope)):
+    """Pull the carrier off a booked load and put it back on the board as
+    Tendered. Requires a reason code; the reason lands in the load's feed."""
+    load = _load(scope, load_id)
+    if not scope.can_edit(load):
+        raise HTTPException(status_code=http.HTTP_403_FORBIDDEN, detail="Not permitted")
+    if load.status not in ("covered", "dispatched", "in_transit"):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Only a covered, dispatched, or in-transit load can be uncovered.")
+    if payload.reason not in UNCOVER_REASONS:
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"reason must be one of: {', '.join(UNCOVER_REASONS)}")
+    if payload.reason == "Other" and not (payload.note and payload.note.strip()):
+        raise HTTPException(status_code=http.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="A note is required when the reason is Other.")
+
+    carrier_name = load.carrier.name if load.carrier else None
+    load.status = "tendered"
+    load.carrier_id = None
+    load.carrier_rate = None
+    load.offered_carrier_id = None
+    load.offer_expires_at = None
+    # The Quote Desk stays consistent: the winning option steps back down.
+    for opt in scope.query(LoadOption).filter(
+        LoadOption.load_id == load.id, LoadOption.status == "accepted"
+    ):
+        opt.status = "declined"
+    events.log_event(
+        scope.db, org_id=scope.org_id, load_id=load.id, event_type="uncovered",
+        subject=f"Uncovered — {payload.reason}"
+                + (f" (was {carrier_name})" if carrier_name else ""),
+        body=payload.note,
+        meta={"reason": payload.reason, "carrier": carrier_name},
+        actor_id=scope.user.id,
+    )
     scope.db.commit()
     scope.db.refresh(load)
     return load

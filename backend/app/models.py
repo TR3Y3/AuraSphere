@@ -62,6 +62,11 @@ class User(Base):
     email_verified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    # High-water mark for @mention notifications (feed): mentions created
+    # after this instant count as unseen.
+    mentions_seen_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -648,6 +653,11 @@ class Activity(Base):
     related_carrier_id: Mapped[int | None] = mapped_column(
         ForeignKey("carriers.id"), nullable=True
     )
+    # Feed fields (Prompt 5): user rows vs auto-posted system events.
+    kind: Mapped[str] = mapped_column(String(10), nullable=False, server_default="user")
+    event_type: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    meta: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    mentions: Mapped[list | None] = mapped_column(JSON, nullable=True)  # user ids
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

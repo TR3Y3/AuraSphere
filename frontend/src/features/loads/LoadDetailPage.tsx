@@ -4,7 +4,7 @@ import { AlertBadge, KpiStrip, Panel, RecordHeader, Tabs } from '../../component
 import { PinButton } from '../pins/PinButton'
 import { useCarrier } from '../carriers/api'
 import { Copy } from '../../components/Copy'
-import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, useDatPost, STATUS_LABEL, money, marginPct, LOW_MARGIN_PCT } from './api'
+import { useBoardMeta, useLoad, useUpdateLoad, useDeleteLoad, useDuplicateLoad, useDatPost, useUncoverLoad, UNCOVER_REASONS, STATUS_LABEL, money, marginPct, LOW_MARGIN_PCT } from './api'
 import { LoadForm } from './LoadForm'
 import { QuoteDesk } from './QuoteDesk'
 import { DocumentsPanel } from './documents'
@@ -22,6 +22,54 @@ const FORWARD: { status: string; label: string }[] = [
 ]
 const PIPELINE_ORDER = ['quote', 'tendered', 'offered', 'covered', 'dispatched', 'in_transit', 'delivered', 'invoiced']
 const TERMINAL = ['lost', 'tonu']
+// Statuses that mean a truck is booked — the backend requires a carrier for
+// these, and only these can be uncovered (delivered/invoiced are done deals).
+const BOOKED = ['covered', 'dispatched', 'in_transit', 'delivered', 'invoiced']
+const UNCOVERABLE = ['covered', 'dispatched', 'in_transit']
+
+// Small modal: pick an uncover reason (note required for "Other").
+function UncoverDialog({ loadRef, onConfirm, onClose, pending }: {
+  loadRef: string
+  onConfirm: (reason: string, note: string) => void
+  onClose: () => void
+  pending: boolean
+}) {
+  const [reason, setReason] = useState<string>(UNCOVER_REASONS[1]) // Bounced
+  const [note, setNote] = useState('')
+  const needsNote = reason === 'Other'
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label="Uncover load" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <h2 style={{ border: 0, padding: 0, margin: 0, flex: 1 }}>Uncover {loadRef}</h2>
+          <button className="iconbtn" aria-label="Close" onClick={onClose}>✕</button>
+        </div>
+        <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
+          Pulls the carrier off this load and puts it back on the board as Tendered.
+          The reason is logged to the load's activity feed.
+        </p>
+        <label className="field" style={{ marginBottom: 10 }}>
+          <span className="cl">Reason</span>
+          <select className="ti" value={reason} onChange={(e) => setReason(e.target.value)}>
+            {UNCOVER_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span className="cl">Note {needsNote ? '(required)' : '(optional)'}</span>
+          <textarea className="ti" rows={2} value={note} onChange={(e) => setNote(e.target.value)}
+            placeholder="What happened?" />
+        </label>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
+          <button className="btn ghost" onClick={onClose}>Cancel</button>
+          <button className="btn" disabled={pending || (needsNote && !note.trim())}
+            onClick={() => onConfirm(reason, note)}>
+            {pending ? 'Uncovering…' : 'Uncover load'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function LoadDetailPage() {
   const { id } = useParams()
@@ -35,6 +83,8 @@ export function LoadDetailPage() {
   const del = useDeleteLoad()
   const dup = useDuplicateLoad()
   const datPost = useDatPost(loadId ?? 0)
+  const uncover = useUncoverLoad(loadId ?? 0)
+  const [uncovering, setUncovering] = useState(false)
 
   if (isLoading) return <p className="muted">Loading…</p>
   if (error || !l) return <div className="notice err">Load not found.</div>
@@ -57,6 +107,17 @@ export function LoadDetailPage() {
     <section>
       <p style={{ marginBottom: 14 }}><Link to="/loads" className="muted">← Loads</Link></p>
 
+      {uncovering && (
+        <UncoverDialog
+          loadRef={l.reference ?? `Load ${l.id}`}
+          pending={uncover.isPending}
+          onClose={() => setUncovering(false)}
+          onConfirm={(reason, note) =>
+            uncover.mutate({ reason, note: note.trim() || null },
+              { onSuccess: () => setUncovering(false) })}
+        />
+      )}
+
       <RecordHeader
         status={STATUS_LABEL[l.status] ?? l.status}
         statusClass={`st-${l.status}`}
@@ -75,13 +136,26 @@ export function LoadDetailPage() {
       />
 
       <div className="action-row" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, margin: '12px 0' }}>
-        {/* Forward progression — the immediate next step is the primary button. */}
-        {forward.map((a, i) => (
-          <button key={a.status} className={`btn ${i === 0 ? '' : 'ghost'}`}
-            onClick={() => update.mutate({ status: a.status })} disabled={update.isPending}>
-            {a.label}
+        {/* Forward progression — the immediate next step is the primary button.
+            Booked statuses need a carrier; the button says why it's disabled. */}
+        {forward.map((a, i) => {
+          const needsCarrier = BOOKED.includes(a.status) && l.carrier_id == null
+          return (
+            <button key={a.status} className={`btn ${i === 0 ? '' : 'ghost'}`}
+              onClick={() => update.mutate({ status: a.status })}
+              disabled={update.isPending || needsCarrier}
+              title={needsCarrier ? 'Assign a carrier first (Edit, or accept a Quote Desk option)' : undefined}>
+              {a.label}
+            </button>
+          )
+        })}
+
+        {UNCOVERABLE.includes(l.status) && (
+          <button className="btn ghost" onClick={() => setUncovering(true)}
+            title="Pull the carrier off this load and put it back on the board as Tendered (reason required).">
+            ↩ Uncover
           </button>
-        ))}
+        )}
 
         <div style={{ flex: 1 }} />
 

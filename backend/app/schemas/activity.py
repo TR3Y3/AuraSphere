@@ -19,6 +19,7 @@ class ActivityBase(BaseModel):
 
 class ActivityCreate(ActivityBase):
     owner_id: int | None = None
+    mentions: list[int] | None = None  # user ids @tagged in the note
 
 
 class ActivityUpdate(BaseModel):
@@ -40,5 +41,13 @@ class ActivityOut(ActivityBase):
     organization_id: int
     completed_at: datetime | None
     owner_id: int | None
+    kind: str = "user"           # 'user' | 'system' (auto-posted feed event)
+    event_type: str | None = None
+    meta: dict | None = None
+    mentions: list[int] | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class MentionCount(BaseModel):
+    count: int
