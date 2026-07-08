@@ -170,7 +170,8 @@ export function Layout() {
         <FeedbackButton />
 
         <div className="menu" ref={meRef}>
-          <button className="avatar-btn" onClick={() => setMeOpen((v) => !v)}>
+          <button className="avatar-btn" aria-label="Account menu" aria-haspopup="menu"
+            aria-expanded={meOpen} onClick={() => setMeOpen((v) => !v)}>
             {(me?.user.full_name ?? '?').slice(0, 1).toUpperCase()}
           </button>
           {meOpen && (

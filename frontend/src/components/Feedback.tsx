@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
 
@@ -21,15 +21,22 @@ export function FeedbackButton() {
     }
   }
 
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
   return (
     <>
-      <button className="iconbtn" title="Send feedback" onClick={() => setOpen(true)}>💬</button>
+      <button className="iconbtn" aria-label="Send feedback" title="Send feedback" onClick={() => setOpen(true)}>💬</button>
       {open && (
         <div className="modal-overlay" onClick={() => setOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal" role="dialog" aria-modal="true" aria-label="Send feedback" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
               <h2 style={{ border: 0, padding: 0, margin: 0, flex: 1 }}>Send feedback</h2>
-              <button className="iconbtn" onClick={() => setOpen(false)}>✕</button>
+              <button className="iconbtn" aria-label="Close" onClick={() => setOpen(false)}>✕</button>
             </div>
             {state === 'done' ? (
               <div className="notice" style={{ background: 'rgba(63,185,80,0.14)', color: 'var(--good)' }}>

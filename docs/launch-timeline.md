@@ -53,6 +53,18 @@ These must be done before test users see the product:
 - **Effort:** 5 min  
 - **Why:** Lets cookies work cross-subdomain; allows `app.yourdomain.com` + `api.yourdomain.com` to share auth without SameSite=none
 
+### 6. Legal & Accessibility (compliance)
+- [x] **Accessibility audit** (WCAG 2.1 AA) — see `docs/accessibility-audit.md`. High-value fixes applied (focus ring, dialog semantics, aria-labels, page title).
+- [ ] **Close accessibility M1** — form label association (`htmlFor`/`id`) before public/paying users
+- [ ] (Optional) accessibility M2 — board keyboard drag (a keyboard alternative already exists via the detail-page status dropdown)
+- [x] **Draft Terms of Service** — `docs/legal/terms-of-service.md` (NOT yet lawyer-reviewed)
+- [x] **Draft Privacy Policy** — `docs/legal/privacy-policy.md` (NOT yet lawyer-reviewed)
+- [ ] **Fill in bracketed placeholders** (company legal name, jurisdiction, contact, liability cap)
+- [ ] **Wire ToS + Privacy links** into the signup page + footer; add "I agree" checkbox at signup
+- [ ] **⚠️ Lawyer review of ToS + Privacy — REQUIRED before any non-friendly (paying/public) user.** Friendly beta testers under a handshake are acceptable with the draft in place.
+- **Timeline:** Drafts done now; lawyer review before widening past friends
+- **Notes:** Friendly testers = OK with drafts. Strangers with real freight data = needs counsel.
+
 ---
 
 ## Launch Phase Checklist
