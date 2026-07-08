@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { Layout } from './components/Layout'
@@ -9,6 +9,7 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { SignRateCon } from './pages/SignRateCon'
 import { CarrierPortal } from './pages/CarrierPortal'
+import { NotFound } from './pages/NotFound'
 import { TermsPage, PrivacyPage } from './pages/Legal'
 import { Dashboard } from './pages/Dashboard'
 import { CompaniesPage } from './features/companies/CompaniesPage'
@@ -59,7 +60,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
