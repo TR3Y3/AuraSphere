@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session as DbSession
 
+from app import events
 from app.database import get_db
 from app.models import Document, Load, LoadOption, Organization, RateConfirmation
 from app.security import hash_token
@@ -118,5 +119,10 @@ def sign_rate_con(token: str, payload: SignRequest, request: Request,
         content_type="text/html", size=len(stamp.encode()), kind="rate_con",
         data=stamp.encode(), uploaded_by=rc.created_by,
     ))
+    events.log_event(
+        db, org_id=rc.organization_id, load_id=rc.load_id, event_type="ratecon_signed",
+        subject=f"Rate confirmation signed by {payload.signer_name}",
+        meta={"doc_hash": rc.doc_hash[:12]},
+    )
     db.commit()
     return view_rate_con(token, db)

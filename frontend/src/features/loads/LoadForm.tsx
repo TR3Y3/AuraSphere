@@ -1,8 +1,11 @@
+import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { Load } from '../../lib/api'
 import { CityDatalist, splitCityState } from '../../lib/usCities'
+import { estimateMiles } from '../../lib/cityCoords'
+import { EquipmentDatalist } from '../../lib/equipment'
 import { useCompanies } from '../companies/api'
 import { useCarriers } from '../carriers/api'
 import { useCreateLoad, useUpdateLoad } from './api'
@@ -47,6 +50,7 @@ export function LoadForm({
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -69,6 +73,21 @@ export function LoadForm({
       post_to_dat: false,
     },
   })
+
+  // Auto-miles: when both lane endpoints are known cities, fill total_miles.
+  // Only fills an empty field or replaces its own previous estimate — a
+  // hand-typed mileage is never overwritten.
+  const autoMiles = useRef<number | null>(null)
+  const maybeAutoMiles = () => {
+    const v = getValues()
+    const est = estimateMiles(v.origin_city, v.origin_state, v.dest_city, v.dest_state)
+    if (est == null) return
+    const current = v.total_miles
+    if (!current || (autoMiles.current != null && Number(current) === autoMiles.current)) {
+      autoMiles.current = est
+      setValue('total_miles', est)
+    }
+  }
 
   const onSubmit = async (v: FormValues) => {
     const body = {
@@ -101,29 +120,36 @@ export function LoadForm({
           {shippers?.items.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </label>
-      <label className="field"><span className="cl">Equipment</span><input className="ti" placeholder="53' Van" {...register('equipment')} /></label>
+      <label className="field"><span className="cl">Equipment</span>
+        <input className="ti" list="equipment-types" placeholder="Dry Van, Reefer, Flatbed…" {...register('equipment')} />
+      </label>
       <CityDatalist />
+      <EquipmentDatalist />
       <label className="field"><span className="cl">Origin city</span>
         <input className="ti" list="us-cities" placeholder="Start typing a city…"
           {...register('origin_city', { onChange: (e) => {
             const cs = splitCityState(e.target.value)
             if (cs) { setValue('origin_city', cs.city); setValue('origin_state', cs.state) }
+            maybeAutoMiles()
           } })} />
       </label>
-      <label className="field"><span className="cl">Origin state</span><input className="ti" maxLength={2} {...register('origin_state')} /></label>
+      <label className="field"><span className="cl">Origin state</span><input className="ti" maxLength={2} {...register('origin_state', { onChange: maybeAutoMiles })} /></label>
       <label className="field"><span className="cl">Destination city</span>
         <input className="ti" list="us-cities" placeholder="Start typing a city…"
           {...register('dest_city', { onChange: (e) => {
             const cs = splitCityState(e.target.value)
             if (cs) { setValue('dest_city', cs.city); setValue('dest_state', cs.state) }
+            maybeAutoMiles()
           } })} />
       </label>
-      <label className="field"><span className="cl">Destination state</span><input className="ti" maxLength={2} {...register('dest_state')} /></label>
+      <label className="field"><span className="cl">Destination state</span><input className="ti" maxLength={2} {...register('dest_state', { onChange: maybeAutoMiles })} /></label>
       <label className="field"><span className="cl">Pickup date</span><input className="ti" type="date" {...register('pickup_date')} /></label>
       <label className="field"><span className="cl">Delivery date</span><input className="ti" type="date" {...register('delivery_date')} /></label>
       <label className="field"><span className="cl">Commodity</span><input className="ti" {...register('commodity')} /></label>
       <label className="field"><span className="cl">Weight (lbs)</span><input className="ti" type="number" {...register('weight')} /></label>
-      <label className="field"><span className="cl">Total miles</span><input className="ti" type="number" {...register('total_miles')} /></label>
+      <label className="field"><span className="cl">Total miles <span className="muted" style={{ textTransform: 'none' }}>(auto-estimated from the lane — edit freely)</span></span>
+        <input className="ti" type="number" {...register('total_miles')} />
+      </label>
       <label className="field"><span className="cl">Customer rate ($)</span><input className="ti" type="number" step="0.01" {...register('customer_rate')} /></label>
       <label className="field"><span className="cl">Target buy ($)</span><input className="ti" type="number" step="0.01" {...register('target_rate')} /></label>
       {!isQuote && (

@@ -14,7 +14,11 @@ def _shipper(db, org_id):
 
 
 def _seed_loads(client, shipper_id):
-    mk = lambda **kw: client.post("/api/loads", json={"shipper_id": shipper_id, **kw})
+    cid = client.post("/api/carriers", json={"name": "Dash Trucking"}).json()["id"]
+    mk = lambda **kw: client.post("/api/loads", json={
+        "shipper_id": shipper_id,
+        **({"carrier_id": cid} if kw.get("status") in ("covered", "delivered") else {}),
+        **kw})
     mk(origin_city="Atlanta", origin_state="GA", dest_city="Miami", dest_state="FL",
        equipment="Dry Van", customer_rate="1000", carrier_rate="800", status="delivered")
     mk(origin_city="Atlanta", origin_state="GA", dest_city="Miami", dest_state="FL",
@@ -66,7 +70,11 @@ def test_dashboard_isolation(client, seeded):
 def test_rep_performance_aggregates_by_owner(client, seeded, db):
     _login(client, "a@example.com", "password-a")
     sid = _shipper(db, seeded["org_a"]).id
-    mk = lambda **kw: client.post("/api/loads", json={"shipper_id": sid, **kw})
+    cid = client.post("/api/carriers", json={"name": "Rep Trucking"}).json()["id"]
+    mk = lambda **kw: client.post("/api/loads", json={
+        "shipper_id": sid,
+        **({"carrier_id": cid} if kw.get("status") in ("covered", "delivered") else {}),
+        **kw})
     mk(customer_rate="1000", carrier_rate="800", status="covered")
     mk(customer_rate="2000", carrier_rate="1500", status="delivered")
     mk(customer_rate="900", status="quote")   # quotes excluded

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
-from app import config, offers
+from app import config, events, offers
 from app.deps import OrgScope, get_scope
 from app.email import send_email
 from app.models import Carrier, Load, LoadOption, Organization, RateConfirmation
@@ -158,6 +158,14 @@ def accept_option(load_id: int, option_id: int, scope: OrgScope = Depends(get_sc
         LoadOption.load_id == load_id, LoadOption.id != option_id, LoadOption.status == "available"
     ):
         other.status = "declined"
+    carrier = scope.query(Carrier).filter(Carrier.id == opt.carrier_id).first()
+    events.log_event(
+        scope.db, org_id=scope.org_id, load_id=load_id, event_type="status_change",
+        subject=f"Covered with {(carrier.name if carrier else None) or opt.carrier_name or 'carrier'}"
+                f" at ${rate}",
+        meta={"from": load.status, "to": "covered", "carrier_id": opt.carrier_id},
+        actor_id=scope.user.id,
+    )
     scope.db.commit()
 
     refreshed = (
@@ -187,6 +195,12 @@ def _issue_ratecon(scope: OrgScope, load: Load, opt: LoadOption,
         expires_at=expires_at, created_by=scope.user.id,
     )
     scope.db.add(rc)
+    events.log_event(
+        scope.db, org_id=scope.org_id, load_id=load.id, event_type="ratecon_sent",
+        subject=f"Rate confirmation sent to {carrier_name}"
+                + (f" ({rc.sent_to})" if rc.sent_to else ""),
+        actor_id=scope.user.id,
+    )
     sign_url = f"{config.FRONTEND_ORIGIN}/sign?token={token}"
     if rc.sent_to:
         send_email(

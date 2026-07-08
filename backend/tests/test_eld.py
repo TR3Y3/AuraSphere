@@ -13,8 +13,9 @@ def _shipper(db, org_id):
 
 def _load(client, db, org_id):
     sh = _shipper(db, org_id)
+    cid = client.post("/api/carriers", json={"name": "ELD Trucking"}).json()["id"]
     return client.post("/api/loads", json={
-        "shipper_id": sh.id, "status": "dispatched", "total_miles": 1000,
+        "shipper_id": sh.id, "status": "dispatched", "carrier_id": cid, "total_miles": 1000,
         "origin_city": "Rincon", "origin_state": "GA", "dest_city": "Dallas", "dest_state": "TX",
     }).json()["id"]
 

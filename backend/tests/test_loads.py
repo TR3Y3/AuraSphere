@@ -45,7 +45,8 @@ def test_margin_is_derived(client, seeded, db):
 def test_status_change_persists_and_stamps_delivered(client, seeded, db):
     _login(client, "a@example.com", "password-a")
     sh = _shipper(db, seeded["org_a"])
-    lid = client.post("/api/loads", json={"shipper_id": sh.id}).json()["id"]
+    cid = client.post("/api/carriers", json={"name": "Status Trucking"}).json()["id"]
+    lid = client.post("/api/loads", json={"shipper_id": sh.id, "carrier_id": cid}).json()["id"]
 
     r = client.patch(f"/api/loads/{lid}/status", json={"status": "covered"})
     assert r.status_code == 200 and r.json()["status"] == "covered"
@@ -81,9 +82,10 @@ def test_board_meta_lists_pipeline(client, seeded):
 def test_duplicate_rebooks_as_fresh_quote(client, seeded, db):
     _login(client, "a@example.com", "password-a")
     sh = _shipper(db, seeded["org_a"])
+    cid = client.post("/api/carriers", json={"name": "Dup Trucking"}).json()["id"]
     src = client.post("/api/loads", json={
         "shipper_id": sh.id, "commodity": "Steel", "equipment": "Flatbed",
-        "origin_city": "Houston", "origin_state": "TX",
+        "origin_city": "Houston", "origin_state": "TX", "carrier_id": cid,
         "customer_rate": "2000.00", "carrier_rate": "1700.00", "status": "delivered",
     }).json()
 

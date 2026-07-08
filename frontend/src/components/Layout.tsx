@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { SearchPalette } from './SearchPalette'
 import { FeedbackButton } from './Feedback'
+import { useMarkMentionsSeen, useUnseenMentions } from '../features/activities/api'
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
@@ -19,6 +20,54 @@ const MORE_NAV = [
   { to: '/prospects', label: 'Lead-Gen' },
   { to: '/pricing', label: 'Pricing' },
 ]
+
+// Bell with a badge when teammates @mention you; opening lists the mentions
+// (linked to their loads) and marks them seen.
+function MentionBell() {
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const { data } = useUnseenMentions()
+  const markSeen = useMarkMentionsSeen()
+  const ref = useClickOutside(() => setOpen(false))
+  const count = data?.total ?? 0
+
+  const toggle = () => {
+    setOpen((v) => !v)
+    if (!open && count > 0) markSeen.mutate()
+  }
+
+  return (
+    <div className="menu" ref={ref}>
+      <button className="iconbtn" style={{ position: 'relative' }} onClick={toggle}
+        aria-label={count > 0 ? `Mentions (${count} unseen)` : 'Mentions'}>
+        🔔
+        {count > 0 && (
+          <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--danger)',
+            color: '#fff', borderRadius: 999, fontSize: 10, fontWeight: 700,
+            minWidth: 15, height: 15, lineHeight: '15px', textAlign: 'center', padding: '0 3px' }}>
+            {count}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="menu-pop" style={{ minWidth: 280 }}>
+          <div className="who">Mentions</div>
+          {(data?.items ?? []).map((a) => (
+            <button key={a.id} onClick={() => {
+              setOpen(false)
+              if (a.related_load_id) navigate(`/loads/${a.related_load_id}`)
+            }}>
+              <span style={{ fontWeight: 600 }}>{a.subject ?? 'Note'}</span>
+              {a.body ? <span className="muted" style={{ display: 'block', fontSize: 12,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.body}</span> : null}
+            </button>
+          ))}
+          {count === 0 && <div className="who" style={{ border: 0 }}>You're all caught up.</div>}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Close a popover when clicking outside it.
 function useClickOutside(onOut: () => void) {
@@ -167,6 +216,7 @@ export function Layout() {
           )}
         </div>
 
+        <MentionBell />
         <FeedbackButton />
 
         <div className="menu" ref={meRef}>

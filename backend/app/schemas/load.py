@@ -70,6 +70,12 @@ class LoadStatusUpdate(BaseModel):
     status: str
 
 
+class LoadUncover(BaseModel):
+    """Pull the carrier off a booked load (reason required; note for Other)."""
+    reason: str
+    note: str | None = None
+
+
 class LoadOut(LoadBase):
     model_config = ConfigDict(from_attributes=True)
 

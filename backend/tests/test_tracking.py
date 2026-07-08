@@ -15,7 +15,10 @@ def _shipper(db, org_id):
 
 def _load(client, db, org_id):
     sh = _shipper(db, org_id)
-    return client.post("/api/loads", json={"shipper_id": sh.id, "status": "dispatched"}).json()["id"]
+    cid = client.post("/api/carriers", json={"name": "Track Trucking"}).json()["id"]
+    return client.post("/api/loads", json={
+        "shipper_id": sh.id, "status": "dispatched", "carrier_id": cid,
+    }).json()["id"]
 
 
 def test_log_and_list_newest_first(client, seeded, db):

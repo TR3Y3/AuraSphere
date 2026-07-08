@@ -71,6 +71,23 @@ export function useDatPost(id: number) {
   })
 }
 
+export const UNCOVER_REASONS = ['TONU', 'Bounced', 'Carrier Fault', 'Rate Dispute',
+  'Capacity Fell Through', 'Other'] as const
+
+export function useUncoverLoad(id: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { reason: string; note?: string | null }) =>
+      api.post<Load>(`/api/loads/${id}/uncover`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['loads'] })
+      qc.invalidateQueries({ queryKey: ['load', id] })
+      qc.invalidateQueries({ queryKey: ['activities'] })
+      qc.invalidateQueries({ queryKey: ['load-options', id] })
+    },
+  })
+}
+
 export function useDuplicateLoad() {
   const qc = useQueryClient()
   return useMutation({
