@@ -26,20 +26,15 @@
 
 ---
 
-## 🟡 Remaining — close before public / paying users
+## ✅ M1 — Form label association (CLOSED)
+Every form field now uses **implicit label association**: the field wrapper is a
+`<label class="field">` and the caption is a `<span class="cl">`, so each input is a
+descendant of its label and programmatically named for screen readers. Applied
+across Carrier, Company, Contact, Load, Prospect, Team, and auth forms;
+placeholder-only inputs (tracking check-call, Team sales code) got `aria-label`s.
+Satisfies WCAG 1.3.1, 3.3.2, 4.1.2.
 
-### M1. Form label association (biggest remaining gap)
-Forms show a visible `<label class="cl">` above each input, but the label is **not
-programmatically linked** to its input (no `htmlFor`/`id` pair). Sighted users are
-fine; screen-reader users won't hear the field name on focus.
-
-- **Affected:** ~14 form files, ~100 fields (Carrier, Company, Contact, Load,
-  Prospect, Team, auth forms).
-- **Fix:** add matching `htmlFor`/`id` to each field (mechanical, but touches many
-  files → deferred out of this pass to avoid regression risk right before testers).
-- **WCAG:** 1.3.1 Info & Relationships, 3.3.2 Labels, 4.1.2 Name/Role/Value.
-- **Interim:** placeholders + visible labels make these usable for sighted keyboard
-  users today; the gap is specifically screen-reader announcement.
+## 🟡 Remaining — optional, before public / paying users
 
 ### M2. Kanban board keyboard operation
 The Load status board (dnd-kit) uses only `PointerSensor` — drag-to-change-status
