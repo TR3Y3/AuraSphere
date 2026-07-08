@@ -1,6 +1,7 @@
 import { useAuth } from '../../auth/AuthContext'
 import { BillingPanel } from './BillingPanel'
 import { TeamPanel } from './TeamPanel'
+import { SecurityPanel } from './SecurityPanel'
 
 // "Available at launch" surface: integrations are visible here as cards with
 // a status, even though the wiring is built later (see docs/integrations.md).
@@ -62,6 +63,12 @@ export function SettingsPage() {
       <TeamPanel />
 
       <BillingPanel />
+
+      {me.user.role === 'owner' && (
+        <div className="panel panel-pad" style={{ marginBottom: 22 }}>
+          <SecurityPanel />
+        </div>
+      )}
 
       <h2 style={{ fontSize: 15, margin: '8px 0 4px' }}>Integrations</h2>
       <p className="muted" style={{ marginTop: 0, marginBottom: 14, fontSize: 13 }}>
