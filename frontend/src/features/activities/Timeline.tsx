@@ -60,9 +60,11 @@ export function Timeline({ scope, title = 'Activity' }: { scope: ActivityScope; 
   }
 
   const submit = () => {
-    if (!subject.trim() && !body.trim()) return
+    if (type === 'task' ? !subject.trim() && !body.trim() : !body.trim()) return
     log.mutate({
-      type, subject: subject || null, body: body || null,
+      // Notes/calls/emails are a single text box — the body IS the note.
+      // Only tasks keep a separate title (the list view needs one).
+      type, subject: type === 'task' ? subject || null : null, body: body || null,
       due_at: type === 'task' && due ? new Date(due).toISOString() : null,
       mentions: mentionIds.length ? mentionIds : null,
       ...scope,
@@ -112,10 +114,13 @@ export function Timeline({ scope, title = 'Activity' }: { scope: ActivityScope; 
             </label>
           )}
         </div>
-        <input className="ti" placeholder={type === 'task' ? 'Task — what needs doing?' : 'Subject'} value={subject} onChange={(e) => setSubject(e.target.value)} />
+        {type === 'task' && (
+          <input className="ti" placeholder="Task — what needs doing?" value={subject} onChange={(e) => setSubject(e.target.value)} />
+        )}
         <div style={{ position: 'relative' }}>
-          <textarea className="ti" rows={2} placeholder="Details… (type @ to tag a teammate)" value={body}
-            onChange={(e) => onBodyChange(e.target.value)} />
+          <textarea className="ti" rows={2}
+            placeholder={type === 'task' ? 'Details… (type @ to tag a teammate)' : `Write a ${type}… (type @ to tag a teammate)`}
+            value={body} onChange={(e) => onBodyChange(e.target.value)} />
           {mentionMatches.length > 0 && (
             <div className="menu-pop" style={{ left: 8, right: 'auto', top: '100%' }}>
               {mentionMatches.map((u) => (
