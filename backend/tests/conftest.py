@@ -18,6 +18,7 @@ from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Company, Organization, User  # noqa: E402
 from app.security import hash_password  # noqa: E402
+from app import security_ops  # noqa: E402
 
 engine = create_engine(
     "sqlite:///./test_pytest.db", connect_args={"check_same_thread": False}
@@ -34,6 +35,14 @@ def _override_get_db():
 
 
 app.dependency_overrides[get_db] = _override_get_db
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset in-memory rate limiter before each test."""
+    security_ops._rate_limit_windows.clear()
+    yield
+    security_ops._rate_limit_windows.clear()
 
 
 @pytest.fixture()

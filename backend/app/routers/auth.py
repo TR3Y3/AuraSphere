@@ -31,6 +31,13 @@ from app.security import (
     hash_token,
     verify_password,
 )
+from app.security_ops import (
+    get_client_ip,
+    record_failed_login,
+    check_rate_limit,
+    RATE_LIMIT_AUTH_REQUESTS,
+    RATE_LIMIT_AUTH_WINDOW,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -95,9 +102,18 @@ def _set_session_cookie(response: Response, token: str) -> None:
 
 
 @router.post("/signup", response_model=SignupResult, status_code=status.HTTP_201_CREATED)
-def signup(payload: SignupRequest, response: Response, db: DbSession = Depends(get_db)):
+def signup(payload: SignupRequest, response: Response, request: Request, db: DbSession = Depends(get_db)):
     """Self-serve: create a new brokerage (org) + its owner, log them in, and
     send an email-verification link."""
+    ip = get_client_ip(request)
+
+    # Rate limit auth endpoints
+    if ip and not check_rate_limit(ip, RATE_LIMIT_AUTH_REQUESTS, RATE_LIMIT_AUTH_WINDOW):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many signup attempts. Try again later.",
+        )
+
     email = payload.email.lower()
     if db.query(User).filter(User.email == email).first() is not None:
         raise HTTPException(
@@ -180,8 +196,15 @@ def resend_verification(db: DbSession = Depends(get_db), user: User = Depends(ge
 
 
 @router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
-def forgot_password(payload: ForgotPasswordRequest, db: DbSession = Depends(get_db)):
+def forgot_password(payload: ForgotPasswordRequest, request: Request, db: DbSession = Depends(get_db)):
     """Issue a reset link. Always 204 (never reveal whether the email exists)."""
+    ip = get_client_ip(request)
+
+    # Rate limit auth endpoints
+    if ip and not check_rate_limit(ip, RATE_LIMIT_AUTH_REQUESTS, RATE_LIMIT_AUTH_WINDOW):
+        # Still return 204 to not reveal rate limit info, but silently drop the request
+        return
+
     user = db.query(User).filter(User.email == payload.email.lower()).first()
     if user is not None:
         reset_url = issue_password_reset(db, user)
@@ -231,12 +254,25 @@ def reset_password(payload: ResetPasswordRequest, response: Response, db: DbSess
 def login(
     payload: LoginRequest,
     response: Response,
+    request: Request,
     db: DbSession = Depends(get_db),
 ):
+    ip = get_client_ip(request)
+
+    # Rate limit auth endpoints
+    if ip and not check_rate_limit(ip, RATE_LIMIT_AUTH_REQUESTS, RATE_LIMIT_AUTH_WINDOW):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again later.",
+        )
+
     user = db.query(User).filter(User.email == payload.email.lower()).first()
     # Verify even when the user is missing to keep timing uniform.
     valid = user is not None and verify_password(payload.password, user.password_hash)
     if not user or not valid or not user.is_active:
+        # Track failed attempt for auto-ban
+        if ip:
+            record_failed_login(db, ip, payload.email.lower())
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",

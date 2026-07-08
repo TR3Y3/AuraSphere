@@ -668,3 +668,31 @@ class Activity(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+
+class IPBan(Base):
+    """Global IP ban list (not org-scoped; applies to entire system)."""
+    __tablename__ = "ip_bans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ip_address: Mapped[str] = mapped_column(String(45), unique=True, nullable=False)  # IPv6-safe
+    reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    auto_banned: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)  # True if system auto-banned
+    banned_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # NULL = permanent
+
+
+class FailedLoginAttempt(Base):
+    """Track failed login attempts per IP for auto-ban and rate limiting."""
+    __tablename__ = "failed_login_attempts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ip_address: Mapped[str] = mapped_column(String(45), nullable=False)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    attempted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

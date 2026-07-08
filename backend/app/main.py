@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app import config
+from app.database import SessionLocal
+from app.security_ops import get_client_ip, is_ip_banned, check_rate_limit
 
 log = logging.getLogger("aurasphere")
 from app.routers import (
@@ -27,12 +29,57 @@ from app.routers import (
     pins,
     portal,
     prospects,
+    security,
     sign,
     tracking,
     users,
 )
 
 app = FastAPI(title="AuraSphere CRM", version="0.1.0")
+
+# Security middleware: check IP bans and rate limits BEFORE CORS (to save bandwidth on banned IPs).
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    """IP ban check and rate limiting."""
+    ip = get_client_ip(request)
+
+    # Check IP ban
+    if ip:
+        db = SessionLocal()
+        try:
+            if is_ip_banned(db, ip):
+                return JSONResponse(status_code=403, content={"detail": "Access denied"})
+
+            # Check rate limit (except /health)
+            if not request.url.path.startswith("/health"):
+                if not check_rate_limit(ip):
+                    return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded"})
+        finally:
+            db.close()
+
+    response = await call_next(request)
+    return response
+
+
+# Add security headers
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Add security headers to all responses."""
+    response = await call_next(request)
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    # Prevent MIME sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Enable XSS protection
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Strict Transport Security (HTTPS only)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Content Security Policy (strict, allow only same-origin)
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    # Referrer Policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 
 # CORS: exact SPA origin with credentials so the session cookie is sent.
 app.add_middleware(
@@ -64,6 +111,7 @@ app.include_router(activities.router)
 app.include_router(dashboard.router)
 app.include_router(feedback.router)
 app.include_router(users.router)
+app.include_router(security.router)
 
 
 # Global handlers: responses produced here flow back through the middleware
