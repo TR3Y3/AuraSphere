@@ -23,6 +23,21 @@
 }
 
 * { box-sizing: border-box; }
+
+/* Accessibility: a clear, consistent keyboard-focus ring on every interactive
+   element (WCAG 2.4.7). :focus-visible only shows it for keyboard users, not
+   on mouse click, so it doesn't disrupt the pointer experience. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Screen-reader-only helper: visually hidden but announced. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 html, body, #root { margin: 0; padding: 0; min-height: 100vh; }
 html, body { overflow-x: hidden; }
 body {
@@ -136,13 +151,17 @@ td .sub { color: var(--muted); font-size: 12px; }
 
 /* ── Forms ──────────────────────────────────────────────────────── */
 .form-grid { display: grid; gap: 12px; }
+/* .field is a <label> wrapping its caption (.cl span) + control, so the control
+   is programmatically associated with its label (WCAG 1.3.1 / 3.3.2). */
 .field { display: flex; flex-direction: column; gap: 4px; }
+label.field { cursor: default; }
 .cl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
 .ti {
   width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
   padding: 10px 12px; border-radius: 8px; font-size: 14px; font-family: inherit;
 }
 .ti:focus { outline: none; border-color: var(--brand); }
+.ti:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 select.ti { appearance: auto; }
 .err-text { color: var(--danger); font-size: 12px; }
 .form-actions { display: flex; gap: 8px; margin-top: 4px; }

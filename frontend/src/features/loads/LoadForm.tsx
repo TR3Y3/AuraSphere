@@ -94,48 +94,48 @@ export function LoadForm({
 
   return (
     <form className="form-grid two-col" onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid' }}>
-      <div className="field">
-        <label className="cl">Shipper (customer)</label>
+      <label className="field">
+        <span className="cl">Shipper (customer)</span>
         <select className="ti" {...register('shipper_id')}>
           <option value="">(none)</option>
           {shippers?.items.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-      </div>
-      <div className="field"><label className="cl">Equipment</label><input className="ti" placeholder="53' Van" {...register('equipment')} /></div>
+      </label>
+      <label className="field"><span className="cl">Equipment</span><input className="ti" placeholder="53' Van" {...register('equipment')} /></label>
       <CityDatalist />
-      <div className="field"><label className="cl">Origin city</label>
+      <label className="field"><span className="cl">Origin city</span>
         <input className="ti" list="us-cities" placeholder="Start typing a city…"
           {...register('origin_city', { onChange: (e) => {
             const cs = splitCityState(e.target.value)
             if (cs) { setValue('origin_city', cs.city); setValue('origin_state', cs.state) }
           } })} />
-      </div>
-      <div className="field"><label className="cl">Origin state</label><input className="ti" maxLength={2} {...register('origin_state')} /></div>
-      <div className="field"><label className="cl">Destination city</label>
+      </label>
+      <label className="field"><span className="cl">Origin state</span><input className="ti" maxLength={2} {...register('origin_state')} /></label>
+      <label className="field"><span className="cl">Destination city</span>
         <input className="ti" list="us-cities" placeholder="Start typing a city…"
           {...register('dest_city', { onChange: (e) => {
             const cs = splitCityState(e.target.value)
             if (cs) { setValue('dest_city', cs.city); setValue('dest_state', cs.state) }
           } })} />
-      </div>
-      <div className="field"><label className="cl">Destination state</label><input className="ti" maxLength={2} {...register('dest_state')} /></div>
-      <div className="field"><label className="cl">Pickup date</label><input className="ti" type="date" {...register('pickup_date')} /></div>
-      <div className="field"><label className="cl">Delivery date</label><input className="ti" type="date" {...register('delivery_date')} /></div>
-      <div className="field"><label className="cl">Commodity</label><input className="ti" {...register('commodity')} /></div>
-      <div className="field"><label className="cl">Weight (lbs)</label><input className="ti" type="number" {...register('weight')} /></div>
-      <div className="field"><label className="cl">Total miles</label><input className="ti" type="number" {...register('total_miles')} /></div>
-      <div className="field"><label className="cl">Customer rate ($)</label><input className="ti" type="number" step="0.01" {...register('customer_rate')} /></div>
-      <div className="field"><label className="cl">Target buy ($)</label><input className="ti" type="number" step="0.01" {...register('target_rate')} /></div>
+      </label>
+      <label className="field"><span className="cl">Destination state</span><input className="ti" maxLength={2} {...register('dest_state')} /></label>
+      <label className="field"><span className="cl">Pickup date</span><input className="ti" type="date" {...register('pickup_date')} /></label>
+      <label className="field"><span className="cl">Delivery date</span><input className="ti" type="date" {...register('delivery_date')} /></label>
+      <label className="field"><span className="cl">Commodity</span><input className="ti" {...register('commodity')} /></label>
+      <label className="field"><span className="cl">Weight (lbs)</span><input className="ti" type="number" {...register('weight')} /></label>
+      <label className="field"><span className="cl">Total miles</span><input className="ti" type="number" {...register('total_miles')} /></label>
+      <label className="field"><span className="cl">Customer rate ($)</span><input className="ti" type="number" step="0.01" {...register('customer_rate')} /></label>
+      <label className="field"><span className="cl">Target buy ($)</span><input className="ti" type="number" step="0.01" {...register('target_rate')} /></label>
       {!isQuote && (
         <>
-          <div className="field">
-            <label className="cl">Carrier</label>
+          <label className="field">
+            <span className="cl">Carrier</span>
             <select className="ti" {...register('carrier_id')}>
               <option value="">(unassigned)</option>
               {carriers?.items.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </div>
-          <div className="field"><label className="cl">Carrier rate ($)</label><input className="ti" type="number" step="0.01" {...register('carrier_rate')} /></div>
+          </label>
+          <label className="field"><span className="cl">Carrier rate ($)</span><input className="ti" type="number" step="0.01" {...register('carrier_rate')} /></label>
         </>
       )}
       {!existing && (

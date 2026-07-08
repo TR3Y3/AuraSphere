@@ -12,6 +12,7 @@ const schema = z.object({
   full_name: z.string().min(1, 'Your name is required'),
   email: z.string().email('Enter a valid email'),
   password: z.string().min(8, 'At least 8 characters'),
+  agree: z.literal(true, { errorMap: () => ({ message: 'Please accept the terms to continue' }) }),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -55,26 +56,36 @@ export function Signup() {
 
         {formError && <div className="notice err">{formError}</div>}
 
-        <div className="field">
-          <label className="cl">Company name</label>
+        <label className="field">
+          <span className="cl">Company name</span>
           <input className="ti" {...register('organization_name')} />
           {errors.organization_name && <span className="err-text">{errors.organization_name.message}</span>}
-        </div>
-        <div className="field">
-          <label className="cl">Your name</label>
+        </label>
+        <label className="field">
+          <span className="cl">Your name</span>
           <input className="ti" {...register('full_name')} />
           {errors.full_name && <span className="err-text">{errors.full_name.message}</span>}
-        </div>
-        <div className="field">
-          <label className="cl">Work email</label>
+        </label>
+        <label className="field">
+          <span className="cl">Work email</span>
           <input className="ti" type="email" autoComplete="username" {...register('email')} />
           {errors.email && <span className="err-text">{errors.email.message}</span>}
-        </div>
-        <div className="field">
-          <label className="cl">Password</label>
+        </label>
+        <label className="field">
+          <span className="cl">Password</span>
           <input className="ti" type="password" autoComplete="new-password" {...register('password')} />
           {errors.password && <span className="err-text">{errors.password.message}</span>}
-        </div>
+        </label>
+
+        <label className="check" style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 4, fontSize: 13, whiteSpace: 'normal' }}>
+          <input type="checkbox" {...register('agree')} style={{ marginTop: 3 }} />
+          <span>
+            I agree to the{' '}
+            <Link to="/terms" target="_blank">Terms of Service</Link> and{' '}
+            <Link to="/privacy" target="_blank">Privacy Policy</Link>.
+          </span>
+        </label>
+        {errors.agree && <span className="err-text">{errors.agree.message}</span>}
 
         <button className="btn" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creating your workspace…' : 'Create account'}

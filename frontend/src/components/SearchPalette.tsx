@@ -71,9 +71,10 @@ export function SearchPalette({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="palette-overlay" onClick={onClose}>
-      <div className="palette" onClick={(e) => e.stopPropagation()}>
+      <div className="palette" role="dialog" aria-modal="true" aria-label="Search records" onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
+          aria-label="Search loads, lanes, shippers, carriers, MC number, and contacts"
           placeholder="Search loads, lanes, shippers, carriers, MC#, contacts…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
