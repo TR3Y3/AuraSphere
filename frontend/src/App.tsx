@@ -17,6 +17,7 @@ import { ContactsPage } from './features/contacts/ContactsPage'
 import { ContactDetailPage } from './features/contacts/ContactDetailPage'
 import { LoadsPage } from './features/loads/LoadsPage'
 import { QuotesPage } from './features/loads/QuotesPage'
+import { OptionsBoardPage } from './features/options/OptionsBoardPage'
 import { LoadDetailPage } from './features/loads/LoadDetailPage'
 import { ProspectsPage } from './features/prospects/ProspectsPage'
 import { MyTasksPage } from './features/activities/MyTasksPage'
@@ -51,6 +52,7 @@ function App() {
               <Route path="/loads" element={<LoadsPage />} />
               <Route path="/loads/:id" element={<LoadDetailPage />} />
               <Route path="/quotes" element={<QuotesPage />} />
+              <Route path="/options" element={<OptionsBoardPage />} />
               <Route path="/prospects" element={<ProspectsPage />} />
               <Route path="/tasks" element={<MyTasksPage />} />
               <Route path="/pricing" element={<PricingPage />} />

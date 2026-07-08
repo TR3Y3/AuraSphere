@@ -92,3 +92,38 @@ def resolve_offer_expiry(db: DbSession, load: Load) -> bool:
     load.offer_expires_at = None
     db.commit()
     return True
+
+
+# ── Option expiry (Options board) ────────────────────────────────────────
+# Options go stale fast in freight — after OPTION_TTL_HOURS they stop being
+# actionable. Expiry is DERIVED from created_at (no column, no scheduler):
+# the board classifies at read time and accept/cover enforce it.
+
+OPEN_OPTION_STATUSES = ("available", "countered")
+# Load statuses where coverage is still being worked — options on loads past
+# this window are no longer opportunities.
+COVERAGE_LOAD_STATUSES = ("quote", "tendered", "offered")
+
+
+def option_expires_at(opt: LoadOption) -> datetime:
+    from datetime import timedelta
+
+    from app import config
+    created = opt.created_at
+    if created.tzinfo is None:  # SQLite returns naive UTC
+        created = created.replace(tzinfo=timezone.utc)
+    return created + timedelta(hours=config.OPTION_TTL_HOURS)
+
+
+def option_is_expired(opt: LoadOption) -> bool:
+    return datetime.now(timezone.utc) >= option_expires_at(opt)
+
+
+def option_is_active(opt: LoadOption, load: Load) -> bool:
+    """Active = still actionable: open status, not expired, and the load is
+    still in its coverage phase (not covered/booked/terminal)."""
+    return (
+        opt.status in OPEN_OPTION_STATUSES
+        and not option_is_expired(opt)
+        and load.status in COVERAGE_LOAD_STATUSES
+    )

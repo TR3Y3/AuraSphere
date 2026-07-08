@@ -904,6 +904,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Board Options */
+        get: operations["list_board_options_api_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sign/{token}": {
         parameters: {
             query?: never;
@@ -1487,6 +1504,78 @@ export interface components {
             max_loads: number | null;
             /** Plans */
             plans: components["schemas"]["PlanInfo"][];
+        };
+        /**
+         * BoardOption
+         * @description One row on the org-wide Options board: the option + enough load and
+         *     carrier context to act without opening the load first.
+         */
+        BoardOption: {
+            /** Id */
+            id: number;
+            /** Load Id */
+            load_id: number;
+            /** Load Reference */
+            load_reference: string | null;
+            /** Load Status */
+            load_status: string;
+            /** Origin City */
+            origin_city: string | null;
+            /** Origin State */
+            origin_state: string | null;
+            /** Dest City */
+            dest_city: string | null;
+            /** Dest State */
+            dest_state: string | null;
+            /** Pickup Date */
+            pickup_date: string | null;
+            /** Delivery Date */
+            delivery_date: string | null;
+            /** Equipment */
+            equipment: string | null;
+            /** Customer Rate */
+            customer_rate: string | null;
+            /** Carrier Id */
+            carrier_id: number | null;
+            /** Carrier Name */
+            carrier_name: string | null;
+            /** Carrier Phone */
+            carrier_phone?: string | null;
+            /** Carrier Email */
+            carrier_email?: string | null;
+            /** Mc Number */
+            mc_number?: string | null;
+            /**
+             * Source
+             * @default manual
+             */
+            source: string;
+            /** Carrier Light */
+            carrier_light?: string | null;
+            /** Rate */
+            rate: string | null;
+            /** Counter Rate */
+            counter_rate: string | null;
+            /** Margin */
+            margin?: string | null;
+            /** Status */
+            status: string;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Is Expired */
+            is_expired: boolean;
+            /** Active */
+            active: boolean;
         };
         /** Body_import_prospects_api_prospects_import_post */
         Body_import_prospects_api_prospects_import_post: {
@@ -2375,6 +2464,13 @@ export interface components {
              */
             updated_at: string;
             carrier?: components["schemas"]["CarrierRef"] | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /**
+             * Is Expired
+             * @default false
+             */
+            is_expired: boolean;
         };
         /** OptionUpdate */
         OptionUpdate: {
@@ -4904,6 +5000,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_board_options_api_options_get: {
+        parameters: {
+            query?: {
+                view?: string;
+                search?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardOption"][];
                 };
             };
             /** @description Validation Error */

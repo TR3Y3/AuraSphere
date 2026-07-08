@@ -104,6 +104,9 @@ export function QuoteDesk({ load }: { load: Load }) {
               const name = o.carrier?.name ?? o.carrier_name ?? '—'
               const accepted = o.status === 'accepted'
               const light = LIGHT[o.carrier_light ?? 'grey'] ?? LIGHT.grey
+              // Options expire 2h after they're logged (server-enforced).
+              const expired = o.is_expired ?? false
+              const minsLeft = o.expires_at ? Math.floor((new Date(o.expires_at).getTime() - Date.now()) / 60000) : null
               return (
                 <tr key={o.id}>
                   <td style={{ width: 26 }} title={light.label}>
@@ -124,23 +127,32 @@ export function QuoteDesk({ load }: { load: Load }) {
                       : overTarget ? <span className="badge b-muted">over</span>
                       : <span className="badge b-good">on target</span>}
                   </td>
-                  <td><span className={`badge ${STATUS_BADGE[o.status] ?? 'b-muted'}`}>{o.status.replace('_', ' ')}</span></td>
+                  <td>
+                    <span className={`badge ${STATUS_BADGE[o.status] ?? 'b-muted'}`}>{o.status.replace('_', ' ')}</span>
+                    {!accepted && ['available', 'countered'].includes(o.status) && (
+                      expired
+                        ? <span className="badge b-muted" style={{ marginLeft: 6 }}>expired</span>
+                        : minsLeft != null && minsLeft < 30 && (
+                            <span className="badge b-danger" style={{ marginLeft: 6 }}>⏳ {minsLeft}m</span>
+                          )
+                    )}
+                  </td>
                   <td className="t-actions">
-                    {!accepted && load.status !== 'covered' && o.carrier_light === 'green' && (
+                    {!accepted && !expired && load.status !== 'covered' && o.carrier_light === 'green' && (
                       <button className="btn sm" disabled={cover.isPending}
                         title="Cover the load AND send the rate con for signature"
                         onClick={() => cover.mutate(o.id, { onSuccess: onCoverResult, onError: (e) => setActionErr(e.message) })}>
                         {cover.isPending ? '…' : '✓ Cover Load'}
                       </button>
                     )}{' '}
-                    {!accepted && ['quote', 'tendered'].includes(load.status) && o.carrier_id != null && o.carrier_light !== 'red' && (
+                    {!accepted && !expired && ['quote', 'tendered'].includes(load.status) && o.carrier_id != null && o.carrier_light !== 'red' && (
                       <button className="btn ghost sm" disabled={offer.isPending}
                         title="Lock the load to this carrier while they sign (auto-reverts if unsigned)"
                         onClick={() => offer.mutate({ option_id: o.id }, { onSuccess: onCoverResult, onError: (e) => setActionErr(e.message) })}>
                         ⏳ Offer
                       </button>
                     )}{' '}
-                    {!accepted && load.status !== 'covered' && o.carrier_light !== 'green' && (
+                    {!accepted && !expired && load.status !== 'covered' && o.carrier_light !== 'green' && (
                       <button className="btn ghost sm" title="Cover without vetting (no rate con sent)"
                         onClick={() => accept.mutate(o.id)}>Accept</button>
                     )}{' '}
